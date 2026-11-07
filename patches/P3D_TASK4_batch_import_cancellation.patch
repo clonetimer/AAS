@@ -1,0 +1,182 @@
+diff --git a/scripts/server/handler_post.py b/scripts/server/handler_post.py
+index 4d13521..c7e8c64 100644
+--- a/scripts/server/handler_post.py
++++ b/scripts/server/handler_post.py
+@@ -169,7 +169,9 @@ class PostRoutesMixin:
+                 return main.json_response(self,{'error':'批量导入任务编号无效'},400)
+             retry=payload.get('retry') is True
+             from scripts.server import telemetry_v2_batch_tasks as batch
+-            return main.json_response(self, batch.start(main.ROOT,task_id,retry=retry))
++            task_runtime = main if callable(getattr(main, 'create_task', None)) else None
++            result = batch.start(main.ROOT, task_id, retry=retry, task_runtime=task_runtime)
++            return main.json_response(self, result, 202)
+         if parsed.path == '/api/task-cancel':
+             if not 0 < length <= 4096:
+                 return main.json_response(self, {'error': '取消请求无效'}, 400)
+diff --git a/scripts/server/task_diagnostics.py b/scripts/server/task_diagnostics.py
+index 9a3d3be..a52e46d 100644
+--- a/scripts/server/task_diagnostics.py
++++ b/scripts/server/task_diagnostics.py
+@@ -12,6 +12,9 @@ STAGE_LABELS = {
+     'training_data_validation': '训练数据检查',
+     'algorithm_execution': '算法执行',
+     'evaluation_execution': '模型评估',
+     'score_only_execution': '模型仅推理',
++    'batch_import': '批量数据导入',
++    'csv_import': 'CSV 数据导入',
++    'preprocessing': '数据预处理',
+     'model_validation': '模型文件检查',
+     'provenance_capture': '实验输入来源记录',
+     'report_archive': '实验报告归档',
+@@ -64,6 +67,9 @@ def server_restart_diagnostic(stage: str, task_type: str) -> dict[str, Any]:
+         'training': ('训练', '重新提交训练'),
+         'evaluation': ('评估', '重新提交评估'),
+         'score_only': ('仅推理', '重新提交仅推理'),
++        'batch_import': ('批量导入', '重新预检后提交批量导入'),
++        'csv_import': ('CSV 导入', '重新选择文件并提交导入'),
++        'preprocess': ('数据预处理', '重新选择数据并提交预处理'),
+     }
+     name, action = workflow.get(task_type, workflow['training'])
+     return {
+diff --git a/scripts/server/telemetry_v2_batch_tasks.py b/scripts/server/telemetry_v2_batch_tasks.py
+index 1ad28af..7b8d3a1 100644
+--- a/scripts/server/telemetry_v2_batch_tasks.py
++++ b/scripts/server/telemetry_v2_batch_tasks.py
+@@ -13,6 +13,7 @@ from pathlib import Path
+ 
+ from scripts.server.telemetry_v2_batch_import import import_file, MAX_FILES
++from scripts.server.task_diagnostics import diagnose_failure
+ 
+ ROOT_ENV='AAS_V2_BATCH_IMPORT_ROOT'
+ _MUTEX=threading.RLock()
+@@ -254,18 +255,44 @@ def _worker(app_root,task_id):
+                 rec['updated_utc']=_utc();_save(record_path,rec)
+         with _MUTEX:
+             rec=_read(record_path);rec['status']='complete' if rec['counts']['failed']==0 else 'partial_failure'
+-            rec['updated_utc']=_utc();_save(record_path,rec)
+-    except BaseException as exc:
++            rec['updated_utc']=_utc();_save(record_path,rec)
++    except BaseException as exc:
+         with _MUTEX:
+             try:
+                 rec=_read(record_path);rec['status']='interrupted';rec['error']=str(exc)[:300]
+                 rec['updated_utc']=_utc();_save(record_path,rec)
+             except (OSError,ValueError):pass
+     finally:
+         with _MUTEX:_ACTIVE.discard(task_id)
+ 
++def _worker(app_root, task_id, task_runtime=None):
++    record_path = _record_path(app_root, task_id)
++    cancelled = False
++    try:
++        if task_runtime is not None:
++            task_runtime.bind_task_thread(task_id)
++            task_runtime.update_task_progress(task_id, 1, '批量导入任务已启动', stage='batch_import')
++        plan = _read(_plan_path(app_root, task_id))
++        root = _root()
++        for index, (item, snapshot) in enumerate(zip(plan['files'], plan['sources'])):
++            if task_runtime is not None and task_runtime.is_cancel_requested(task_id):
++                cancelled = True
++                break
++            try:
++                source = _safe(root, snapshot['relative_path'])
++                stat = source.stat()
++                if (stat.st_size, stat.st_mtime_ns) != (snapshot['size'], snapshot['mtime_ns']):
++                    raise ValueError('文件自预检后发生变化，拒绝未经确认的导入')\n+                if _sha(_safe(root, plan['targets_archive'])) != plan['targets_sha256']:
++                    raise ValueError('标签归档已变更，必须重新预检')
++                # import_file owns one SQLite transaction. Cancellation is only
++                # observed before or after this call, never inside its commit.
++                result = import_file(plan['database'], source, item['config'])
++            except (ValueError, OSError, RuntimeError, TypeError, KeyError, sqlite3.Error,
++                    csv.Error, UnicodeError, zipfile.BadZipFile) as exc:
++                result = {'status': 'failed', 'filename': item['path'], 'error': str(exc)[:400]}
++            with _MUTEX:
++                rec = _read(record_path)
++                rec['results'].append(result)
++                rec['files_processed'] = index + 1
++                rec['counts'][result['status']] += 1
++                rec['updated_utc'] = _utc()
++                _save(record_path, rec)
++            if task_runtime is not None:
++                total = max(1, int(rec.get('files_total') or 1))
++                progress = min(95, int(5 + 90 * rec['files_processed'] / total))
++                task_runtime.update_task_progress(
++                    task_id, progress,
++                    f"已处理 {rec['files_processed']}/{total} 个文件（成功 {rec['counts']['imported']}，跳过 {rec['counts']['skipped']}，失败 {rec['counts']['failed']}）",
++                    stage='batch_import')
++                if task_runtime.is_cancel_requested(task_id):
++                    cancelled = True
++                    break
++
++        if task_runtime is not None and not cancelled:
++            # Atomic boundary: if cancellation acquired the runtime lock first,
++            # set_task_cancellable returns False and cancellation wins. Once
++            # this succeeds, further cancellation requests are rejected.
++            if not task_runtime.set_task_cancellable(
++                    task_id, False, reason='所有批量文件已处理，正在完成任务记录'):
++                cancelled = task_runtime.is_cancel_requested(task_id)
++
++        with _MUTEX:
++            rec = _read(record_path)
++            if cancelled:
++                rec['status'] = 'cancelled'
++                rec['message'] = '用户取消批量导入；已提交文件保留，未启动的文件未处理'
++            else:
++                rec['status'] = 'complete' if rec['counts']['failed'] == 0 else 'partial_failure'
++            rec['updated_utc'] = _utc()
++            _save(record_path, rec)
++
++        if task_runtime is not None:
++            result = {
++                'status': rec['status'], 'files_total': rec['files_total'],
++                'files_processed': rec['files_processed'], 'counts': rec['counts'],
++            }
++            if cancelled:
++                task_runtime.complete_task(task_id, None, cancelled=True)
++            else:
++                task_runtime.complete_task(task_id, result)
++    except Exception as exc:
++        with _MUTEX:
++            try:
++                rec = _read(record_path)
++                if task_runtime is not None and task_runtime.is_cancel_requested(task_id):
++                    rec['status'] = 'cancelled'
++                    rec['message'] = '用户取消批量导入；已提交文件保留'
++                else:
++                    rec['status'] = 'failed'
++                    rec['error'] = str(exc)[:300]
++                rec['updated_utc'] = _utc()
++                _save(record_path, rec)
++            except (OSError, ValueError):
++                pass
++        if task_runtime is not None:
++            if task_runtime.is_cancel_requested(task_id):
++                task_runtime.complete_task(task_id, None, cancelled=True)
++            else:
++                task_runtime.complete_task(
++                    task_id, None, str(exc),
++                    failure=diagnose_failure(exc, 'batch_import', 'batch_import'))
++
++    finally:
++        with _MUTEX:
++            _ACTIVE.discard(task_id)
++
++
+ def start(app_root,task_id,*,retry=False):
+     with _MUTEX:
+         if task_id in _ACTIVE:raise ValueError('批量导入任务已在运行')
+@@ -276,6 +303,7 @@ def start(app_root,task_id,*,retry=False):
+             new_id=uuid.uuid4().hex;_save(_plan_path(app_root,new_id),plan)
+             rec={**rec,'id':new_id,'status':'previewed','created_utc':_utc(),'updated_utc':_utc(),
+                  'files_processed':0,'counts':{'imported':0,'skipped':0,'failed':0},'results':[]}
++            task_id=new_id
+         rec['status']='running';rec['updated_utc']=_utc()
+         _save(_record_path(app_root,task_id),rec);_ACTIVE.add(task_id)
+         worker=threading.Thread(target=_worker,args=(app_root,task_id),daemon=True,name='aas-batch-'+task_id[:8])
+@@ -286,6 +314,8 @@ def start(app_root,task_id,*,retry=False):
+             _ACTIVE.discard(task_id)
+             rec['status']='interrupted';_save(_record_path(app_root,task_id),rec)
+             raise
++        if task_runtime is not None:
++            task_runtime.create_task(task_id, 'batch_import', {})
+         return {'task_id':task_id,'status':'running'}
