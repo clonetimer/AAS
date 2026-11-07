@@ -20,7 +20,7 @@ P3-E (historical database large-data browsing) is complete locally. The branch i
 - Overview points: 2,995 (cap 3,000)
 - Detail traversal: 500 pages × 100 logical frames; indexes 1–50,000 contiguous, no gaps or repeats
 - Full traversal time: 4.257 seconds on Linux x86_64 / Python 3.13.5
-- Child-process peak RSS: 160,436,224 bytes (~153 MiB)
+- Child-process peak RSS: approximately 153 MiB
 
 These are Linux test-host measurements, not Windows acceptance results. The stress test has a 30-second timeout to catch repeated full-table scans.
 
@@ -46,9 +46,4 @@ The correction:
 
 ## Source archive
 
-- Full source candidate: AAS_V2_P3E_20261107_candidate.zip
-- Size: 2,105,932 bytes
-- ZIP entries: 686; CRC: PASS
-- SHA-256: a42d59a55a6e4d0a25c4a5c9a68d95a6b14b4d5e4db0f8dbcbab8b95a1d11c9b
-
-The candidate ZIP is delivered separately in the ChatGPT conversation and is not stored as a binary asset in this repository. This remote repository still does not contain the complete application source tree; do not treat it as a complete cloneable application.
+The full P3-E candidate ZIP is delivered separately in the ChatGPT conversation. It is not stored as a binary asset in this repository. The remote repository still does not contain the complete application source tree; do not treat it as a complete cloneable application.
