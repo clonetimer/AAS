@@ -1,50 +1,54 @@
-# AAS V2 P3-E — 历史数据库大数据浏览进展
+# AAS V2 P3-E Progress — 2026-11-07
 
-日期：2026-11-07
-分支：`feat/aas-p3e-history-browser`
+## Conclusion
 
-## 阶段结论
+P3-E (historical database large-data browsing) is complete locally. The branch implements server-side catalog pagination, bounded full-range chart overview, server-backed zoom/selection, and single-channel cursor detail pages.
 
-P3-E 的五个实施单元均已完成本地实现与专项验证。历史数据库浏览已从全量目录加载/一次性曲线读取，改为服务端分页、全范围有界概览、按时间窗口重新读取和单参量游标明细。
+## Delivered
 
-## 功能交付
+1. **Catalog pagination** — SQLite count + deterministic 50-item pages; hierarchy facets use DISTINCT queries with ancestor filters; selected channels remain selected across pages.
+2. **Chart overview** — bounded full-range envelope; logical frame count, valid sample count, plotted point count and duplicate physical row count remain distinct; CSV export remains complete.
+3. **Server-backed zoom** — wheel, zoom buttons and drag selection query a new server time window; reset restores the original range; latest-request-wins prevents stale responses from replacing current state.
+4. **Time precision** — numeric, naive datetime and UTC datetime domains retain their semantics and six-digit microsecond precision.
+5. **Single-channel detail** — only one selected channel is queried at a time; cursor previous/next pages show logical frame, timestamp, value, label, source table, segment ID and source row; no cross-channel alignment is introduced.
 
-1. **目录分页**：SQLite 侧完成总数统计和 50 项分页；分层筛选项采用带祖先条件的 DISTINCT 查询；浏览器只缓存当前页与用户已选参量。
-2. **曲线概览**：保留整个筛选时间范围的代表点；逻辑帧数、有效样本数、绘图点数、重复记录数分别显示；完整 CSV 导出不受绘图点数限制。
-3. **服务端缩放**：滚轮、按钮缩放和拖动框选都会提交新的时间窗口；重置回到初始范围；请求序号确保慢请求不能覆盖较新的缩放或筛选结果。
-4. **时间域精度**：数字时基、无时区日期时间和 UTC 日期时间分别转换；微秒时间戳在缩放请求中保留 6 位小数，不擅自添加或删除时区。
-5. **单参量采样明细**：明细面板只允许选择当前已选的一个参量；使用服务端游标上一页/下一页；每页最多 100 个逻辑帧；展示源表、分片 ID、源文件行号和采样标签，不跨参量按行/时间戳合并。
+## 50,000-frame full traversal
 
-## 50,000 帧压力测试
+- Logical frames: 50,000
+- Physical rows: 50,001 (one identical duplicate)
+- Valid numeric samples: 49,000
+- Overview points: 2,995 (cap 3,000)
+- Detail traversal: 500 pages × 100 logical frames; indexes 1–50,000 contiguous, no gaps or repeats
+- Full traversal time: 4.257 seconds on Linux x86_64 / Python 3.13.5
+- Child-process peak RSS: 160,436,224 bytes (~153 MiB)
 
-测试：`tests/test_p3e_browser_stress.py`
+These are Linux test-host measurements, not Windows acceptance results. The stress test has a 30-second timeout to catch repeated full-table scans.
 
-环境：Linux x86_64，Python 3.13.5。
+## Cursor performance correction
 
-独立测试进程实测：
-- 逻辑帧：50,000
-- 匹配物理记录：50,001
-- 重复物理记录：1
-- 有效数值样本：49,000
-- 全范围概览点：2,995（上限 3,000）
-- 连续明细页：第 1 页 1–100 帧；第 2 页 101–200 帧，无缺失/重复
-- 建库 + 概览 + 两个明细页总耗时：1.349 秒
-- 测试进程峰值 RSS：159,666,176 bytes；测试开始前进程峰值 RSS 为 132,390,912 bytes；本轮高水位增量约 27,275,264 bytes（约 26.0 MiB）
+The first complete 500-page traversal exceeded the 20-second guard. The cause was repeated full-window statistics/conflict scans, prefix counting and window sorting on every page.
 
-RSS 是当前 Linux 测试进程的环境测量值，不代表 Windows 现场设备的内存上限。该压力测试验证了 50,000 帧数据集的有界概览与相邻游标页连续性，不宣称已在该测试中逐页读取完全部 50,000 帧。
+The correction:
+- upgrades the opaque cursor to v2 with a SHA-256 fingerprint over the SQLite main database, WAL and journal file metadata (including canonical database path);
+- caches validated full-window metrics in a bounded process-local LRU (4,096 entries);
+- invalidates cursors on database-file changes, including value-only changes that preserve row counts/time keys;
+- falls back to full validation after service restart or cache eviction;
+- uses indexed time-key pagination and computes row numbers only for the current page candidates;
+- rejects sample/source-segment time-domain mismatches rather than silently filtering them.
 
-## 回归结果
+## Verification
 
-- P3-E + 相关 V2 浏览、导入、治理、训练与任务运行时 Python 回归：**186 passed, 1 deselected**。
-- `tests/telemetry_v2_browser_p3e.cjs`：PASS，覆盖目录翻页、跨页选择、依赖筛选、按钮/滚轮/框选缩放、重置、最新请求优先、数字/naive/UTC 时间域微秒精度、明细游标前进/返回及来源字段。
-- 其余 Node UI 契约测试：15 PASS。
-- 两个历史 Node 测试 `runner_selection_behavior.cjs`、`task_failure_recovery_ui.cjs` 在本分支仍失败；已在 D1–D6 基线提交 `dc72030` 上复现，属于既有基线问题。
-- `node --check web/visualization/telemetry-v2-browser.js`：PASS。
-- `python -m compileall -q scripts`：PASS。
-- `git -c core.whitespace=cr-at-eol diff --check`：PASS。
+- P3-E + related V2 Python regression: **190 passed, 3 skipped, 1 known Phase 41 baseline test deselected**.
+- P3-E browser contract: PASS.
+- Node UI contracts: 15 PASS; two historical tests (`runner_selection_behavior.cjs`, `task_failure_recovery_ui.cjs`) still fail on the P3-D base commit `dc72030`, so they are not P3-E regressions.
+- Python compileall, browser JS syntax and CRLF-aware diff check: PASS.
+- Windows 10/11 fresh-install acceptance remains in P3-H.
 
-Windows 10/11 全新环境验收仍待 P3-H，不由 Linux 回归代替。
+## GitHub archive boundary
 
-## 后续
+- Branch: `feat/aas-p3e-history-browser`
+- Local full-source commit: `5fdada0`
+- P3-E Task 5 + cursor performance patch archive: `patches/P3E_TASK5_AND_CURSOR_FIX.patch.gz`
+- Patch SHA-256: `07c3fcb9968114efa5b1d9f2210fbf2d2116b30c28a329c6ec0ca78fe3704994`
 
-P3-E 完成。按路线进入 P3-F：多故障事件时间线、故障注入版本差异、重叠区间解释，以及按事件撤销/版本回退。P3-F 应保留现有故障注入记录与审计语义，不直接覆盖已提交版本。
+The remote repository still does not contain the complete application source tree. The full P3-E candidate ZIP is delivered separately; do not treat this docs/patch repository as a complete cloneable application.
