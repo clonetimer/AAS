@@ -26,7 +26,7 @@ These are Linux test-host measurements, not Windows acceptance results. The stre
 
 ## Cursor performance correction
 
-The first complete 500-page traversal exceeded the 20-second guard. The cause was repeated full-window statistics/conflict scans, prefix counting and window sorting on every page.
+The first complete 500-page traversal exceeded the 20-second guard. The cause was repeated full-window statistics/conflict scans, prefix frame count and window sorting on every page.
 
 The correction:
 - upgrades the opaque cursor to v2 with a SHA-256 fingerprint over the SQLite main database, WAL and journal file metadata (including canonical database path);
@@ -40,15 +40,15 @@ The correction:
 
 - P3-E + related V2 Python regression: **190 passed, 3 skipped, 1 known Phase 41 baseline test deselected**.
 - P3-E browser contract: PASS.
-- Node UI contracts: 15 PASS; two historical tests (`runner_selection_behavior.cjs`, `task_failure_recovery_ui.cjs`) still fail on the P3-D base commit `dc72030`, so they are not P3-E regressions.
+- Node UI contracts: 15 PASS; two historical tests (runner_selection_behavior.cjs, task_failure_recovery_ui.cjs) still fail on the P3-D base commit dc72030, so they are not P3-E regressions.
 - Python compileall, browser JS syntax and CRLF-aware diff check: PASS.
 - Windows 10/11 fresh-install acceptance remains in P3-H.
 
-## GitHub archive boundary
+## Source archive
 
-- Branch: `feat/aas-p3e-history-browser`
-- Local full-source commit: `5fdada0`
-- P3-E Task 5 + cursor performance patch archive: `patches/P3E_TASK5_AND_CURSOR_FIX.patch.gz`
-- Patch SHA-256: `07c3fcb9968114efa5b1d9f2210fbf2d2116b30c28a329c6ec0ca78fe3704994`
+- Full source candidate: AAS_V2_P3E_20261107_candidate.zip
+- Size: 2,105,932 bytes
+- ZIP entries: 686; CRC: PASS
+- SHA-256: a42d59a55a6e4d0a25c4a5c9a68d95a6b14b4d5e4db0f8dbcbab8b95a1d11c9b
 
-The remote repository still does not contain the complete application source tree. The full P3-E candidate ZIP is delivered separately; do not treat this docs/patch repository as a complete cloneable application.
+The candidate ZIP is delivered separately in the ChatGPT conversation and is not stored as a binary asset in this repository. This remote repository still does not contain the complete application source tree; do not treat it as a complete cloneable application.
