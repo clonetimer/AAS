@@ -94,4 +94,57 @@ index 966756d..a6e27ea 100644
  
  def bind_task_thread(task_id):
      return _legacy_task_runtime().bind_task_thread(task_id)
-@@ -105,12 +105,24 @@ def bind_task_thread(task_id, config):
+ 
+ def update_task_progress(task_id, progress, message=None, stage=None):
+     return _legacy_task_runtime().update_task_progress(task_id, progress, message, stage)
+ 
+-def create_training_task(task_id, config):
+-    return _legacy_task_runtime().create_training_task(task_id, config)
++def create_task(task_id, task_type, config=None):
++    return _legacy_task_runtime().create_task(task_id, task_type, config)
+ 
+-def complete_task(task_id, result, error=None, failure=None):
++def create_training_task(task_id, config, task_type='training'):
++    return _legacy_task_runtime().create_training_task(task_id, config, task_type=task_type)
++
++def request_cancel_task(task_id):
++    return _legacy_task_runtime().request_cancel_task(task_id)
++
++def is_cancel_requested(task_id):
++    return _legacy_task_runtime().is_cancel_requested(task_id)
++
++def set_task_cancellable(task_id, cancellable, reason=None):
++    return _legacy_task_runtime().set_task_cancellable(task_id, cancellable, reason)
++
++def complete_task(task_id, result, error=None, failure=None, *, cancelled=False):
+     # TASK_RESOURCE_TRACKER.finish is delegated into TaskRuntime.complete_task.
+-    return _legacy_task_runtime().complete_task(task_id, result, error, failure)
++    return _legacy_task_runtime().complete_task(task_id, result, error, failure, cancelled=cancelled)
+ 
+ def get_task_status(task_id):
+     return _legacy_task_runtime().get_task_status(task_id)
+@@ -118,11 +130,11 @@ def get_task_status(task_id):
+ def get_public_task_status(task_id):
+     return _legacy_task_runtime().get_public_task_status(task_id)
+ 
+-def list_public_task_statuses(limit=50):
+-    return _legacy_task_runtime().list_public_task_statuses(limit)
++def list_public_task_statuses(limit=50, include_all=False):
++    return _legacy_task_runtime().list_public_task_statuses(limit, include_all=include_all)
+ 
+-def count_public_task_statuses():
+-    return _legacy_task_runtime().count_public_task_statuses()
++def count_public_task_statuses(include_all=False):
++    return _legacy_task_runtime().count_public_task_statuses(include_all=include_all)
+ 
+ def setup_logging(config_path: str = "config.yaml") -> dict:
+     """配置日志系统。"""
+diff --git a/.gitignore b/.gitignore
+index 2fa776e..2409471 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -8,3 +8,4 @@ outputs/
+ .venv/
+ 
+ .worktrees/
++.superpowers/
