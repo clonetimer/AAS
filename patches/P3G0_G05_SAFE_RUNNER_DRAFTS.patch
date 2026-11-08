@@ -1,0 +1,72 @@
+diff --git a/web/visualization/runner-v2.js b/web/visualization/runner-v2.js
+index 3e81d2a..8b4c1e7 100644
+--- a/web/visualization/runner-v2.js
++++ b/web/visualization/runner-v2.js
+@@ -8,6 +8,61 @@ const roleCatalogs={train:null,eval:null};let historyCatalog=null;
+ const parameterControls=new Map();
+ const previewCache={train:null,eval:null},workspaceSelection={train:'data',eval:'data'};
++// Persist only bounded, static user choices. Never persist previews, task IDs,
++// credentials, CSV bytes, execution receipts or preflight authorizations.
++const DRAFT_KEY='aas.runner.safe-draft.v1',DRAFT_MAX=4096;
++const DRAFT_FIELDS={
++ train:['trainDataSource','trainUserCsvDataset','trainStart','trainEnd','trainAlgorithm'],
++ eval:['evalDataSource','evalUserCsvDataset','evalStart','evalEnd','evalSourceModel','evalTargetSplit']
++};
++let draftRestorePending=null,draftSaveTimer=null;
++function readRunnerDraft(){
++ try{
++  const raw=localStorage.getItem(DRAFT_KEY);if(!raw||raw.length>DRAFT_MAX)return null;
++  const value=JSON.parse(raw);
++  if(!value||value.version!==1||!value.fields||typeof value.fields!=='object')return null;
++  return value.fields;
++ }catch(_){return null;}
++}
++function saveRunnerDraft(){
++ const fields={};
++ for(const ids of Object.values(DRAFT_FIELDS))for(const id of ids){
++  const node=$(id);if(!node)continue;
++  const value=String(node.value||'');
++  if(value.length>256)continue;
++  fields[id]=value;
++ }
++ const payload=JSON.stringify({version:1,saved_at:new Date().toISOString(),fields});
++ if(payload.length>DRAFT_MAX)return;
++ try{localStorage.setItem(DRAFT_KEY,payload);}catch(_){}
++}
++function scheduleRunnerDraftSave(){
++ if(draftSaveTimer)clearTimeout(draftSaveTimer);
++ draftSaveTimer=setTimeout(saveRunnerDraft,180);
++}
++function restoreRunnerDraft(){
++ const fields=draftRestorePending||readRunnerDraft();draftRestorePending=null;
++ if(!fields)return;
++ for(const ids of Object.values(DRAFT_FIELDS))for(const id of ids){
++  const node=$(id),value=fields[id];
++  if(!node||typeof value!=='string'||value.length>256)continue;
++  if(node.tagName==='SELECT'&&![...node.options].some(option=>option.value===value))continue;
++  if(node.type==='datetime-local'&&value&&!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?$/.test(value))continue;
++  node.value=value;
++ }
++ // Restored identifiers are only preferences. Reload catalog and require fresh
++ // previews/validation; never restore selected run IDs or authorization tokens.
++}
++function bindRunnerDraftPersistence(){
++ for(const ids of Object.values(DRAFT_FIELDS))for(const id of ids){
++  const node=$(id);if(!node||node.dataset.draftBound==='1')continue;
++  node.dataset.draftBound='1';node.addEventListener('change',scheduleRunnerDraftSave);
++  node.addEventListener('input',scheduleRunnerDraftSave);
++ }
++ window.addEventListener('pagehide',saveRunnerDraft);
++}
+@@
+ async function initialize(){
++ draftRestorePending=readRunnerDraft();
+  const initialTab=new URLSearchParams(window.location.search).get('tab')==='eval'?'eval':'train';
+@@
+  $('trainAlgorithm').replaceChildren(...options.map(([value,label])=>new Option(label,value)));
++ restoreRunnerDraft();
++ bindRunnerDraftPersistence();
++ await Promise.all([loadRoleCatalog('train'),loadRoleCatalog('eval')]);
+  await loadParameters();await refreshModels();
++ scheduleRunnerDraftSave();
+ }
