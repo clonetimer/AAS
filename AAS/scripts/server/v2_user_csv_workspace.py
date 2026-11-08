@@ -9,8 +9,10 @@ _DB_NAME = "user_csv_workspace.sqlite"
 _ID = re.compile(r"^[0-9a-f]{32}$")
 _MAX_BYTES = 64 * 1024 * 1024
 
+
 def database_path(root: Path) -> Path:
     return Path(root).resolve() / "datasets" / "user_csv_workspaces" / _DB_NAME
+
 
 def _connect(path: Path) -> sqlite3.Connection:
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -20,10 +22,38 @@ def _connect(path: Path) -> sqlite3.Connection:
     db.execute("PRAGMA busy_timeout=30000")
     return db
 
+
 def initialize(root: Path) -> Path:
+    """Initialize a complete V2 schema plus user-workspace metadata in this DB only.
+
+    The canonical V2 schema is created only when the workspace DB has no V2
+    marker. An existing incompatible/partial V2 schema is rejected rather than
+    destructively rebuilt. The historical telemetry DB is never opened here.
+    """
+    from scripts.rebuild_telemetry_v2 import CANON_SCHEMA
+
     path = database_path(root)
     with _connect(path) as db:
         db.execute("PRAGMA journal_mode=WAL")
+        marker = db.execute(
+            "SELECT 1 FROM sqlite_master WHERE type='table' AND name='v2_meta'"
+        ).fetchone()
+        if marker:
+            row = db.execute(
+                "SELECT value FROM v2_meta WHERE key='schema_version'"
+            ).fetchone()
+            if not row or str(row[0]) != "2":
+                raise ValueError("用户 CSV 工作区存在不兼容的 V2 数据库，拒绝自动重建")
+        else:
+            existing = db.execute(
+                "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'"
+            ).fetchall()
+            unexpected = [r[0] for r in existing
+                          if r[0] not in ("user_csv_datasets", "user_csv_task_refs")]
+            if unexpected:
+                raise ValueError("用户 CSV 工作区包含未知表，拒绝覆盖: " + ",".join(unexpected))
+            db.executescript(CANON_SCHEMA)
+            db.execute("INSERT INTO v2_meta(key,value) VALUES('schema_version','2')")
         db.executescript("""
         CREATE TABLE IF NOT EXISTS user_csv_datasets (
           id TEXT PRIMARY KEY, filename TEXT NOT NULL,
@@ -40,6 +70,7 @@ def initialize(root: Path) -> Path:
         );
         """)
     return path
+
 
 def import_csv(root: Path, raw: bytes, filename: str, role: str,
                metadata: dict[str, Any], *, format_confirmed: bool) -> dict[str, Any]:
@@ -62,6 +93,7 @@ def import_csv(root: Path, raw: bytes, filename: str, role: str,
     return {"id":dataset_id,"filename":filename,"role":role,"sha256":digest,
             "size_bytes":len(raw),"created_utc":created,"metadata":metadata}
 
+
 def list_datasets(root: Path, role: str|None=None) -> list[dict[str,Any]]:
     path=database_path(root)
     if not path.is_file(): return []
@@ -74,6 +106,7 @@ def list_datasets(root: Path, role: str|None=None) -> list[dict[str,Any]]:
           (role,role)).fetchall()
     return [{**dict(row),"metadata":json.loads(row["metadata_json"]),"metadata_json":None} for row in rows]
 
+
 def get_dataset(root: Path, dataset_id: str, *, include_bytes: bool=False) -> dict[str,Any]:
     if not isinstance(dataset_id,str) or not _ID.fullmatch(dataset_id): raise ValueError("数据集 ID 无效")
     path=database_path(root)
@@ -84,6 +117,7 @@ def get_dataset(root: Path, dataset_id: str, *, include_bytes: bool=False) -> di
     item=dict(row); raw=item.pop("raw_bytes"); item["metadata"]=json.loads(item.pop("metadata_json"))
     if include_bytes: item["raw_bytes"]=raw
     return item
+
 
 def bind_task(root: Path, task_id: str, dataset_id: str) -> None:
     if not isinstance(task_id,str) or not task_id or len(task_id)>128: raise ValueError("任务 ID 无效")
@@ -96,10 +130,12 @@ def bind_task(root: Path, task_id: str, dataset_id: str) -> None:
         db.execute("INSERT OR IGNORE INTO user_csv_task_refs VALUES(?,?,?)",
           (task_id,dataset_id,datetime.now(timezone.utc).isoformat()))
 
+
 def release_task(root: Path, task_id: str) -> None:
     path=database_path(root)
     if not path.is_file(): return
     with _connect(path) as db: db.execute("DELETE FROM user_csv_task_refs WHERE task_id=?",(task_id,))
+
 
 def delete_dataset(root: Path, dataset_id: str, *, confirm: bool) -> dict[str,Any]:
     if confirm is not True: raise ValueError("删除用户 CSV 必须明确确认")
