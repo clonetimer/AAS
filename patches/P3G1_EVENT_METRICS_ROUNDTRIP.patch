@@ -1,0 +1,28 @@
+diff --git a/web/visualization/result-chart.js b/web/visualization/result-chart.js
+--- a/web/visualization/result-chart.js
++++ b/web/visualization/result-chart.js
+@@
+-      metrics, events: eventEvidence(result),
++      metrics, event_metrics: trace.event_metrics || result?.event_metrics || null,
++      events: eventEvidence(result),
+@@
+diff --git a/tests/result_chart_evidence_behavior.cjs b/tests/result_chart_evidence_behavior.cjs
+--- a/tests/result_chart_evidence_behavior.cjs
++++ b/tests/result_chart_evidence_behavior.cjs
+@@
++const roundTripInput = {
++  chart_trace: {
++    rows: [{timestamp: 0, label: 1}], scores: [0.8], decision_threshold: 0.5,
++    label_evidence: {status: 'verified'}, metrics: {precision: 1, recall: 1},
++    event_metrics: {event_recall: 1, fault_events_detected: 1, fault_events_evaluable: 1},
++    event_overlay: {items: [{event_id: 'E-ROUNDTRIP', label: 1, start_timestamp: 0, end_timestamp: 1}]}
++  }
++};
++const roundTripSnapshot = context.AASResultChart.buildReportSnapshot(roundTripInput, {result_sha256: 'sha-roundtrip'});
++const restoredSnapshot = JSON.parse(JSON.stringify(roundTripSnapshot));
++assert.deepEqual(JSON.parse(JSON.stringify(restoredSnapshot.event_metrics)),
++  {event_recall: 1, fault_events_detected: 1, fault_events_evaluable: 1});
++assert.equal(restoredSnapshot.result_sha256, 'sha-roundtrip');
++assert.equal(restoredSnapshot.events[0].id, 'E-ROUNDTRIP');
++assert.equal(restoredSnapshot.metrics.precision, 1);
++console.log('G1 report JSON round-trip preserves metrics, event evidence and result digest: PASS');
