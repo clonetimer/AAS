@@ -1,0 +1,40 @@
+diff --git a/web/visualization/reports.html b/web/visualization/reports.html
+--- a/web/visualization/reports.html
++++ b/web/visualization/reports.html
+@@
+             <button type="button" id="compareBtn">检查可比性</button>
++            <button type="button" id="exportComparisonG1Btn" disabled>导出比较报告 JSON</button>
+diff --git a/web/visualization/reports.js b/web/visualization/reports.js
+--- a/web/visualization/reports.js
++++ b/web/visualization/reports.js
+@@
+   compareResult: document.getElementById('compareResult'),
++  exportComparisonBtn: document.getElementById('exportComparisonG1Btn'),
+@@
+   taskHistoryTimer: null,
++  lastComparison: null,
+@@
+     const controls = result.repeatability_controls;
++    state.lastComparison = { schema_version: 1, created_at: new Date().toISOString(),
++      left_experiment_id: left, right_experiment_id: right, ...result };
++    if (els.exportComparisonBtn) els.exportComparisonBtn.disabled = false;
+@@
+   } catch (error) {
++    state.lastComparison = null;
++    if (els.exportComparisonBtn) els.exportComparisonBtn.disabled = true;
+     els.compareResult.textContent = `比较失败：${error.message}`;
+@@
++function exportG1ComparisonJSON() {
++  const comparison = state.lastComparison;
++  if (!comparison) { notify('请先完成一次实验可比性检查', 'error'); return; }
++  const payload = {schema_version:1, report_type:'experiment_comparison',
++    exported_at:new Date().toISOString(), comparison,
++    authority:'server_compare_experiments',
++    note:'比较分类及指标由服务端生成；导出不重新计算或改变可比性结论。'};
++  const blob = new Blob([JSON.stringify(payload,null,2)], {type:'application/json;charset=utf-8'});
++  const url=URL.createObjectURL(blob), link=document.createElement('a');
++  link.href=url;
++  link.download=`AAS_G1_comparison_${comparison.left_experiment_id}_${comparison.right_experiment_id}.json`;
++  document.body.appendChild(link); link.click(); link.remove(); URL.revokeObjectURL(url);
++}
++els.exportComparisonBtn?.addEventListener('click', exportG1ComparisonJSON);
