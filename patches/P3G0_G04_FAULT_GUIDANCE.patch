@@ -1,0 +1,76 @@
+From 0d63ca2b0b9d48d44033d47895ea948ff9a5ae74 Mon Sep 17 00:00:00 2001
+From: clonetimer <115241403+clonetimer@users.noreply.github.com>
+Date: Sun, 8 Nov 2026 07:08:46 +0000
+Subject: [PATCH] ux: explain CSV fault injection parameters by fault type
+
+---
+ tests/simulation_csv_fault_guidance.cjs       | 12 ++++++++++++
+ web/visualization/simulation-csv-workspace.js | 14 ++++++++++++++
+ web/visualization/simulation.html             |  2 +-
+ 3 files changed, 27 insertions(+), 1 deletion(-)
+ create mode 100644 tests/simulation_csv_fault_guidance.cjs
+
+diff --git a/tests/simulation_csv_fault_guidance.cjs b/tests/simulation_csv_fault_guidance.cjs
+new file mode 100644
+index 0000000..3fe5870
+--- /dev/null
++++ b/tests/simulation_csv_fault_guidance.cjs
+@@ -0,0 +1,12 @@
++const fs = require('fs');
++const path = require('path');
++const html = fs.readFileSync(path.join(__dirname, '../web/visualization/simulation.html'), 'utf8');
++const js = fs.readFileSync(path.join(__dirname, '../web/visualization/simulation-csv-workspace.js'), 'utf8');
++const backend = fs.readFileSync(path.join(__dirname, '../scripts/server/v2_csv_workspace.py'), 'utf8');
++function check(ok, message) { if (!ok) throw new Error(message); }
++for (const id of ['csvMagnitudeLabel', 'csvFaultHelp']) check(html.includes(`id="${id}"`), `${id} missing`);
++for (const kind of ['bias', 'drift', 'stuck', 'spike']) check(js.includes(`${kind}:{label:`), `${kind} guidance missing`);
++check(js.includes('每隔 8 帧产生一次尖峰'), 'spike periodicity must match backend');
++check(backend.includes("elif (frame - start) % 8 == 0:"), 'backend spike implementation changed; review guidance');
++check(js.includes("on('csvFaultType','change',()=>{updateCsvFaultGuidance();invalidate();})"), 'fault type change must refresh help');
++console.log('CSV fault parameter explanations match implemented fault equations: PASS');
++diff --git a/web/visualization/simulation-csv-workspace.js b/web/visualization/simulation-csv-workspace.js
++index fbb2e3a..17f39e3 100644
++--- a/web/visualization/simulation-csv-workspace.js
+++++ b/web/visualization/simulation-csv-workspace.js
++@@ -194,6 +194,18 @@ async function refreshDatasets(preferred){
++  const current=selected();$('csvVersions').textContent=current?`当前版本 v${current.version}；父版本：${current.parent_id?current.parent_id.slice(0,8):'原始导入'}；${current.active_event_count||0}/${current.event_count||0} 项故障事件生效；${current.operation_count||0} 项版本操作；来源格式 ${current.csv_format?.encoding||'未知'}/${current.csv_format?.delimiter==='\t'?'TAB':current.csv_format?.delimiter||'未知'}。`:'当前没有工作区数据。';
++  await showDataset();
++ }
+++const csvFaultGuidance={
+++ bias:{label:'偏置幅值（按当前参量单位）',help:'在选定帧区间内，对每一帧叠加相同幅值。正值使曲线上移，负值使曲线下移；例如温度参量单位为 ℃ 时，填写 2 表示增加 2 ℃。'},
+++ drift:{label:'漂移终值增量（按当前参量单位）',help:'在选定区间内逐帧线性累积，从起始帧的较小增量逐渐增加，到结束帧达到所填幅值。填写 4 表示区间末端相对原始值累计增加 4 个参量单位。'},
+++ stuck:{label:'固定目标值（按当前参量单位）',help:'把选定区间内的参量固定为同一个目标值，而不是在原值上叠加。允许填写 0；例如电压单位为 V 时，填写 0 表示该区间固定为 0 V。'},
+++ spike:{label:'尖峰幅值（按当前参量单位）',help:'在选定区间内叠加周期性尖峰，正值形成向上尖峰，负值形成向下尖峰。当前实现每隔 8 帧产生一次尖峰；幅值表示每次尖峰相对原始值的增量。'}
+++};
+++function updateCsvFaultGuidance(){
+++ const kind=$('csvFaultType')?.value||'bias',item=csvFaultGuidance[kind]||csvFaultGuidance.bias;
+++ const label=$('csvMagnitudeLabel'),help=$('csvFaultHelp');
+++ if(label)label.textContent=item.label;
+++ if(help)help.textContent=item.help;
+++}
++ function faultConfig(){
++  const source=selected();if(!source)throw Error('请先选择已导入的数据版本');
++  const start=$('csvStartFrame').value.trim(),end=$('csvEndFrame').value.trim();
++@@ -294,7 +306,9 @@ on('csvCompareButton','click',async()=>{const button=$('csvCompareButton');butto
++ on('csvRollbackButton','click',async()=>{const button=$('csvRollbackButton');button.disabled=true;
++  try{await rollbackSelectedAncestor();}catch(e){tell('csvStatus',e.message,true);}finally{button.disabled=!Boolean($('csvAncestorSelect').value);}});
++ on('csvColumn','change',()=>{invalidate();showChart().catch(e=>tell('csvStatus',e.message,true));});
+++on('csvFaultType','change',()=>{updateCsvFaultGuidance();invalidate();});
++ for(const id of ['csvFaultType','csvStartFrame','csvEndFrame','csvMagnitude'])on(id,'input',invalidate);
+++updateCsvFaultGuidance();
++ on('csvFaultPreview','click',async()=>{const btn=$('csvFaultPreview');btn.disabled=true;invalidate();
++  try{const config=faultConfig();tell('csvStatus','正在计算本次故障的完整帧区间，预览不写库…');
++   const r=await post('/fault-preview',config);state.preview=r;state.config=config;$('csvFaultSave').disabled=false;
++   draw(r.points,r.total_frames,`未保存预览 · 第 ${r.event.start_frame}～${r.event.end_frame} 帧`,[r.event],true);
++   tell('csvStatus',`预览成功：影响 ${r.fault_frames} 帧，其中 ${r.modified_frames} 帧数值实际变化。确认后另存版本。`);
++  }catch(e){tell('csvStatus',e.message,true);}finally{btn.disabled=false;}});
++ on('csvFaultSave','click',async()=>{const btn=$('csvFaultSave');btn.disabled=true;
++  try{if(!state.preview||!state.config)throw Error('请先预览故障');const current=faultConfig();
++   if(JSON.stringify(current)!==JSON.stringify(state.config))throw Error('参数已变化，请重新预览');
++   const saved=await post('/fault-save',{...current,preview_sha256:state.preview.preview_sha256});
++   tell('csvStatus',`故障保存成功：新版本 v${saved.version}，保留原始及父版本。可再次选择故障类型与帧区间继续注入。`);
++   invalidate();await refreshDatasets(saved.id);
++  }catch(e){tell('csvStatus',e.message,true);if(state.preview)btn.disabled=false;}});
++-- 
++2.47.3
++
