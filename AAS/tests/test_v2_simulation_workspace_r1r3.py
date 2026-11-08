@@ -33,14 +33,13 @@ def test_r2_r3_simulation_chain_survives_reopen_and_never_touches_history(tmp_pa
     preview2 = sim.preview_fault(tmp_path, cfg2)
     v2 = sim.save_fault(tmp_path, {**cfg2, "preview_sha256": preview2["preview_sha256"]})
 
-    # Simulate a process restart: re-open the same persistent root and query again.
     reopened = sim.get_dataset(tmp_path, v2["id"])
     assert reopened["version"] == 2
     assert reopened["parent_id"] == v1["id"]
     assert [e["fault_type"] for e in reopened["events"]] == ["bias", "stuck"]
     assert len(reopened["frames"]) == 4
     assert sim.get_dataset(tmp_path, original["id"])["version"] == 0
-    assert sim.list_ancestors(tmp_path, v2["id"])["items"][0]["id"] == v1["id"]
+    assert sim.list_ancestors(tmp_path, v2["id"])["ancestors"][0]["id"] == v1["id"]
 
     rollback_preview = sim.preview_rollback(tmp_path, v2["id"], original["id"])
     v3 = sim.rollback_to_ancestor(tmp_path, {
@@ -51,10 +50,8 @@ def test_r2_r3_simulation_chain_survives_reopen_and_never_touches_history(tmp_pa
     assert history.read_bytes() == b"historical-db-sentinel"
     assert hashlib.sha256(history.read_bytes()).hexdigest() == before
 
-    db = sim._db_path(tmp_path)
-    with sqlite3.connect(db) as conn:
-        count = conn.execute("SELECT COUNT(*) FROM v2_csv_datasets").fetchone()[0]
-    assert count == 4
+    with sqlite3.connect(sim._db_path(tmp_path)) as conn:
+        assert conn.execute("SELECT COUNT(*) FROM v2_csv_datasets").fetchone()[0] == 4
 
 
 def test_r3_simulation_database_is_distinct_from_historical_database(tmp_path):
