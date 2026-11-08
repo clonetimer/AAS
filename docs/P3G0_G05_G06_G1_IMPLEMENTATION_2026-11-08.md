@@ -4,10 +4,10 @@
 - Input: `AAS_V2_P3G0_R1-R4_G04_20261108_candidate.zip`
 - New local working tree extracted from the verified candidate; source archive itself remains unchanged.
 - Updated full source candidate: `AAS_V2_P3G0_R1-R4_G05_G06_G1_20261108_candidate.zip`
-- Size: 3,484,867 bytes; 881 ZIP entries; 880 manifest entries.
+- Size: 3,486,908 bytes; 883 ZIP entries; 882 manifest entries. Added runtime behavior tests for draft restoration and result chart evidence rendering.
 - ZIP CRC: PASS; manifest SHA-256 mismatches: 0.
-- ZIP SHA-256: `8c10ded89269ac390286bc2abe1d69004633c024a5b0eceb82170d91c00a9f27`.
-- Library path: `/AAS_V2_P3G0_R1-R4_G05_G06_G1_20261108_candidate.zip`.
+- ZIP SHA-256: `a9b8def88f33bed5a0c103b546bd684ebcdb0c784e8c2d354ca8ead790792afa`.
+- Library path: `/AAS_V2_P3G0_R1-R4_G05_G06_G1_20261108_candidate_v2.zip`.
 
 ## G0-5 — safe runner draft persistence (implemented in full candidate)
 - Added versioned `aas.runner.safe-draft.v1` allowlist, maximum 4 KiB.
@@ -16,7 +16,7 @@
 - Select values not present in current options and malformed datetime values are rejected.
 - CSV bytes, telemetry arrays, preview results, dynamic run/feature bindings, task IDs, execution receipts, credentials and preflight authorization are never persisted.
 - A restored dataset choice is a preference only; existing preflight/preview state is not restored.
-- New contract test: `tests/runner_safe_draft_contract.cjs` — PASS.
+- New contract and behavior tests: `tests/runner_safe_draft_contract.cjs`, `tests/runner_safe_draft_behavior.cjs` — PASS. Runtime test confirms restore, stale dataset rejection and bounded persistence.
 
 ## G0-6 — canonical task status summary (implemented in full candidate)
 - Added `build_task_history_summary(runtime, 50)` in `task_runtime.py`.
@@ -34,7 +34,7 @@
 - Decision threshold is only drawn when supplied by algorithm result evidence.
 - Unknown ground-truth intervals remain unknown and are not treated as normal in supervised metrics.
 - Existing event overlays and event metrics remain bound to actual result evidence.
-- New contract test: `tests/result_chart_evidence_semantics.cjs` — PASS.
+- New contract and render tests: `tests/result_chart_evidence_semantics.cjs`, `tests/result_chart_evidence_behavior.cjs` — PASS. Runtime render confirms score/threshold/event/unknown-truth labels.
 - This is a clarification/guardrail increment; it does not add new model post-processing or thresholding.
 
 ## Verification
