@@ -1,0 +1,12 @@
+name: iqr
+label: IQR
+description: 基于四分位距的异常检测
+min_training_samples: 4
+class_path: detectors.statistical_detectors.IQRDetector
+type: statistical
+dependencies:
+- numpy
+config: {}
+decision_mode: score_threshold
+decision_modes:
+- score_threshold

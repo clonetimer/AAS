@@ -1,0 +1,14 @@
+# 服务器配置
+server:
+  host: 127.0.0.1
+  port: 8765
+
+# 数据库配置
+database:
+  data_dir: datasets/
+
+# 日志配置
+logging:
+  level: INFO
+  file: logs/aas.log
+

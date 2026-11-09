@@ -1,0 +1,99 @@
+name: torch_like_tranad
+label: TranAD · Transformer
+description: 源自 clonetimer，已适配 AAS V2 参数校验、训练评估和模型保存接口
+class_path: detectors.torch_like_neural.TorchLikeTranADDetector
+type: deep_learning
+dependencies:
+- torch
+- numpy
+min_training_samples: 4
+config:
+  epochs: 10
+  batch_size: 64
+  learning_rate: 0.001
+  window_size: 8
+  d_model: 32
+  n_heads: 4
+  e_layers: 1
+  d_ff: 64
+  dropout: 0.1
+  device: cpu
+  random_state: 42
+  contamination: 0.05
+config_schema:
+- name: epochs
+  label: 轮数
+  type: int
+  min: 1
+  max: 500
+  default: 10
+- name: batch_size
+  label: 批大小
+  type: int
+  min: 1
+  max: 4096
+  default: 64
+- name: learning_rate
+  label: 学习率
+  type: float
+  min: 1.0e-06
+  max: 0.1
+  default: 0.001
+- name: window_size
+  label: 因果窗口长度
+  type: int
+  min: 1
+  max: 256
+  default: 8
+- name: d_model
+  label: 模型通道宽度
+  type: int
+  min: 4
+  max: 512
+  default: 32
+- name: n_heads
+  label: 注意力头数
+  type: int
+  min: 1
+  max: 32
+  default: 4
+- name: e_layers
+  label: Transformer 层数
+  type: int
+  min: 1
+  max: 12
+  default: 1
+- name: d_ff
+  label: 前馈层宽度
+  type: int
+  min: 4
+  max: 2048
+  default: 64
+- name: dropout
+  label: 丢弃率
+  type: float
+  min: 0
+  max: 0.95
+  default: 0.1
+- name: random_state
+  label: 随机种子
+  type: int
+  min: 0
+  max: 1000000
+  default: 42
+- name: contamination
+  label: 正常参考分位尾概率
+  type: float
+  min: 1.0e-05
+  max: 0.49
+  default: 0.05
+- name: device
+  label: 计算设备
+  type: str
+  options:
+  - cpu
+  - cuda
+  default: cpu
+decision_mode: score_threshold
+decision_modes:
+- score_threshold

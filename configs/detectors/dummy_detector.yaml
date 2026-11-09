@@ -1,0 +1,10 @@
+name: dummy_detector
+min_training_samples: 2
+class_path: detectors.dummy_detector.DummyDetector
+config:
+  column_index: 0
+  scale: 1.0
+  threshold: 2.5
+decision_mode: score_threshold
+decision_modes:
+- score_threshold

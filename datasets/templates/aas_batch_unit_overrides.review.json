@@ -1,0 +1,12 @@
+{
+  "propulsion.burn_commanded": "",
+  "propulsion.burn_permitted": "",
+  "eps.pdu.payload_enabled": "",
+  "eps.pdu.payload_commanded": "",
+  "eps.pdu.adcs_enabled": "",
+  "eps.pdu.adcs_commanded": "",
+  "eps.pdu.comm_enabled": "",
+  "eps.pdu.comm_commanded": "",
+  "eps.pdu.heater_enabled": "",
+  "eps.pdu.heater_commanded": ""
+}

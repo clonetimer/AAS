@@ -1,0 +1,15 @@
+{
+  "events": [
+    {
+      "token": "REPLACE_WITH_VERIFIED_RUN_TOKEN",
+      "feature_key": "REPLACE_WITH_EXACT_SOURCE_TABLE_FIELD",
+      "start_s": 0.0,
+      "end_s": 10.0,
+      "label": 0,
+      "fault_type": "",
+      "reviewer": "REPLACE_WITH_REVIEWER",
+      "evidence_reference": "REPLACE_WITH_TRACEABLE_EVIDENCE_ID",
+      "note": "Replace all placeholders, independently verify interval and timebase; do not auto-fill from run labels"
+    }
+  ]
+}

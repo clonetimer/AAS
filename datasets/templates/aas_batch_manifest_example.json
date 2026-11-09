@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "files": [
+    {
+      "path": "YOUR_FILE.csv.gz",
+      "config": {
+        "namespace": "unique_run_namespace",
+        "model": "USER_VERIFIED_MODEL_OR_DATASET_FAMILY",
+        "subsystem": "_column_mapping_",
+        "device": "_column_mapping_",
+        "unit": "unknown",
+        "role": "test",
+        "time_domain": "numeric_unspecified",
+        "time_reference": "unique_run_elapsed_clock",
+        "time_unit": "s",
+        "auto_map": true,
+        "unlabeled_test_confirmed": true,
+        "column_metadata": {
+          "propulsion.burn_commanded": {"unit": "REVIEW_REQUIRED"}
+        }
+      }
+    }
+  ]
+}

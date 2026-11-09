@@ -1,0 +1,243 @@
+/* ============================================================
+   AAS 评估工作台外壳样式（Workbench / Cockpit Shell）
+   侧栏与内容区统一响应浅色 / 深色主题，保证整页视觉一致。
+   ============================================================ */
+
+:root {
+  --wb-accent: #06b6d4;
+  --wb-accent-2: #0891b2;
+  --wb-accent-soft: rgba(6, 182, 212, 0.16);
+  --wb-radius: 14px;
+  --wb-radius-sm: 10px;
+  --wb-sidebar-w: 256px;
+  --wb-sidebar-w-collapsed: 76px;
+  --wb-ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-theme="light"] {
+  --wb-app-bg: #eef2f7;
+  --wb-main-bg: #f1f5f9;
+  --wb-content-bg: #f8fafc;
+  --wb-surface: #ffffff;
+  --wb-line: rgba(203, 213, 225, 0.85);
+  --wb-text: #1e293b;
+  --wb-muted: #64748b;
+  --wb-header-bg: rgba(255, 255, 255, 0.86);
+
+  /* 侧栏浅色主题 */
+  --wb-sidebar-bg: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  --wb-sidebar-text: #334155;
+  --wb-sidebar-title: #0f172a;
+  --wb-sidebar-muted: #64748b;
+  --wb-sidebar-section: #94a3b8;
+  --wb-sidebar-line: rgba(203, 213, 225, 0.9);
+  --wb-sidebar-hover-bg: rgba(8, 145, 178, 0.07);
+  --wb-sidebar-hover-text: #0f172a;
+  --wb-sidebar-active-bg: rgba(8, 145, 178, 0.11);
+  --wb-sidebar-active-text: #0e7490;
+  --wb-sidebar-active-border: rgba(8, 145, 178, 0.26);
+  --wb-sidebar-control-bg: #ffffff;
+  --wb-sidebar-control-border: rgba(203, 213, 225, 0.95);
+  --wb-sidebar-control-text: #334155;
+  --wb-sidebar-control-hover: #f1f5f9;
+}
+
+[data-theme="dark"] {
+  --wb-app-bg: #070b16;
+  --wb-main-bg: #0b1020;
+  --wb-content-bg: #0b1020;
+  --wb-surface: #111a30;
+  --wb-line: rgba(143, 169, 255, 0.18);
+  --wb-text: #e6edf7;
+  --wb-muted: #93a4c4;
+  --wb-header-bg: rgba(13, 20, 38, 0.86);
+
+  /* 侧栏深色主题 */
+  --wb-sidebar-bg: linear-gradient(180deg, #0f172a 0%, #0b1220 100%);
+  --wb-sidebar-text: #b6c4de;
+  --wb-sidebar-title: #e6edf7;
+  --wb-sidebar-muted: #8aa0c6;
+  --wb-sidebar-section: #5f7398;
+  --wb-sidebar-line: rgba(143, 169, 255, 0.12);
+  --wb-sidebar-hover-bg: rgba(255, 255, 255, 0.06);
+  --wb-sidebar-hover-text: #eaf1ff;
+  --wb-sidebar-active-bg: var(--wb-accent-soft);
+  --wb-sidebar-active-text: #ffffff;
+  --wb-sidebar-active-border: rgba(110, 231, 216, 0.35);
+  --wb-sidebar-control-bg: rgba(255, 255, 255, 0.04);
+  --wb-sidebar-control-border: rgba(143, 169, 255, 0.18);
+  --wb-sidebar-control-text: #dbe6f7;
+  --wb-sidebar-control-hover: rgba(255, 255, 255, 0.08);
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body.wb {
+  font-family: "Segoe UI Variable", system-ui, -apple-system, "Helvetica Neue",
+    Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: var(--wb-app-bg);
+  color: var(--wb-text);
+  -webkit-font-smoothing: antialiased;
+}
+body.wb a { color: inherit; }
+
+.wb-app {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ===================== 侧边栏 ===================== */
+.wb-sidebar {
+  width: var(--wb-sidebar-w);
+  flex: 0 0 var(--wb-sidebar-w);
+  background: var(--wb-sidebar-bg);
+  color: var(--wb-sidebar-text);
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--wb-sidebar-line);
+  transition: width 0.25s var(--wb-ease), flex-basis 0.25s var(--wb-ease),
+    background 0.22s ease, color 0.22s ease, border-color 0.22s ease;
+  z-index: 5;
+}
+.wb-app.wb-collapsed .wb-sidebar {
+  width: var(--wb-sidebar-w-collapsed);
+  flex-basis: var(--wb-sidebar-w-collapsed);
+}
+
+.wb-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 18px;
+  border-bottom: 1px solid var(--wb-sidebar-line);
+}
+.wb-logo {
+  width: 40px; height: 40px;
+  flex: 0 0 40px;
+  border-radius: 11px;
+  display: grid; place-items: center;
+  font-weight: 800; font-size: 13px; letter-spacing: 0.5px;
+  color: #04141a;
+  background: linear-gradient(135deg, #6ee7d8, #06b6d4);
+  box-shadow: 0 6px 18px rgba(6, 182, 212, 0.35);
+}
+.wb-brand-title { font-size: 15px; font-weight: 700; line-height: 1.2; color: var(--wb-sidebar-title); }
+.wb-brand-sub { font-size: 11px; color: var(--wb-sidebar-muted); margin-top: 2px; }
+
+.wb-nav {
+  flex: 1 1 auto;
+  padding: 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow-y: auto;
+}
+.wb-nav-section {
+  font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--wb-sidebar-section); padding: 16px 12px 6px;
+}
+.wb-nav-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 12px;
+  border-radius: var(--wb-radius-sm);
+  color: var(--wb-sidebar-text);
+  text-decoration: none;
+  cursor: pointer;
+  border: 1px solid transparent;
+  position: relative;
+  transition: background 0.18s var(--wb-ease), color 0.18s var(--wb-ease);
+  white-space: nowrap;
+}
+.wb-nav-item:hover { background: var(--wb-sidebar-hover-bg); color: var(--wb-sidebar-hover-text); }
+.wb-nav-item.active {
+  background: var(--wb-sidebar-active-bg);
+  color: var(--wb-sidebar-active-text);
+  border-color: var(--wb-sidebar-active-border);
+}
+.wb-nav-item.active::before {
+  content: ""; position: absolute; left: -12px; top: 10px; bottom: 10px;
+  width: 3px; border-radius: 3px;
+  background: linear-gradient(180deg, #6ee7d8, #06b6d4);
+}
+.wb-nav-icon { width: 22px; height: 22px; flex: 0 0 22px; display: grid; place-items: center; }
+.wb-nav-icon svg { width: 20px; height: 20px; }
+.wb-nav-label { font-size: 14px; font-weight: 500; }
+
+.wb-sidebar-footer {
+  padding: 12px;
+  border-top: 1px solid var(--wb-sidebar-line);
+  display: flex; flex-direction: column; gap: 10px;
+}
+.wb-theme-toggle {
+  display: flex; align-items: center; gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: var(--wb-radius-sm);
+  border: 1px solid var(--wb-sidebar-control-border);
+  background: var(--wb-sidebar-control-bg);
+  color: var(--wb-sidebar-control-text); cursor: pointer; font-size: 13px;
+  transition: background 0.18s var(--wb-ease), color 0.18s ease, border-color 0.18s ease;
+}
+.wb-theme-toggle:hover { background: var(--wb-sidebar-control-hover); }
+.wb-footer-label { font-size: 11px; color: var(--wb-sidebar-section); text-align: center; line-height: 1.5; }
+
+/* 收起态 */
+.wb-app.wb-collapsed .wb-brand-text,
+.wb-app.wb-collapsed .wb-nav-label,
+.wb-app.wb-collapsed .wb-footer-label,
+.wb-app.wb-collapsed .wb-nav-section { display: none; }
+.wb-app.wb-collapsed .wb-brand { justify-content: center; padding: 18px 0; }
+.wb-app.wb-collapsed .wb-nav-item { justify-content: center; padding: 12px 0; }
+.wb-app.wb-collapsed .wb-theme-toggle { justify-content: center; }
+
+/* ===================== 主区 ===================== */
+.wb-main {
+  flex: 1 1 auto;
+  display: flex; flex-direction: column;
+  min-width: 0;
+  background: var(--wb-main-bg);
+}
+.wb-header {
+  height: 60px; flex: 0 0 60px;
+  display: flex; align-items: center; gap: 14px;
+  padding: 0 18px;
+  background: var(--wb-header-bg);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--wb-line);
+}
+.wb-collapse {
+  width: 38px; height: 38px; border-radius: 10px;
+  border: 1px solid var(--wb-line); background: var(--wb-surface);
+  color: var(--wb-text); cursor: pointer; font-size: 16px;
+  display: grid; place-items: center;
+  transition: border-color 0.18s var(--wb-ease);
+}
+.wb-collapse:hover { border-color: var(--wb-accent); }
+.wb-breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+.wb-crumb-root { color: var(--wb-muted); }
+.wb-crumb-sep { color: var(--wb-muted); }
+.wb-crumb-current { font-weight: 700; color: var(--wb-text); }
+.wb-header-actions { margin-left: auto; display: flex; align-items: center; gap: 14px; }
+.wb-status { display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--wb-muted); }
+.wb-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #22c55e; box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.18);
+}
+.wb-open-new {
+  font-size: 13px; text-decoration: none; color: var(--wb-accent);
+  padding: 7px 12px; border-radius: 9px; border: 1px solid var(--wb-line);
+  transition: background 0.18s var(--wb-ease), border-color 0.18s var(--wb-ease);
+}
+.wb-open-new:hover { border-color: var(--wb-accent); background: var(--wb-accent-soft); }
+
+.wb-content { flex: 1 1 auto; min-height: 0; background: var(--wb-content-bg); }
+.wb-iframe { width: 100%; height: 100%; border: 0; display: block; background: var(--wb-content-bg); }
+
+@media (max-width: 720px) {
+  .wb-sidebar { position: absolute; height: 100%; }
+  .wb-header { gap: 10px; }
+}
+
+/* Formal system title, two-row wrap when sidebar is expanded. */
+.wb-brand-text{min-width:0}.wb-brand-title{font-size:13px;line-height:1.45;white-space:normal;overflow-wrap:anywhere}.wb-app.wb-collapsed .wb-brand-text{display:none}

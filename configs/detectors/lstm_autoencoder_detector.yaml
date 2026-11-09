@@ -1,0 +1,43 @@
+name: lstm_autoencoder_detector
+label: LSTM AutoEncoder
+description: LSTM 自编码器异常检测
+min_training_samples: 32
+class_path: detectors.lstm_autoencoder_detector.LSTMAutoEncoderDetector
+type: deep_learning
+dependencies:
+- torch
+- numpy
+config:
+  learning_rate: 0.001
+  epochs: 20
+  batch_size: 32
+  device: cpu
+config_schema:
+- name: learning_rate
+  label: 学习率
+  type: float
+  min: 0
+  step: 0.0001
+  default: 0.001
+- name: epochs
+  label: 训练轮数
+  type: int
+  min: 1
+  step: 1
+  default: 20
+- name: batch_size
+  label: 批大小
+  type: int
+  min: 1
+  step: 1
+  default: 32
+- name: device
+  label: 设备
+  type: str
+  options:
+  - cpu
+  - cuda
+  default: cpu
+decision_mode: score_threshold
+decision_modes:
+- score_threshold

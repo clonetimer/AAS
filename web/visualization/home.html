@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#091423" />
+  <title>智能故障检测算法评估系统 · 首页</title>
+  <link rel="stylesheet" href="home.css" />
+  <script src="home.js" defer></script>
+</head>
+<body>
+  <div class="sky-grid" aria-hidden="true"></div>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="identity" href="/" aria-label="返回首页">
+        <span class="identity-logo">A<span>◆</span>S</span>
+        <span><strong>智能故障检测算法评估系统</strong><small>Intelligent Fault Diagnosis & Evaluation</small></span>
+      </a>
+      <div class="header-right">
+        <div class="clock"><span id="timeText">--:--:--</span><small id="dateText">—</small></div>
+        <span class="connection"><i></i> 本地服务运行中</span>
+        <button type="button" id="headerAction" class="line-button">登录系统 <span>↗</span></button>
+      </div>
+    </header>
+
+    <main>
+      <div class="eyebrow"><span class="eyebrow-line"></span> INTELLIGENT DIAGNOSTICS · DATA INTELLIGENCE <span class="eyebrow-index">SYSTEM OVERVIEW / 01</span></div>
+      <section class="hero-layout" aria-labelledby="heroTitle">
+        <div class="hero-panel">
+          <div class="hero-copy">
+            <div class="pill"><span class="pulse"></span> 故障检测 · 模型训练 · 评估验证</div>
+            <h1 id="heroTitle">让数据更清晰<span>，</span><br/>让诊断更可靠<span class="period">.</span></h1>
+            <p>从多特征遥测数据到故障检测模型，统一管理数据资产、训练任务与评价结果。用可追溯的工作流，连接每一步分析。</p>
+            <div class="hero-cta">
+              <a id="heroEnter" class="primary-cta" href="/index.html">进入评估工作台 <span>↗</span></a>
+              <a class="quiet-cta" href="#overview">查看系统概览 <span>↓</span></a>
+            </div>
+          </div>
+          <div class="orbital" aria-hidden="true"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="orbit orbit-three"></div><div class="orbit-center"><span class="orbital-mark">AAS</span><small>INTELLIGENCE</small></div><div class="orbit-node n1"></div><div class="orbit-node n2"></div><div class="orbit-node n3"></div><div class="orbit-caption">SIGNAL · ANALYSIS · INSIGHT</div></div>
+          <div class="hero-footer"><span><i class="mini-cyan"></i> 数据驱动分析</span><span><i class="mini-purple"></i> 多维特征建模</span><span><i class="mini-blue"></i> 可信评估流程</span></div>
+        </div>
+
+        <aside class="access-panel" id="loginPanel" aria-labelledby="accessTitle">
+          <div class="panel-heading"><span class="panel-kicker">ACCESS PORTAL</span><span class="panel-index">↗ 02</span></div>
+          <div class="access-icon"><svg viewBox="0 0 28 28" fill="none" aria-hidden="true"><rect x="6" y="12" width="16" height="12" rx="3" stroke="currentColor" stroke-width="1.8"/><path d="M10 12V8a4 4 0 0 1 8 0v4" stroke="currentColor" stroke-width="1.8"/><path d="M14 16v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+          <h2 id="accessTitle">欢迎使用系统</h2>
+          <p id="accessDesc" class="access-description">登录后查看真实的系统数据与分析任务。</p>
+          <form id="authForm" autocomplete="on">
+            <label for="loginUser">管理员账号</label>
+            <div class="field"><span class="field-icon">◉</span><input id="loginUser" name="username" type="text" minlength="3" maxlength="32" autocomplete="username" required placeholder="请输入用户名" /></div>
+            <label for="loginPassword">登录密码</label>
+            <div class="field"><span class="field-icon">⌁</span><input id="loginPassword" name="password" type="password" minlength="10" maxlength="128" autocomplete="current-password" required placeholder="请输入密码" /><button type="button" id="passwordToggle" class="password-toggle" aria-label="显示密码">◉</button></div>
+            <p id="formError" class="form-error" role="alert" aria-live="polite"></p>
+            <button id="loginSubmit" type="submit" class="submit-button">登录并进入系统 <span>→</span></button>
+          </form>
+          <div id="signedPanel" class="signed-panel" hidden>
+            <div class="signed-icon">✓</div><p>当前已登录</p><strong id="signedUser">管理员</strong>
+            <a class="submit-button signed-enter" href="/index.html">打开评估工作台 <span>→</span></a>
+            <button id="logoutBtn" class="logout-link" type="button">退出当前账号</button>
+          </div>
+          <div class="access-foot"><span class="privacy-dot"></span><span id="accessFootText">本机账号验证 · 会话访问控制</span></div>
+        </aside>
+      </section>
+
+      <section id="overview" class="overview-section" aria-labelledby="overviewTitle">
+        <div class="section-top"><div><span class="section-index">01 / PLATFORM OVERVIEW</span><h2 id="overviewTitle">系统运行概览</h2><p>展示当前工作空间的真实数据资产与任务状态</p></div><span id="lastSync" class="sync-pill">等待登录以加载数据</span></div>
+        <div class="metric-grid">
+          <article class="metric"><div class="metric-top"><span>遥测数据库</span><span class="metric-symbol">▤</span></div><strong id="countDatabases">—</strong><div class="metric-foot"><span>DATABASES</span><span class="metric-note">当前规范遥测库</span></div></article>
+          <article class="metric"><div class="metric-top"><span>逻辑参量</span><span class="metric-symbol">▥</span></div><strong id="countTables">—</strong><div class="metric-foot"><span>LOGICAL CHANNELS</span><span class="metric-note" id="countClean">等待加载</span></div></article>
+          <article class="metric"><div class="metric-top"><span>已保存模型</span><span class="metric-symbol">⬡</span></div><strong id="countModels">—</strong><div class="metric-foot"><span>MODELS</span><span class="metric-note" id="countPublished">等待加载</span></div></article>
+          <article class="metric"><div class="metric-top"><span>运行中任务</span><span class="metric-symbol">⌁</span></div><strong id="countRunning">—</strong><div class="metric-foot"><span>ACTIVE TASKS</span><span class="metric-note" id="countCompleted">等待加载</span></div></article>
+        </div>
+      </section>
+
+      <section class="insights-layout" aria-label="资产分析和工作流程">
+        <article class="glass-panel distribution"><div class="card-head"><div><span class="section-index">DATA DISTRIBUTION</span><h3>数据资源分布</h3></div><span class="tiny-detail">按分系统统计参量数量</span></div><div id="databaseChart" class="bar-chart"><div class="empty-message">登录后查看逻辑参量分布</div></div><div class="chart-footer"><span><i></i> 逻辑参量</span><span id="chartFoot">数据来自本地 SQLite</span></div></article>
+        <article class="glass-panel health-panel"><div class="card-head"><div><span class="section-index">TASK STATUS</span><h3>任务执行状态</h3></div><span class="status-bullet"></span></div><div class="health-content"><div class="health-ring" id="taskRing"><div><strong id="taskTotal">—</strong><small>总任务数</small></div></div><div class="health-legend"><div><i class="running-color"></i> 运行中 <strong id="taskRunning">—</strong></div><div><i class="completed-color"></i> 已完成 <strong id="taskCompleted">—</strong></div><div><i class="failed-color"></i> 失败 <strong id="taskFailed">—</strong></div><div>已取消 <strong id="taskCancelled">—</strong></div><div>服务重启中断 <strong id="taskInterrupted">—</strong></div><div>报告待处理 <strong id="taskAttention">—</strong></div></div></div><div class="subtle-note" id="taskScopeNote">任务状态来自持久化任务历史。</div></div><div class="subtle-note">任务状态统计当前服务进程内的训练任务，不代表历史全部运行记录。</div></article>
+      </section>
+
+      <section class="modules" aria-labelledby="moduleTitle"><div class="section-top"><div><span class="section-index">02 / QUICK ACCESS</span><h2 id="moduleTitle">快速进入工作模块</h2><p>从数据准备、故障模拟到算法训练、结果追溯</p></div></div>
+      <div class="module-grid">
+        <a href="/index.html#browser" class="module-card"><span class="module-icon">▤</span><span class="module-number">01</span><strong>历史故障数据库</strong><p>数据导入、清洁处理与多特征曲线</p><span class="module-arrow">↗</span></a>
+        <a href="/index.html#runner" class="module-card"><span class="module-icon">⌁</span><span class="module-number">02</span><strong>智能检测算法评估</strong><p>时间窗口训练、模型评估与发布</p><span class="module-arrow">↗</span></a>
+        <a href="/index.html#reports" class="module-card"><span class="module-icon">▥</span><span class="module-number">04</span><strong>任务查询与导出</strong><p>诊断结果、性能指标与实验追溯</p><span class="module-arrow">↗</span></a>
+      </div></section>
+    </main>
+    <footer><span>© AAS · 智能故障检测算法评估系统</span><span>DATA · MODEL · EVALUATION</span><a href="/index.html">工作台 ↗</a></footer>
+  </div>
+</body>
+</html>

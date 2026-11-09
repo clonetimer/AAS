@@ -1,0 +1,12 @@
+name: zscore
+label: Z-Score
+description: 基于 Z-Score 的异常检测
+min_training_samples: 2
+class_path: detectors.statistical_detectors.ZScoreDetector
+type: statistical
+dependencies:
+- numpy
+config: {}
+decision_mode: score_threshold
+decision_modes:
+- score_threshold

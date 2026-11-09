@@ -1,0 +1,23 @@
+/* Shared import layout; scoped so existing workspaces retain their own controls. */
+.csv-wizard{min-width:0;container-type:inline-size;margin:12px 0;color:var(--text,#243c50)}
+.csv-wizard-header{margin-bottom:14px}.csv-wizard-purpose{font-size:12px;font-weight:650;color:#38647c;margin:0 0 8px}
+.csv-wizard-steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;list-style:none;margin:0 0 14px;padding:0}
+.csv-wizard-steps li{min-width:0}.csv-wizard-steps button{width:100%;min-height:42px;text-align:left;padding:8px;border:1px solid #cbdce5;border-radius:6px;background:#f4f8fb;color:#334e61;white-space:normal;font-size:12px;line-height:1.4}
+.csv-wizard-steps button[aria-current=step]{background:#e7f4fc;border-color:#247ca4;color:#125579;font-weight:700}
+.csv-wizard-steps button:disabled{opacity:.58;cursor:default}.csv-wizard-steps button[aria-current=step]:disabled{opacity:1}
+.csv-wizard h3{margin:0 0 6px;font-size:16px}.csv-wizard-instruction,.csv-wizard-destination,.csv-wizard-notice{font-size:13px;line-height:1.65;margin:6px 0;overflow-wrap:anywhere}
+.csv-wizard-destination{color:#365e76}.csv-wizard-notice{border-left:3px solid #5c93b0;padding:6px 10px;background:#f1f7fb}.csv-wizard-notice.error{color:#a32438;border-color:#b83349;background:#fff4f4}
+.csv-wizard [data-csv-stage]{min-width:0;border:0;padding:0;margin:0;max-width:100%}.csv-wizard [data-csv-stage][hidden],.csv-wizard [hidden]{display:none!important}
+.csv-wizard .csv-wizard-legend{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.csv-wizard-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.csv-wizard-actions button{white-space:normal;min-height:40px;line-height:1.5}
+.csv-wizard-summary{border:1px solid #d3e2eb;background:#f8fbfd;border-radius:8px;padding:12px;margin:8px 0 12px;overflow-wrap:anywhere}
+.csv-wizard-summary dl{display:grid;grid-template-columns:minmax(75px,auto) minmax(0,1fr);gap:8px 14px;font-size:13px;line-height:1.6;margin:0}
+.csv-wizard-summary dt{color:#526c7d}.csv-wizard-summary dd{margin:0}.csv-wizard-followup{padding:8px;background:#fff6e7;color:#76541e;font-size:13px;line-height:1.6}
+.csv-wizard button:focus-visible,.csv-wizard input:focus-visible,.csv-wizard select:focus-visible,.csv-wizard summary:focus-visible{outline:3px solid #2788b8;outline-offset:2px}
+.csv-wizard h3:focus{outline:2px solid #81b8d4;outline-offset:4px}.csv-wizard input:not([type=checkbox]),.csv-wizard select{max-width:100%;min-width:0;box-sizing:border-box}
+.csv-wizard .v2-import-actions{flex-wrap:wrap}.csv-wizard .v2-import-grid{margin:0}.csv-wizard [data-csv-stage=fields] .v2-import-actions{grid-column:1/-1}
+.csv-wizard .csv-wizard-advanced{grid-column:1/-1;border:1px solid #d7e2ee;border-radius:8px;padding:10px}.csv-wizard-advanced>summary{cursor:pointer;font-size:13px}.csv-wizard-advanced>.v2-import-grid{margin-top:12px}
+.csv-wizard .v2-csv-columns{overflow-wrap:anywhere}.csv-wizard .v2-csv-columns label{min-width:0}
+@container (max-width:620px){.csv-wizard-steps{grid-template-columns:repeat(2,minmax(0,1fr))}.csv-wizard .v2-run-filters{grid-template-columns:1fr}.csv-wizard .v2-import-grid{grid-template-columns:1fr}.csv-wizard-summary dl{grid-template-columns:1fr;gap:2px}.csv-wizard-summary dd{margin-bottom:7px}}
+@media(max-width:620px){.csv-wizard-steps{grid-template-columns:repeat(2,minmax(0,1fr))}.csv-wizard .v2-import-grid,.csv-wizard .v2-run-filters,body.import-embedded #v2ImportForm .v2-import-grid{grid-template-columns:1fr}.v2-run-grid.is-idle{grid-template-columns:minmax(0,1fr)}.v2-run-filters{grid-template-columns:minmax(0,1fr)}.sim-csv-grid{grid-template-columns:minmax(0,1fr)}.csv-wizard-actions>button{max-width:100%}.csv-wizard .sim-two-col{grid-template-columns:minmax(0,1fr)}}
+.csv-wizard-audit{font-size:13px;margin:10px 0}.csv-wizard-audit summary{cursor:pointer}.csv-wizard-audit pre{white-space:pre-wrap;overflow-wrap:anywhere;max-height:240px;overflow:auto;line-height:1.6;font-size:12px}

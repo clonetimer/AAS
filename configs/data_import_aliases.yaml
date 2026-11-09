@@ -1,0 +1,111 @@
+# AAS 数据导入自动识别规则
+#
+# 用途：导入 CSV/JSON 时，自动将源列映射到 AAS 的标准字段，并识别常见正常/故障标签值。
+# 修改本文件后无需重启服务；下一次“预览/解析导入文件”时会自动重新加载。
+#
+# 注意：
+# 1. 列名匹配不区分大小写，空格、点号、短横线等会归一化为下划线。
+#    例如 label.fault_active 会归一化为 label_fault_active。
+# 2. 每个字段的列表是该字段完整的别名列表；删除某项即表示不再主动识别该别名。
+# 3. 0/1 和布尔类型 True/False 是 AAS 的基础二值标签，始终支持；下面的 labels 主要
+#    用于配置 CSV/JSON 中的字符串标签，如 normal/fault、正常/故障。
+# 4. 修改 YAML 后若语法错误，导入预览会给出“自动识别规则配置无效”的明确提示。
+
+version: 1
+
+columns:
+  timestamp:
+    - timestamp
+    - time
+    - time_s
+    - sim_time
+    - sim_time_s
+    - simulation_time
+    - datetime
+    - date_time
+    - ts
+    - 采样时间
+    - 时间
+    - 时间戳
+    - 仿真时间
+
+  label:
+    - label
+    - fault
+    - fault_active
+    - is_fault
+    - fault_label
+    - anomaly
+    - abnormal
+    - 标签
+    - 故障标签
+    - 是否故障
+
+  model:
+    - model
+    - model_name
+    - satellite_model
+    - 型号
+    - 卫星型号
+
+  subsystem:
+    - subsystem
+    - sub_system
+    - subsys
+    - 分系统
+    - 子系统
+
+  device:
+    - device
+    - component
+    - unit
+    - equipment
+    - target_name
+    - 单机
+    - 设备
+    - 部件
+
+  variable:
+    - variable
+    - parameter
+    - param
+    - channel
+    - signal
+    - 参量
+    - 参数
+    - 测点
+
+  value:
+    - value
+    - val
+    - reading
+    - measurement
+    - measure
+    - 数值
+    - 值
+    - 测量值
+
+labels:
+  normal:
+    - "0"
+    - "0.0"
+    - "false"
+    - "no"
+    - normal
+    - nominal
+    - healthy
+    - ok
+    - 正常
+    - 无故障
+
+  fault:
+    - "1"
+    - "1.0"
+    - "true"
+    - "yes"
+    - fault
+    - faulty
+    - abnormal
+    - anomaly
+    - 故障
+    - 异常

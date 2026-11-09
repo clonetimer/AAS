@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>历史故障数据库 - 智能检测算法评估软件</title>
+  <link rel="stylesheet" href="styles-light.css?layout_compact=1&intervals=2" />
+  <link rel="stylesheet" href="telemetry-v2-browser.css?phase43=1" />
+</head>
+<body class="browser-page compact-ui">
+  <div class="ambient ambient-left"></div>
+  <div class="ambient ambient-right"></div>
+  <main class="shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">智能故障检测</p>
+        <h1>历史故障数据库</h1>
+        <p class="subtitle">按卫星身份、分系统、参量与时间范围查询；无需选择物理表。</p>
+      </div>
+      <nav class="nav-links">
+        <a class="active" href="browser.html">历史故障数据库</a>
+        <a href="runner.html">智能检测算法评估</a>
+        <a href="reports.html">任务查询与导出</a>
+        <a href="monitor.html">软件性能监控</a>
+        <a href="index.html">返回首页</a>
+      </nav>
+      
+    </header>
+
+    <section id="v2Browser" class="v2-layout" aria-label="按逻辑参量浏览遥测">
+      <div class="v2-left">
+        <section class="panel v2-panel">
+          <div class="panel-header"><h2>筛选条件</h2><div class="v2-filter-tools"><button type="button" id="v2OpenFaultFinder" aria-haspopup="dialog" aria-controls="v2FaultDialog">查找故障</button><button type="button" id="v2OpenImport" class="primary">+ 导入 CSV</button></div></div>
+          <div class="v2-fields">
+            <label class="field"><span>来源类型（仅用于浏览筛选）</span><select id="v2Role">
+              <option value="train">训练来源</option><option value="test">测试来源</option>
+              <option value="raw">原始采集</option><option value="unspecified">用途待确认</option>
+              <option value="simulation">仿真数据</option><option value="processed">预处理数据</option>
+              <option value="simulated_fault">模拟故障数据</option>
+            </select></label>
+            <p class="field-hint">浏览不代表数据可用于训练或评估。无标签、来源名称推断及待确认的数据可以查看；进入训练/评估时仍按来源、标签、时基和质量规则严格校验。</p>
+            <label class="field"><span>数据库</span><select id="v2Database"><option value="">加载数据库中…</option></select><select id="v2Namespace" hidden><option value="">全部来源</option></select></label>
+            <button type="button" id="v2ManageSources">管理数据源</button>
+            <label class="field"><span>卫星型号</span><select id="v2Model"><option value="">全部型号</option></select></label>
+            <label class="field"><span>分系统</span><select id="v2Subsystem"><option value="">全部分系统</option></select></label>
+            <label class="field"><span>部件</span><select id="v2Device"><option value="">全部部件</option></select></label>
+            <label class="field"><span>参量关键词</span><input id="v2Keyword" type="search" placeholder="如 speed、current" /></label>
+            <div class="v2-time-row">
+              <label class="field"><span>开始时间</span><input id="v2Start" type="datetime-local" step="1" aria-describedby="v2TimeHelp v2TimeError" disabled /></label>
+              <label class="field"><span>结束时间</span><input id="v2End" type="datetime-local" step="1" aria-describedby="v2TimeHelp v2TimeError" disabled /></label>
+            </div>
+            <p id="v2TimeHelp" class="v2-time-help">请先勾选参量，再选择有效日期；浏览模式展示所选曲线的时间并集，不强求各曲线时间重叠。</p>
+            <p id="v2TimeError" class="v2-time-error" role="alert" aria-live="polite" hidden></p>
+            <div class="v2-actions"><button class="primary" type="button" id="v2Search">筛选参量</button><button type="button" id="v2Reset">重置</button></div>
+          </div>
+        </section>
+        <section class="panel v2-panel v2-results">
+          <div class="panel-header"><h2>筛选后的参量</h2><span id="v2Count" class="meta">0 项</span></div>
+          <div class="v2-result-list" id="v2Candidates" role="group" aria-label="可选逻辑参量"></div>
+          <div class="v2-pagination" id="v2CatalogPagination" role="group" aria-label="参量目录分页">
+            <button type="button" id="v2PrevPage" disabled>上一页</button>
+            <span id="v2PageInfo" aria-live="polite">第 1 页</span>
+            <button type="button" id="v2NextPage" disabled>下一页</button>
+          </div>
+          <p class="field-hint" id="v2CandidateStatus" role="status" aria-live="polite">正在加载逻辑参量目录…</p>
+          <div class="v2-actions"><button class="primary" id="v2Plot" type="button">绘制已选参量</button><button id="v2ClearSelected" type="button">清空选择</button></div>
+        </section>
+      </div>
+      <div class="v2-right">
+        <section class="panel v2-panel v2-plot-panel">
+          <div class="panel-header"><h2>时间序列曲线</h2><span id="v2PlotMeta" class="meta">请选择参量</span></div>
+          <p class="field-hint">初始概览覆盖所选时间范围；滚轮缩放、按钮缩放和拖动框选都会按新时间窗口重新读取。逻辑帧数、有效数值样本数和绘图点数分别统计；导出仍包含完整匹配数据。</p>
+          <div class="v2-chart-toolbar"><span class="field-hint">滚轮缩放 · 拖动实时框选 · 双击复原；不同卫星按各自数据经过时间比较</span><button id="v2ZoomIn" type="button">放大 +</button><button id="v2ZoomOut" type="button">缩小 −</button><button id="v2ZoomReset" type="button">重置视图</button><span class="v2-toolbar-divider" aria-hidden="true"></span><button id="v2Export" type="button" class="v2-export-button" disabled title="导出当前勾选参量与日期范围内的完整采样，无需先绘图">↓ 导出所选数据（CSV）</button></div><output id="v2ZoomStatus" class="v2-zoom-status" aria-live="polite">全范围</output><div id="v2PlotStatus" class="v2-status" role="status" aria-live="polite"></div><div id="v2ExportStatus" class="v2-status" role="status" aria-live="polite"></div>
+          <div id="v2Chart" class="v2-chart" aria-label="遥测时间序列绘图区域"><div class="empty-state">勾选左侧参量后点击“绘制已选参量”</div></div>
+        </section>
+        <section class="panel v2-panel v2-selected-panel">
+          <div class="panel-header"><h2>已选曲线</h2><span class="meta">所选参量均包含在导出中</span></div>
+          <div id="v2Selected" class="v2-selected-list">尚未选择曲线</div>
+        </section>
+        <section class="panel v2-panel v2-detail-panel">
+          <div class="panel-header"><h2>单参量采样明细</h2><span class="meta">按逻辑帧游标分页</span></div>
+          <p class="field-hint">一次仅查看一个已选参量，不跨参量按行或时间戳合并。每页最多 100 个逻辑帧，并保留来源分片与源文件行号。</p>
+          <div class="v2-detail-toolbar">
+            <label class="field"><span>查看参量</span><select id="v2DetailChannel"><option value="">请先勾选参量</option></select></label>
+            <button type="button" id="v2LoadDetail" class="primary" disabled>加载明细</button>
+            <button type="button" id="v2DetailPrev" disabled>上一页</button>
+            <button type="button" id="v2DetailNext" disabled>下一页</button>
+          </div>
+          <p id="v2DetailStatus" class="v2-status" role="status" aria-live="polite">选择一个已选参量并加载明细。</p>
+          <div class="v2-detail-table-wrap">
+            <table class="v2-detail-table">
+              <thead><tr><th>逻辑帧</th><th>时间戳</th><th>数值</th><th>采样标签</th><th>来源表</th><th>分片 ID</th><th>源文件行</th></tr></thead>
+              <tbody id="v2DetailBody"><tr><td colspan="7">尚未加载采样明细</td></tr></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </section>
+    <dialog id="v2FaultDialog" class="v2-fault-dialog" aria-labelledby="v2FaultDialogTitle">
+      <div class="v2-dialog-header"><strong id="v2FaultDialogTitle">故障速查 · 查找相关参量</strong><button type="button" id="v2CloseFaultFinder" aria-label="关闭故障速查">✕ 关闭</button></div>
+      <div class="v2-fault-dialog-body">
+        <p class="field-hint">按主页面的数据库、型号、分系统、部件及关键词检索测试数据中的故障证据。此操作不会改变原始数据。</p>
+        <div class="v2-fault-controls">
+          <button class="primary" type="button" id="v2FindFaults">查找故障相关参量</button>
+          <label class="field"><span>故障类型</span><select id="v2FaultType" aria-label="按故障类型筛选" disabled><option value="">全部故障类型</option></select></label>
+        </div>
+        <p id="v2FaultStatus" class="v2-status" role="status" aria-live="polite">点击“查找故障相关参量”开始检索。</p>
+        <div id="v2FaultResults" class="v2-fault-list" aria-live="polite"></div>
+        <section class="v2-association-panel" aria-labelledby="v2AssociationTitle">
+          <div class="v2-association-header"><strong id="v2AssociationTitle">关联参量分析</strong><span class="field-hint">按所选型号的整次运行（跨部件）对比</span></div>
+          <div class="v2-association-tools">
+            <button type="button" id="v2FindAssociations">分析当前卫星</button>
+            <label class="field"><span>分类</span><select id="v2AssociationClass" aria-label="关联参量分类">
+              <option value="all">全部参量</option>
+              <option value="source">故障源 / 明确标注</option>
+              <option value="affected">疑似受影响</option>
+              <option value="no_clear_change">暂未发现明显变化</option>
+              <option value="insufficient">证据不足</option>
+            </select></label>
+          </div>
+          <p class="v2-status" id="v2AssociationStatus" role="status" aria-live="polite">先在左侧选择卫星型号，然后点击“分析当前卫星”。</p>
+          <div id="v2AssociationResults" class="v2-fault-list" aria-live="polite"></div>
+          <p class="field-hint">仅精确的故障部件映射或参量级事件可确认归属；统计变化是排查线索，不自动写入故障标签。运行级故障标签不会画成参量故障红点。</p>
+        </section>
+        <p class="field-hint v2-fault-disclaimer">故障运行中的传感器并非都已损坏；变化强度仅供查看排序，不是故障诊断概率。</p>
+      </div>
+    </dialog>
+    <dialog id="v2ImportDialog" class="v2-import-dialog" aria-label="导入遥测 CSV"><div class="v2-dialog-header"><strong>导入外部遥测数据</strong><button type="button" id="v2CloseImport" aria-label="关闭导入弹窗">✕ 关闭</button></div><iframe title="导入外部 CSV 数据" loading="lazy" data-src="import.html?dialog=1" id="v2ImportFrame"></iframe></dialog>
+    <dialog id="v2SourceDialog" class="v2-fault-dialog" aria-labelledby="v2SourceDialogTitle">
+      <div class="v2-dialog-header"><strong id="v2SourceDialogTitle">管理 V2 数据源</strong><button type="button" id="v2CloseSources">✕ 关闭</button></div>
+      <div class="v2-dialog-body" style="padding:20px;display:grid;gap:12px">
+        <p class="field-hint">按数据源删除其分片和采样，其他来源及共享表结构保留。删除不可撤销；请先备份数据库。</p>
+        <label class="field"><span>数据源</span><select id="v2DeleteSource"><option value="">加载中…</option></select></label>
+        <button type="button" id="v2PreviewSourceDelete">预检影响范围</button>
+        <pre id="v2SourceDeletePreview" style="white-space:pre-wrap;max-height:240px;overflow:auto"></pre>
+        <label class="field"><span>输入完整数据源名称以确认</span><input id="v2SourceConfirmName" autocomplete="off" /></label>
+        <button type="button" id="v2CommitSourceDelete" disabled>永久删除此数据源</button>
+        <p id="v2SourceDeleteStatus" role="status" aria-live="polite"></p>
+      </div>
+    </dialog>
+    </main>
+    <script src="telemetry-v2-browser.js?phase43=1&p3g0=3"></script>
+
+
+
+</body>
+</html>

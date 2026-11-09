@@ -1,0 +1,111 @@
+/* Respect hidden sections even when CSS declares display:grid. */
+[hidden]{display:none!important}
+.v2-mode-buttons{display:flex;gap:10px;margin:12px 0 18px}.v2-mode-buttons button{padding:10px 22px;border-radius:10px}.v2-mode-buttons .active{background:#214c92;color:white}.v2-run-grid{display:grid;grid-template-columns:minmax(300px,360px) minmax(0,1fr);gap:15px;align-items:start}.v2-run-settings,.v2-run-main{padding:20px;min-width:0}.v2-run-main{min-height:530px}.v2-run-filters{display:grid;grid-template-columns:1fr 1fr;gap:10px}.v2-run-filters .field{min-width:0}.v2-run-channels{min-height:100px;max-height:260px;overflow:auto;border:1px solid #ccd5e5;border-radius:8px;margin:12px 0;padding:6px;background:#fff}.v2-run-item{display:flex;gap:8px;padding:9px;align-items:flex-start;cursor:pointer;border-bottom:1px solid #edf0f5}.v2-run-item:last-child{border:0}.v2-run-item small{display:block;color:#52637f;margin-top:3px}.v2-run-actions{display:flex;gap:10px;margin:16px 0;flex-wrap:wrap}.v2-run-output{white-space:pre-wrap;overflow-wrap:anywhere;margin:16px 0;padding:16px;border:1px solid #cbd5e1;border-radius:8px;min-height:74px}.v2-run-output.error{color:#aa1e1e;border-color:#e6b3b3}.v2-run-preview{min-height:100px;overflow:auto}.v2-run-preview table{width:100%;border-collapse:collapse}.v2-run-preview th,.v2-run-preview td{padding:8px;border-bottom:1px solid #d6deeb;text-align:left}.v2-publish{padding:15px;border:1px solid #c9d7e9;border-radius:8px}.v2-run-settings .field{margin-bottom:10px}@media(max-width:920px){.v2-run-grid{grid-template-columns:1fr}}
+
+/* V2 detector-owned parameter schema controls */
+.v2-alg-config{border:1px solid #d0dae9;border-radius:9px;padding:12px;margin:12px 0;background:#f7faff}
+.v2-alg-config h3{font-size:1rem;margin:0 0 8px}
+.v2-param-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px 10px}
+.v2-param-list .field{min-width:0;margin-bottom:0;display:flex;flex-direction:column}
+.v2-param-list .field input:not([type=checkbox]),.v2-param-list .field select{width:100%;box-sizing:border-box}
+.v2-param-list .field small{font-size:.75rem;line-height:1.35;color:#52637f}
+.v2-param-list .field[hidden]{display:none!important}
+
+/* Phase 12: bounded steps and collapsible model settings */
+.v2-run-settings h2{font-size:1.05rem;margin:20px 0 8px;padding-top:8px;border-top:1px solid #e1e8f1}
+.v2-run-settings h2:first-child{margin-top:0;border-top:0}
+.v2-alg-config summary{cursor:pointer;font-weight:600;padding:5px}
+.v2-metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(115px,1fr));gap:10px}
+.v2-metric{padding:14px 11px;background:rgba(53,110,178,.06);border:1px solid #d6e3f1;border-radius:10px;display:flex;flex-direction:column;gap:8px}
+.v2-metric strong{font-size:1.3rem}.v2-metric small{color:#52637f}
+.v2-run-output details{margin-top:18px}.v2-run-output pre{white-space:pre-wrap;word-break:break-word;max-height:280px;overflow:auto}
+
+.v2-result-chart{margin-top:14px;max-width:100%;overflow:auto}
+.v2-result-chart svg{width:100%;height:auto;min-width:550px;background:#fff;border:1px solid #d6dfe9;border-radius:9px}
+.v2-result-chart h3{font-size:1rem;margin:10px 0 4px}
+
+/* Phase 14: use available width only after the user requests preview or execution. */
+.v2-run-grid.is-idle{grid-template-columns:minmax(340px,740px);justify-content:center}
+.v2-run-grid.is-idle>.v2-run-main{display:none}
+.v2-run-grid:not(.is-idle){grid-template-columns:minmax(330px,34%) minmax(0,1fr)}
+.v2-run-main{min-height:0}
+.v2-run-output:empty,.v2-run-preview:empty,.v2-result-chart:empty{display:none}
+.v2-run-channels{max-height:280px;overflow:auto;scrollbar-gutter:stable}
+.v2-run-item span{min-width:0;overflow-wrap:anywhere}
+.v2-run-filters input[type=datetime-local]{font-size:12px;min-width:0;width:100%}
+@media(max-width:920px){.v2-run-grid:not(.is-idle){grid-template-columns:1fr}}
+
+/* Phase 23: independent data / progress / result workspaces. */
+.v2-workspace-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.v2-workspace-head h2{margin:0}
+.v2-workspace-state{font-size:12px;color:#52637f;padding:5px 9px;border-radius:30px;background:#eef4fb}
+.v2-workspace-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;border-bottom:1px solid #d7e1ec;padding-bottom:9px}
+.v2-workspace-tabs button{font-weight:600;color:#46556b;background:#eef3f8;border:1px solid transparent;border-radius:9px;padding:9px 15px;cursor:pointer}
+.v2-workspace-tabs button.active{background:#214c92;color:#fff}
+.v2-workspace-tabs button:focus-visible{outline:2px solid #276dc5;outline-offset:2px}
+.v2-workspace-panel{min-width:0}.v2-workspace-panel[hidden]{display:none!important}
+.v2-workspace-panel>.field-hint{margin-bottom:12px}
+#trainProgressBar{display:block;width:100%;height:15px;margin:18px 0;accent-color:#214c92}
+#trainProgressLabel{font-weight:600;overflow-wrap:anywhere}
+.v2-run-preview{min-height:0;padding:10px 12px;background:#f7fafc;border:1px solid #e2e8f0;border-radius:9px;white-space:pre-wrap}
+.v2-run-preview:empty{display:none}
+.v2-data-plot{margin:14px 0;min-width:0}
+.v2-data-plot-tools{display:flex;flex-wrap:wrap;gap:12px;margin:10px 0 14px}
+.v2-data-plot-tools label{display:flex;flex:1 1 230px;min-width:0;flex-direction:column;gap:5px;font-size:12px;font-weight:600;color:#46556b}
+.v2-data-plot-tools select{box-sizing:border-box;max-width:100%;min-height:36px;border:1px solid #cbd5e1;border-radius:8px;padding:6px;background:var(--card,#fff);color:inherit}
+.v2-data-plot-chart{overflow:hidden;max-width:100%}
+.v2-data-plot-chart svg{width:100%;height:auto;display:block;border:1px solid #e2e8f0;border-radius:9px;background:#fff}
+.v2-data-plot-legend{display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:10px;font-size:12px;color:#52637f}
+.v2-data-plot-legend span{display:inline-flex;gap:6px;align-items:center;overflow-wrap:anywhere}
+.v2-data-plot-legend i{width:10px;height:10px;flex:0 0 10px;border-radius:50%}
+.v2-run-main{min-width:0}
+@media(max-width:920px){.v2-run-grid:not(.is-idle){grid-template-columns:1fr}}
+
+/* Phase 24: date input limits are derived from selected telemetry coverage. */
+.v2-time-coverage{font-size:12px;line-height:1.55;color:#355a76;background:#f1f7fc;border:1px solid #cfe1f2;border-radius:8px;padding:8px 10px;margin:0 0 12px}
+.v2-time-coverage.is-error{background:#fff5f4;border-color:#efb7b4;color:#a52828}
+.v2-time-coverage.is-loading{color:#64748b}
+/* P0: make successful report navigation a clear next step. */
+.v2-run-output .aas-report-action[href] {
+  display: inline-flex;
+  margin-top: 12px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  background: #2563eb;
+  color: #fff;
+  text-decoration: none;
+  font-weight: 600;
+}
+.v2-run-output .aas-report-action[role="alert"] {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-left: 3px solid #d97706;
+  background: #fff7ed;
+  color: #92400e;
+}
+.v2-csv-import{margin:10px 0 16px;padding:12px;border:1px solid #c9dce9;border-radius:10px;background:#f7fbfd}
+.v2-csv-import>summary{cursor:pointer;font-weight:650;color:#175e82;padding:4px 0}
+.v2-csv-columns{max-height:150px;overflow:auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:6px;margin:10px 0}
+.v2-csv-columns label{display:flex;gap:7px;align-items:center;font-size:12px;overflow-wrap:anywhere}
+.v2-csv-import-actions{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.v2-csv-import-actions button{cursor:pointer;min-width:90px}
+.v2-csv-import-actions button:disabled{opacity:.45;cursor:not-allowed}
+
+/* P3-C: structured task failures with safe, explicit recovery navigation. */
+.v2-task-diagnostic{margin:14px 0;padding:14px 16px;border:1px solid #e8b4a8;border-left:4px solid #c2410c;border-radius:10px;background:#fff7f3;color:#7c2d12}
+.v2-task-diagnostic[hidden]{display:none!important}
+.v2-task-diagnostic-stage{margin:0 0 6px;font-size:12px;font-weight:650;color:#9a3412}
+.v2-task-diagnostic h3{margin:0 0 8px;font-size:16px;color:#7c2d12}
+.v2-task-diagnostic p{line-height:1.55;overflow-wrap:anywhere}
+.v2-task-diagnostic-action{font-weight:550}
+.v2-task-diagnostic button{margin-top:4px;padding:9px 13px;border:1px solid #c2410c;border-radius:8px;background:#fff;color:#9a3412;font-weight:650;cursor:pointer}
+.v2-task-diagnostic button:focus-visible{outline:2px solid #c2410c;outline-offset:2px}
+
+.v2-csv-task-controls{display:grid;grid-template-columns:minmax(120px,1fr) auto;gap:6px 10px;align-items:center;margin:8px 0 10px}
+.v2-csv-task-controls progress{width:100%;height:10px;grid-column:1/-1}
+.v2-csv-task-controls .field-hint{margin:0;min-width:0;overflow-wrap:anywhere}
+.v2-csv-task-controls button{justify-self:end;padding:5px 10px;font-size:12px}
+.v2-task-cancel{margin-top:8px}
+
+.v2-workspace-panel>progress{width:100%;height:10px}
+.v2-workspace-panel>.v2-task-cancel{margin-top:10px}

@@ -1,0 +1,12 @@
+name: three_sigma
+label: 3-Sigma
+description: 基于 3-Sigma 原则的异常检测
+min_training_samples: 2
+class_path: detectors.statistical_detectors.ThreeSigmaDetector
+type: statistical
+dependencies:
+- numpy
+config: {}
+decision_mode: score_threshold
+decision_modes:
+- score_threshold

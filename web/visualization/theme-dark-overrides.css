@@ -1,0 +1,62 @@
+/* 深色主题补丁
+ * 页面内联样式里写死的浅色背景/边框/文字在这里按主题变量覆盖。
+ * 只有在 workbench 判定为深色主题时，才会把本文件注入到同源 iframe 与嵌套 iframe。
+ * 浅色主题不加载本文件，因此不会影响现有浅色外观。
+ */
+
+html[data-theme="dark"] {
+  /* 让页面里 var(--card, #fff) / var(--border-color, ...) 这种兜底写法跟随主题 */
+  --card: var(--surface);
+  --border-color: var(--line);
+}
+
+/* 软件性能监控 */
+html[data-theme="dark"] .monitor-panel { background: var(--surface); border-color: var(--line); }
+html[data-theme="dark"] .monitor-metric { background: var(--panel-strong); border-color: var(--line); }
+html[data-theme="dark"] .monitor-progress { background: var(--line); }
+html[data-theme="dark"] .monitor-progress > span { background: var(--accent); }
+html[data-theme="dark"] .monitor-table th { background: var(--surface); }
+html[data-theme="dark"] .monitor-table th,
+html[data-theme="dark"] .monitor-table td { border-bottom-color: var(--line); }
+html[data-theme="dark"] .monitor-danger { color: var(--danger); }
+html[data-theme="dark"] .monitor-status[role="alert"] { color: var(--danger); }
+
+/* 仿真故障数据库 */
+html[data-theme="dark"] .sim-card { background: var(--surface); border-color: var(--line); box-shadow: none; }
+html[data-theme="dark"] .sim-card h2 { color: var(--text); }
+html[data-theme="dark"] .sim-note,
+html[data-theme="dark"] .sim-legend { color: var(--muted); }
+html[data-theme="dark"] .sim-card input,
+html[data-theme="dark"] .sim-card select { background: var(--surface); border-color: var(--line); color: var(--text); }
+html[data-theme="dark"] .sim-card button { background: var(--accent-strong); color: #04121a; }
+html[data-theme="dark"] .sim-card button.secondary { background: var(--panel-strong); color: var(--text); border: 1px solid var(--line); }
+html[data-theme="dark"] .sim-card button.danger { background: rgba(255, 138, 138, 0.14); color: var(--danger); border-color: rgba(255, 138, 138, 0.42); }
+html[data-theme="dark"] .sim-table-wrap { border-color: var(--line); }
+html[data-theme="dark"] .sim-card th,
+html[data-theme="dark"] .sim-card td { border-bottom-color: var(--line); }
+html[data-theme="dark"] .sim-card th { background: var(--surface); }
+html[data-theme="dark"] .sim-card tr[data-id]:hover,
+html[data-theme="dark"] .sim-card tr.selected { background: var(--accent-soft); }
+html[data-theme="dark"] .sim-chart { background: var(--surface); border-color: var(--line); }
+html[data-theme="dark"] .sim-chart .grid-line { stroke: var(--line); }
+html[data-theme="dark"] .sim-plugin-params { border-color: var(--line); }
+html[data-theme="dark"] .sim-error { color: var(--danger); }
+
+/* 数据预处理质量报告 */
+html[data-theme="dark"] .v2-quality-report { background: var(--panel); border-color: var(--line); }
+html[data-theme="dark"] .v2-quality-grid div { background: var(--surface); border-color: var(--line); }
+html[data-theme="dark"] .v2-quality-grid dt { color: var(--muted); }
+html[data-theme="dark"] .v2-quality-grid dd { color: var(--text); }
+html[data-theme="dark"] .v2-quality-plot { background: var(--surface); border-color: var(--line); }
+html[data-theme="dark"] .v2-quality-plot text { fill: var(--muted); }
+html[data-theme="dark"] .v2-quality-note { color: var(--muted); }
+html[data-theme="dark"] .v2-quality-note.warning { color: var(--warning); }
+html[data-theme="dark"] .v2-quality-history th,
+html[data-theme="dark"] .v2-quality-history td { border-bottom-color: var(--line); }
+
+/* 检测算法管理 */
+html[data-theme="dark"] .pg-ready-track { background: var(--line); }
+html[data-theme="dark"] .pg-ready-fill { background: var(--accent); }
+
+/* 导入弹窗 */
+html[data-theme="dark"] .v2-batch-panel { border-top-color: var(--line) !important; }

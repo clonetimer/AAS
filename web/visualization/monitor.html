@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>软件性能监控 - 智能故障检测算法评估系统</title>
+<link rel="stylesheet" href="styles-light.css?layout_compact=1">
+<style>
+.monitor-layout{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(300px,1fr);gap:16px;align-items:start}
+.monitor-stack{display:grid;gap:16px;min-width:0}
+.monitor-panel{background:var(--card,#fff);border:1px solid var(--line,#e2e8f0);border-radius:14px;padding:20px;min-width:0}
+.monitor-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px}
+.monitor-head h2{font-size:17px;margin:0}.monitor-note{color:var(--muted,#64748b);font-size:12px;line-height:1.6;margin:5px 0 14px}
+.monitor-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.monitor-metric{border:1px solid var(--line,#e2e8f0);border-radius:10px;padding:14px;min-width:0;background:var(--panel,#f8fafc)}
+.monitor-label{font-size:13px;color:var(--muted,#64748b)}.monitor-value{font-size:25px;font-weight:750;letter-spacing:-.5px;margin:5px 0;overflow-wrap:anywhere}
+.monitor-sub{font-size:12px;color:var(--muted,#64748b);line-height:1.5}
+.monitor-progress{background:#dbe4ec;height:6px;border-radius:10px;overflow:hidden;margin:9px 0 4px}
+.monitor-progress>span{display:block;height:100%;background:#2995ac;transition:width .4s}
+.monitor-table-wrap{width:100%;max-height:310px;overflow:auto}
+.monitor-table{border-collapse:collapse;width:100%;font-size:12px}.monitor-table th,.monitor-table td{text-align:left;padding:8px;border-bottom:1px solid var(--line,#e2e8f0);overflow-wrap:anywhere}
+.monitor-table th{color:var(--muted,#64748b);position:sticky;top:0;background:var(--card,#fff)}
+.monitor-badges{display:flex;flex-wrap:wrap;gap:8px}.monitor-badge{border:1px solid var(--line,#e2e8f0);border-radius:20px;padding:5px 10px;font-size:12px}
+.monitor-danger{color:#bb3546}.monitor-status{font-size:12px;color:var(--muted,#64748b)}.monitor-status[role=alert]{color:#ba2941}
+@media (max-width:1000px){.monitor-layout{grid-template-columns:1fr}}
+@media (max-width:520px){.monitor-grid{grid-template-columns:1fr}.monitor-panel{padding:14px}}
+</style>
+</head>
+<body class="compact-ui">
+<main class="shell">
+<header class="topbar"><div><h1>软件性能监控</h1><p class="subtitle">重点监控 AAS 应用自身的资源占用、任务与请求性能。</p></div><nav class="nav-links"><a href="browser.html">历史故障数据库</a><a href="runner.html">智能检测算法评估</a><a href="reports.html">任务查询与导出</a><a class="active" href="monitor.html">软件性能监控</a><a href="index.html">返回首页</a></nav></header>
+<div class="monitor-layout">
+  <div class="monitor-stack">
+    <section class="monitor-panel">
+      <div class="monitor-head"><h2>AAS 软件资源占用</h2><span id="monitorUpdated" class="monitor-status" aria-live="polite">正在读取…</span></div>
+      <p class="monitor-note" id="monitorScope">包含当前 Web 服务及它直接启动的存活子进程；不会将电脑其他软件算作 AAS。</p>
+      <div class="monitor-grid" id="monitorSoftware"></div>
+    </section>
+    <section class="monitor-panel">
+      <div class="monitor-head"><h2>运行中的进程</h2><span id="monitorProcessCount" class="monitor-status"></span></div>
+      <p class="monitor-note">仅展示可访问的 AAS 进程和子进程；CPU 首次采样需要等待下一轮。</p>
+      <div class="monitor-table-wrap"><table class="monitor-table"><thead><tr><th>进程</th><th>PID</th><th>CPU（单核等效）</th><th>内存 RSS</th></tr></thead><tbody id="monitorProcesses"></tbody></table></div>
+    </section>
+    <section class="monitor-panel"><div class="monitor-head"><h2>软件接口性能</h2><span class="monitor-status">运行期累计</span></div>
+      <div class="monitor-grid" id="monitorApiTotals"></div>
+      <div class="monitor-table-wrap"><table class="monitor-table"><thead><tr><th>接口</th><th>次数</th><th>平均耗时</th><th>失败</th></tr></thead><tbody id="monitorApiRows"></tbody></table></div>
+    </section>
+  </div>
+  <div class="monitor-stack">
+    <section class="monitor-panel"><div class="monitor-head"><h2>训练任务</h2></div><div class="monitor-badges" id="monitorTaskStats"></div><div class="monitor-table-wrap"><table class="monitor-table"><thead><tr><th>任务标识</th><th>进度</th><th>已运行</th></tr></thead><tbody id="monitorTaskRows"></tbody></table></div>
+    <p class="monitor-note">显示由当前服务登记的任务；独立启动的外部程序不自动计入。</p></section>
+    <section class="monitor-panel">
+      <div class="monitor-head"><h2>训练任务资源记录</h2><span class="monitor-status">运行中与历史任务</span></div>
+      <p class="monitor-note">CPU 为训练工作线程，峰值内存和磁盘 I/O 是执行期间 AAS 共享进程组观测值；不可作为任务独占消耗。记录保存后重启仍可查看。</p>
+      <div class="monitor-table-wrap"><table class="monitor-table"><thead><tr><th>算法 / 状态</th><th>耗时</th><th>线程 CPU</th><th>观察内存峰值</th><th>NVIDIA 显存（进程）</th><th>GPU 利用率（整卡）</th></tr></thead><tbody id="monitorResourceRows"></tbody></table></div>
+    </section>
+    <section class="monitor-panel"><div class="monitor-head"><h2>主机资源（参考）</h2></div>
+      <p class="monitor-note">以下是整机指标，用于判断 AAS 是否受到其他进程争用；不是 AAS 的专属占用。</p><div class="monitor-grid" id="monitorHost"></div>
+    </section>
+    <section class="monitor-panel"><div class="monitor-head"><h2>统计说明</h2></div>
+      <p class="monitor-note">CPU 100% 表示占满一个逻辑核心，可能超过 100%；整机份额会除以逻辑核心数。进程内存为 RSS 之和，可能包含重复的共享内存页。</p>
+      <p class="monitor-note">磁盘 I/O 使用进程读写计数，显示存活进程的累计量和采样速率；退出的子进程不再计入当前值。普通系统接口不能可靠统计“仅 AAS 的网络字节数”，因此这里展示软件自身的 HTTP 接口耗时和调用量。</p>
+      <p class="monitor-note">支持 Windows 和 Linux 的 Python 服务；NVIDIA GPU 仅在 NVML 可用时显示：显存为 AAS 进程关联占用；设备利用率是整卡指标，不能当作某训练任务的独占 GPU 利用率。</p>
+    </section>
+  </div>
+</div>
+<p id="monitorError" role="alert" class="monitor-status" hidden></p>
+</main>
+<script src="monitor-v2.js"></script>
+</body>
+</html>

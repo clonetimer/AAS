@@ -1,0 +1,11 @@
+.runner-workflow-guide{margin:12px 0 16px;padding:16px 18px}
+.runner-workflow-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.runner-workflow-head h2{margin:0;font-size:17px}
+.runner-workflow-head p{margin:5px 0 0;color:var(--muted,#64748b);font-size:12px;line-height:1.6}
+#runnerWorkflowHint{color:var(--muted,#64748b);font-size:12px}
+.runner-workflow-steps{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin-top:14px}
+.runner-workflow-steps button{min-width:0;padding:10px 8px;border:1px solid var(--line,#d7dee8);border-radius:8px;background:var(--panel-strong,#fff);color:var(--text,#243447);font-size:12px;cursor:pointer}
+.runner-workflow-steps button:hover,.runner-workflow-steps button:focus-visible{border-color:var(--accent,#4775a8);outline:2px solid color-mix(in srgb,var(--accent,#4775a8) 25%,transparent);outline-offset:1px}
+.runner-workflow-steps button.active{border-color:var(--accent,#4775a8);background:var(--accent-soft,#edf4fb);font-weight:650}
+@media(max-width:900px){.runner-workflow-steps{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:520px){.runner-workflow-head{display:block}.runner-workflow-steps{grid-template-columns:repeat(2,minmax(0,1fr))}}

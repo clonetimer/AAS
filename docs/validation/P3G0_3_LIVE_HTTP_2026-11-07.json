@@ -1,0 +1,435 @@
+{
+  "status": "PASS",
+  "scope": "live HTTP + jsdom DOM; visual and Windows GUI acceptance remain separate",
+  "platform": "linux",
+  "python": "3.12.14",
+  "generated_at": "2026-11-07T15:20:23Z",
+  "tested_files": {
+    "import.html": "cfb28eaebedb026c360e4a7b2da0a623ab56282347263f3067d6aa5f158fb797",
+    "simulation.html": "968c943caf4e1045b54cea75ffd60f0a54f2749f5b2e6483f314e8e021b84fc5",
+    "runner.html": "22342bf1a9473b24fd2b25a5c18469d2387856a5a9a9d1aa0586cbbb3bf8de0f",
+    "csv-import-wizard.js": "3fc40d179c1141a9048589abe132f6d2ef5a1668d6c5f2a938f9eeae2b06a5e3",
+    "telemetry-v2-import.js": "fc9b0c986cc7e1c355e232a0671bdfb30ba3469fd1fbd814b0fb3a26656f4b75",
+    "simulation-csv-workspace.js": "b50294e8f4a890b9c16501669e1304525794f9c5132b6c9afc15ef2a3ec80f2f",
+    "runner-csv-import.js": "382ef8d8ed116a04b6ee22f72cac0bf0cc38b0b273f04b83ea525e31ef1d356b"
+  },
+  "dom": {
+    "status": "PASS",
+    "transport": "real authenticated HTTP, jsdom XHR and task polling",
+    "flows": [
+      {
+        "purpose": "history",
+        "filename": "acceptance_history.csv",
+        "stage": "done",
+        "receipt": "使用结果导入完成源文件acceptance_history.csv数据去向历史故障数据库中的新来源 · 测试用途帧数8 帧数值参量1 个标签含义保留源文件真实标签；标签作用范围按来源声明文件格式utf-8 / 逗号时间覆盖0 ～ 7参量列eps.battery_energy_j已保存来源1返回历史库筛选参量导入另一个文件"
+      },
+      {
+        "purpose": "simulation",
+        "filename": "acceptance_simulation.csv",
+        "stage": "done",
+        "receipt": "使用结果导入完成源文件acceptance_simulation.csv数据去向独立模拟库 · 原始版本 v0帧数8 帧数值参量1 个标签含义保留源文件真实标签；标签作用范围按来源声明文件格式utf-8 / 逗号参量列voltage按原始帧顺序保留全部 5 列，文本列和已有标签一并保存。继续设置故障注入导入另一个文件"
+      },
+      {
+        "purpose": "train",
+        "filename": "acceptance_train.csv",
+        "stage": "done",
+        "receipt": "使用结果导入完成源文件acceptance_train.csv数据去向历史故障数据库 · 训练来源帧数8 帧数值参量1 个标签含义已由用户确认全部正常（标签 0）文件格式utf-8 / 逗号时间覆盖200 ～ 207参量列speed已保存来源2检查训练时间范围导入另一个文件"
+      },
+      {
+        "purpose": "eval",
+        "filename": "acceptance_eval.csv",
+        "stage": "done",
+        "receipt": "使用结果导入完成源文件acceptance_eval.csv数据去向历史故障数据库 · 测试来源帧数8 帧数值参量1 个标签含义真值未知；导入后仅推理，展示异常分数与报警文件格式utf-8 / 逗号时间覆盖400 ～ 407参量列speed已保存来源3选择模型并检查测试数据导入另一个文件"
+      }
+    ],
+    "requests": [
+      {
+        "method": "GET",
+        "path": "/api/v2/run-dataset/catalog",
+        "status": 401
+      },
+      {
+        "method": "POST",
+        "path": "/api/auth/setup",
+        "status": 200
+      },
+      {
+        "method": "POST",
+        "path": "/api/auth/login",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/auth/status",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/v2/telemetry/imports",
+        "status": 200
+      },
+      {
+        "method": "POST",
+        "path": "/api/v2/telemetry/import-source",
+        "operation": "inspect",
+        "status": 202,
+        "task_id": "de939077969c473993ff1f2f82ad9da6"
+      },
+      {
+        "method": "GET",
+        "path": "/api/task-status",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/telemetry-v2-column-catalog.json",
+        "status": 200
+      },
+      {
+        "method": "POST",
+        "path": "/api/v2/telemetry/import-source",
+        "operation": "preview",
+        "status": 202,
+        "task_id": "46894d040e5e4fe9aae644e4083f64aa"
+      },
+      {
+        "method": "GET",
+        "path": "/api/task-status",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/task-status",
+        "status": 200
+      },
+      {
+        "method": "POST",
+        "path": "/api/v2/telemetry/import-source",
+        "operation": "commit",
+        "status": 202,
+        "task_id": "a9c360d45a0747708c88eeacd3bf92ea"
+      },
+      {
+        "method": "GET",
+        "path": "/api/task-status",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/v2/telemetry/imports",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/v2/csv-workspace/list",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/v2/simulation/fault-types",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/v2/simulation/sources",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/v2/simulation/list",
+        "status": 200
+      },
+      {
+        "method": "POST",
+        "path": "/api/v2/csv-workspace/inspect",
+        "status": 200
+      },
+      {
+        "method": "POST",
+        "path": "/api/v2/csv-workspace/import",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/v2/csv-workspace/list",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/v2/csv-workspace/events",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/v2/csv-workspace/ancestors",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/v2/csv-workspace/dataset-preview",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/v2/run-dataset/catalog",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/available-algorithms",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/algorithm-config-schema",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/v2/models",
+        "status": 200
+      },
+      {
+        "method": "POST",
+        "path": "/api/v2/telemetry/import-source",
+        "operation": "inspect",
+        "status": 202,
+        "task_id": "823943eb3e75429bb04b6f4d4f2435b3"
+      },
+      {
+        "method": "GET",
+        "path": "/api/task-status",
+        "status": 200
+      },
+      {
+        "method": "POST",
+        "path": "/api/v2/telemetry/import-source",
+        "operation": "preview",
+        "status": 202,
+        "task_id": "5b4c6ebac4a14b5eae6bdb1e0a5d7d59"
+      },
+      {
+        "method": "GET",
+        "path": "/api/task-status",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/task-status",
+        "status": 200
+      },
+      {
+        "method": "POST",
+        "path": "/api/v2/telemetry/import-source",
+        "operation": "commit",
+        "status": 202,
+        "task_id": "7b62c385f8be41169476c19dd11b6578"
+      },
+      {
+        "method": "GET",
+        "path": "/api/task-status",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/task-status",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/v2/run-dataset/catalog",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/available-algorithms",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/algorithm-config-schema",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/v2/models",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/algorithm-config-schema",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/v2/run-dataset/catalog",
+        "status": 200
+      },
+      {
+        "method": "POST",
+        "path": "/api/v2/run-dataset/coverage",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/v2/run-dataset/catalog",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/available-algorithms",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/algorithm-config-schema",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/v2/models",
+        "status": 200
+      },
+      {
+        "method": "POST",
+        "path": "/api/v2/telemetry/import-source",
+        "operation": "inspect",
+        "status": 202,
+        "task_id": "771f8f011d1b4ef08c2cb47f70e54343"
+      },
+      {
+        "method": "GET",
+        "path": "/api/task-status",
+        "status": 200
+      },
+      {
+        "method": "POST",
+        "path": "/api/v2/telemetry/import-source",
+        "operation": "preview",
+        "status": 202,
+        "task_id": "3a709603986f400f8ae00f478f35789b"
+      },
+      {
+        "method": "GET",
+        "path": "/api/task-status",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/task-status",
+        "status": 200
+      },
+      {
+        "method": "POST",
+        "path": "/api/v2/telemetry/import-source",
+        "operation": "commit",
+        "status": 202,
+        "task_id": "5851f89b95fc44b4bb09753667c08a73"
+      },
+      {
+        "method": "GET",
+        "path": "/api/task-status",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/task-status",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/v2/run-dataset/catalog",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/available-algorithms",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/algorithm-config-schema",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/v2/models",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/algorithm-config-schema",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/v2/models",
+        "status": 200
+      },
+      {
+        "method": "GET",
+        "path": "/api/v2/run-dataset/catalog",
+        "status": 200
+      },
+      {
+        "method": "POST",
+        "path": "/api/v2/run-dataset/coverage",
+        "status": 200
+      }
+    ],
+    "dom_errors": []
+  },
+  "database_checks": {
+    "sources": [
+      {
+        "purpose": "history",
+        "source_id": 1,
+        "labels": [
+          0,
+          1,
+          0,
+          1,
+          0,
+          1,
+          0,
+          1
+        ],
+        "sha256": "a1f4345369c4047f8c976780fc2c3f83458e720309a3f9c86e0b631206245c1d"
+      },
+      {
+        "purpose": "train",
+        "source_id": 2,
+        "labels": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "sha256": "bf01d100980525f7b1585a17afaee2003595597aafe77bc9cdeffc845c557d4d"
+      },
+      {
+        "purpose": "eval",
+        "source_id": 3,
+        "labels": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        "sha256": "f562934e1e058c764592000abc4ce816736744fa3bfbfce6fd99caed47db16c9"
+      }
+    ],
+    "simulation_full_rows": 8,
+    "simulation_versions": 1,
+    "completed_csv_tasks": 9,
+    "automatic_algorithm_or_fault_tasks": 0
+  }
+}

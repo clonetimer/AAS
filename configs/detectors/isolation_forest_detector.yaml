@@ -1,0 +1,37 @@
+name: isolation_forest_detector
+label: Isolation Forest
+description: 孤立森林异常检测
+min_training_samples: 2
+class_path: detectors.isolation_forest_detector.IsolationForestDetector
+type: machine_learning
+dependencies:
+- sklearn
+- numpy
+config:
+  n_estimators: 100
+  contamination: 0.05
+  random_state: 42
+config_schema:
+- name: n_estimators
+  label: 树数量
+  type: int
+  min: 1
+  step: 1
+  default: 100
+- name: contamination
+  label: 异常比例
+  type: float
+  min: 0.0
+  max: 0.5
+  step: 0.01
+  default: 0.05
+- name: random_state
+  label: 随机种子
+  type: int
+  min: 0
+  step: 1
+  default: 42
+decision_mode: score_threshold
+decision_modes:
+- score_threshold
+- native

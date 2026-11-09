@@ -1,0 +1,64 @@
+{
+  "name": "sample_history_manifest",
+  "dataset": {
+    "name": "sample_history_manifest",
+    "description": "Sample manifest aligned with the requirement document for importing telemetry and fault records into a history DB",
+    "model": "GF-1",
+    "subsystem": "power",
+    "device": "solar_pannel",
+    "variable": "temperature"
+  },
+  "telemetry": {
+    "file": "telemetry_template.csv"
+  },
+  "fault_records": [
+    {
+      "fault_id": "F001",
+      "fault_part": {
+        "model": "GF-1",
+        "subsystem": "power",
+        "device": "solar_pannel",
+        "variable": "temperature"
+      },
+      "normal_time": {
+        "start_time": "2026-04-08T00:00:10",
+        "end_time": "2026-04-08T00:00:19"
+      },
+      "fault_time": {
+        "start_time": "2026-04-08T00:00:20",
+        "end_time": "2026-04-08T00:00:22"
+      },
+      "label": 1,
+      "description": "示例故障区间，高值突变",
+      "cause": "局部传感器漂移或电源链路异常",
+      "treatment": "复核传感器状态并切换备份链路",
+      "severity": "high",
+      "affected_component": "power_unit",
+      "log_text": "telemetry spike observed"
+    },
+    {
+      "fault_id": "F002",
+      "fault_part": {
+        "model": "GF-1",
+        "subsystem": "thermal",
+        "device": "thermal_sensor",
+        "variable": "temperature"
+      },
+      "normal_time": {
+        "start_time": "2026-04-09T12:14:00",
+        "end_time": "2026-04-09T12:14:59"
+      },
+      "fault_time": {
+        "start_time": "2026-04-09T12:15:00",
+        "end_time": "2026-04-09T12:16:30"
+      },
+      "label": 1,
+      "description": "示例故障区间，短时波动",
+      "cause": "短时干扰或采集链路抖动",
+      "treatment": "重采样并检查链路抖动情况",
+      "severity": "medium",
+      "affected_component": "thermal_sensor",
+      "log_text": "intermittent fluctuation observed"
+    }
+  ]
+}

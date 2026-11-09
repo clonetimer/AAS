@@ -1,0 +1,13 @@
+{
+  "name": "aas-ui-regression",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Development-only DOM regression checks; AAS runtime does not require Node.js.",
+  "scripts": {
+    "test": "node --test tests/csv_import_wizard*.cjs"
+  },
+  "devDependencies": {
+    "jsdom": "26.1.0"
+  },
+  "engines": { "node": ">=18" }
+}

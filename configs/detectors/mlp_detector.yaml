@@ -1,0 +1,66 @@
+name: mlp_detector
+label: MLP
+description: 基于多层感知机自编码器的异常检测器
+min_training_samples: 32
+class_path: detectors.mlp_detector.MLPDetector
+type: deep_learning
+dependencies:
+- torch
+- numpy
+config:
+  hidden_sizes:
+  - 64
+  - 32
+  - 16
+  learning_rate: 0.001
+  epochs: 100
+  batch_size: 32
+  contamination: 0.05
+  verbose: false
+  random_state: 42
+config_schema:
+- name: hidden_sizes
+  label: 隐藏层尺寸
+  type: list
+  default:
+  - 64
+  - 32
+  - 16
+- name: learning_rate
+  label: 学习率
+  type: float
+  min: 0
+  step: 0.0001
+  default: 0.001
+- name: epochs
+  label: 训练轮数
+  type: int
+  min: 1
+  step: 1
+  default: 100
+- name: batch_size
+  label: 批大小
+  type: int
+  min: 1
+  step: 1
+  default: 32
+- name: contamination
+  label: 异常比例
+  type: float
+  min: 0
+  max: 0.5
+  step: 0.01
+  default: 0.05
+- name: verbose
+  label: 详细输出
+  type: bool
+  default: false
+- name: random_state
+  label: 随机种子
+  type: int
+  min: 0
+  step: 1
+  default: 42
+decision_mode: score_threshold
+decision_modes:
+- score_threshold

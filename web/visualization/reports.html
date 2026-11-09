@@ -1,0 +1,627 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>任务查询与导出 - 智能检测算法评估软件</title>
+  <link rel="stylesheet" href="styles-light.css?layout_compact=1&amp;event_overlay=1" />
+  <style>
+    #experimentList.summary-list {
+      max-height: 500px;
+      overflow-y: auto;
+      padding-right: 8px;
+      display: block !important;
+    }
+    
+    #experimentList.summary-list::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    #experimentList.summary-list::-webkit-scrollbar-thumb {
+      background: rgba(122, 162, 255, 0.3);
+      border-radius: 3px;
+    }
+    
+    #experimentList.summary-list::-webkit-scrollbar-thumb:hover {
+      background: rgba(122, 162, 255, 0.5);
+    }
+    
+    .summary-card-wrapper {
+      position: relative;
+      margin-bottom: 12px;
+    }
+    
+    .summary-card-wrapper.active .summary-card {
+      border-color: var(--accent-2);
+      background: var(--accent-soft);
+    }
+    
+    .summary-card {
+      width: 100%;
+      color: var(--text);
+      text-align: left;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--panel-strong);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .summary-card:hover {
+      border-color: rgba(122, 162, 255, 0.4);
+      transform: translateY(-2px);
+    }
+    
+    .summary-card strong {
+      font-size: 15px;
+      color: var(--text);
+      display: block;
+      margin-bottom: 8px;
+    }
+    
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-left: 8px;
+    }
+    
+    .badge-success {
+      background: rgba(115, 226, 156, 0.15);
+      color: var(--success);
+    }
+    
+    .badge-warning {
+      background: rgba(255, 152, 0, 0.15);
+      color: var(--warning);
+    }
+    
+    .badge-model {
+      background: rgba(122, 162, 255, 0.18);
+      color: var(--accent-2);
+      margin-left: 6px;
+    }
+    
+    .badge-published {
+      background: rgba(255, 215, 0, 0.18);
+      color: var(--warning);
+      margin-left: 6px;
+    }
+    
+    .experiment-type-tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 18px;
+      padding: 6px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+    }
+    
+    .experiment-type-tab-btn {
+      flex: 1;
+      min-width: 0;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 10px 6px;
+      background: transparent;
+      border: none;
+      border-radius: 8px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .experiment-type-tab-btn.active {
+      background: var(--accent-soft);
+      color: var(--text);
+    }
+    
+    .meta-line {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+    
+    .run-experiment-btn {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      padding: 6px 12px;
+      background: var(--accent-2);
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .run-experiment-btn:hover {
+      opacity: 0.9;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    }
+
+    /* 统计概览样式 */
+    .stats-overview {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 20px;
+      padding: 16px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+    }
+
+    .stat-card {
+      text-align: center;
+      padding: 16px;
+      background: var(--panel-strong);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+    }
+
+    .stat-card .stat-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--accent-2);
+      margin-bottom: 4px;
+    }
+
+    .stat-card .stat-label {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .stat-card.success .stat-value { color: var(--success); }
+    .stat-card.error .stat-value { color: var(--danger); }
+    .stat-card.warning .stat-value { color: var(--warning); }
+
+    /* 视图切换 */
+    .view-switcher {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .view-btn {
+      padding: 10px 16px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--panel);
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--text);
+      transition: all 0.2s;
+    }
+
+    .view-btn.active {
+      background: var(--accent-2);
+      color: #ffffff;
+      border-color: var(--accent-2);
+    }
+
+    .view-btn:hover {
+      border-color: var(--accent-2);
+    }
+
+    .view-btn.export-btn {
+      background: var(--success);
+      color: #ffffff;
+      border-color: var(--success);
+    }
+
+    .view-btn.export-btn:hover {
+      opacity: 0.9;
+    }
+
+    /* 改进的表格样式 */
+    #detailTable {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    #detailTable th,
+    #detailTable td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--line);
+      color: var(--text);
+    }
+
+    #detailTable th {
+      background: var(--panel-strong);
+      font-weight: 600;
+      color: var(--accent-2);
+      white-space: nowrap;
+    }
+
+    #detailTable tbody tr:hover {
+      background: rgba(37, 99, 235, 0.06);
+    }
+
+    #detailTable tbody tr:nth-child(even) {
+      background: rgba(122, 162, 255, 0.04);
+    }
+
+    #detailTable tbody tr:nth-child(even):hover {
+      background: rgba(122, 162, 255, 0.08);
+    }
+
+
+    body { overflow-x: hidden; }
+
+    /* 报表页只有左右两栏；minmax(0, 1fr) 防止宽表把整个页面撑出视口。 */
+    .page-grid-wide {
+      grid-template-columns: minmax(240px, 300px) minmax(0, 1fr) !important;
+      align-items: start;
+    }
+    .page-grid-wide > .panel { min-width: 0; }
+    #tableContainer.table-wrap {
+      width: 100%;
+      max-width: 100%;
+      overflow-x: auto;
+      overflow-y: auto;
+      scrollbar-gutter: stable;
+    }
+    #detailTable {
+      width: max-content;
+      min-width: 100%;
+    }
+    #detailTable th:first-child,
+    #detailTable td:first-child {
+      position: sticky;
+      left: 0;
+      z-index: 3;
+      background: var(--panel-strong);
+    }
+    #detailTable th:first-child { z-index: 4; }
+    .summary-card-wrapper { padding-bottom: 2px; }
+    .summary-publish-btn {
+      margin-top: 8px;
+      padding: 6px 10px;
+      border: 1px solid var(--accent-2);
+      border-radius: 8px;
+      background: transparent;
+      color: var(--accent-2);
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .summary-publish-btn:hover { background: rgba(37, 99, 235, 0.08); }
+    .summary-model-missing {
+      display: inline-block;
+      margin-top: 8px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+    @media (max-width: 900px) {
+      .page-grid-wide { grid-template-columns: 1fr !important; }
+    }
+
+    /* 状态标签 */
+    .status-pill {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .status-pill.success {
+      background: rgba(115, 226, 156, 0.15);
+      color: var(--success);
+    }
+
+    .status-pill.error {
+      background: rgba(255, 138, 138, 0.15);
+      color: var(--danger);
+    }
+
+    .status-pill.running {
+      background: var(--accent-soft);
+      color: var(--accent-2);
+    }
+
+    .status-pill.unknown {
+      background: rgba(153, 168, 203, 0.15);
+      color: var(--muted);
+    }
+
+    /* 指标值样式 */
+    .metric-value {
+      font-family: 'Consolas', monospace;
+      font-size: 12px;
+      color: var(--text);
+    }
+
+    .metric-value.high {
+      color: var(--success);
+      font-weight: 600;
+    }
+
+    .metric-value.low {
+      color: var(--danger);
+    }
+
+
+    .report-search-row {display:flex; align-items:center; gap:8px; margin:8px 0;}
+    .report-search-row input {width:100%; min-width:0; flex:1; padding:10px 12px;
+      color:var(--text); background:var(--panel-strong); border:1px solid var(--line);border-radius:9px;}
+    .report-search-row button,.report-search-row select {padding:9px 10px;cursor:pointer; border:1px solid var(--line);
+      color:var(--text); background:var(--panel-strong); border-radius:9px;}
+    .report-search-filters {justify-content:space-between; margin-bottom:12px; color:var(--muted);font-size:12px;}
+    .report-curve {min-height:218px;height:230px;margin-top:12px;border-radius:8px;background:var(--panel);}
+    .report-curve .chart-svg {width:100%;height:100%;display:block;}
+    .report-curve .empty-state {padding:22px 12px;color:var(--muted);font-size:12px;}
+    .report-trace-meta {margin-top:6px; font-size:12px;color:var(--muted);}
+    .report-legacy-note {padding:15px;border:1px dashed var(--line);border-radius:8px;
+      color:var(--muted);font-size:12px; margin-top:12px;}
+    @media(max-width:620px){.detail-cards {grid-template-columns:minmax(0,1fr);} .report-curve{height:210px;}}
+
+    .report-compare-panel {margin: 8px 0 10px; border: 1px solid var(--border-color, #d3d9e2); border-radius: 8px; padding: 8px 10px; font-size: 13px;}
+    .report-compare-panel summary {cursor: pointer; font-weight: 600;}
+    .report-compare-inputs {display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 10px;}
+    .report-compare-inputs select {min-width: 0; flex: 1 1 145px;}
+    .report-compare-inputs button {flex: 0 0 auto;}
+    #compareResult {margin-top: 7px; line-height: 1.6; white-space: pre-line; overflow-wrap: anywhere;}
+    .report-metrics-table {width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; text-align: left;}
+    .report-metrics-table caption {text-align: left; margin-bottom: 5px; font-weight: 500;}
+    .report-metrics-table th, .report-metrics-table td {border-bottom: 1px solid var(--border-color,#d3d9e2); padding: 5px 7px;}
+    .report-metrics-table td:not(:first-child), .report-metrics-table th:not(:first-child) {text-align: right; font-variant-numeric: tabular-nums;}
+
+    /* 卡片视图样式 */
+    .detail-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(360px, 100%), 1fr));
+      gap: 16px;
+      width: 100%;
+      align-items: start;
+    }
+
+    .detail-card {
+      min-width: 0;
+      padding: 20px;
+      background: var(--panel-strong);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      transition: all 0.2s;
+    }
+
+    .detail-card:hover {
+      border-color: rgba(122, 162, 255, 0.4);
+      transform: translateY(-2px);
+    }
+
+    .detail-card .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .detail-card .card-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .detail-card .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    /* 只有一个 detector 时让卡片真正利用整行宽度，指标也随之展开。 */
+    .detail-cards > .detail-card:only-child .metrics-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    @media (max-width: 1200px) {
+      .detail-cards > .detail-card:only-child .metrics-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 760px) {
+      .detail-cards > .detail-card:only-child .metrics-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 520px) {
+      .detail-card .metrics-grid,
+      .detail-cards > .detail-card:only-child .metrics-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .detail-card .metric-item {
+      padding: 10px;
+      background: var(--panel-strong);
+      border-radius: 8px;
+    }
+
+    .detail-card .metric-item .metric-name {
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .detail-card .metric-item .metric-val {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--accent-2);
+    }
+
+    .detail-card .error-info {
+      margin-top: 12px;
+      padding: 12px;
+      background: rgba(255, 138, 138, 0.1);
+      border-radius: 8px;
+      font-size: 12px;
+      color: var(--danger);
+    }
+    .task-history-panel { margin: 16px 0; }
+    .task-history-panel .panel-header { display:flex;align-items:center;justify-content:space-between;gap:12px; }
+    .task-history-panel .panel-header>div { display:flex;align-items:center;gap:10px; }
+    .task-history-list { display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px; }
+    .task-history-card { min-width:0;padding:13px 14px;border:1px solid var(--line);border-radius:10px;background:var(--panel-strong); }
+    .task-history-card-head { display:flex;align-items:flex-start;justify-content:space-between;gap:8px; }
+    .task-history-card h3 { margin:0;font-size:14px;line-height:1.45;overflow-wrap:anywhere; }
+    .task-history-status { flex:0 0 auto;padding:3px 8px;border-radius:20px;background:#fff1e8;color:#9a3412;font-size:11px;font-weight:650; }
+    .task-history-stage,.task-history-card small { color:var(--muted);font-size:11px; }
+    .task-history-message,.task-history-action { font-size:12px;line-height:1.55;overflow-wrap:anywhere; }
+    .task-history-card a { display:inline-flex;margin-top:5px;padding:7px 10px;border:1px solid var(--line);border-radius:7px;color:var(--accent-2);font-size:12px;font-weight:650;text-decoration:none; }
+    .task-history-card a:focus-visible,.task-history-card a:hover { outline:2px solid var(--accent-2);outline-offset:2px; }
+    .task-history-progress{display:block;width:100%;height:8px;margin:8px 0}
+    .task-history-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:6px}
+    .task-history-actions .task-history-cancel{padding:7px 10px;border:1px solid #b45309;border-radius:7px;background:#fff7ed;color:#92400e;font-size:12px;font-weight:650;cursor:pointer}
+    .task-history-actions .task-history-cancel:disabled{opacity:.55;cursor:wait}
+    .task-history-status-running,.task-history-status-cancelling{background:#eff6ff;color:#1d4ed8}
+    .task-history-status-completed{background:#ecfdf5;color:#047857}
+    .task-history-status-cancelled{background:#f1f5f9;color:#475569}
+    .task-history-status-interrupted,.task-history-status-failed{background:#fff1e8;color:#9a3412}
+    .task-history-cancel-pending{color:var(--muted);font-size:11px}
+    .task-history-empty,.task-history-loading,.task-history-error { color:var(--muted);font-size:13px; }
+  </style>
+<style>
+.g1-evidence-card,.g1-event-evidence{margin:10px 0;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--panel-strong);min-width:0}
+.g1-evidence-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px}
+.g1-evidence-item{min-width:0;overflow-wrap:anywhere;font-size:12px;color:var(--muted)}
+.g1-evidence-item strong{display:block;color:var(--text);font-size:13px}
+.g1-event-table{width:100%;border-collapse:collapse}.g1-event-table th,.g1-event-table td{padding:6px;border-bottom:1px solid var(--line);text-align:left;font-size:12px}
+@media(max-width:600px){.g1-event-table{display:block;overflow-x:auto;white-space:nowrap}}
+</style>
+</head>
+<body class="compact-ui">
+  <div class="ambient ambient-left"></div>
+  <div class="ambient ambient-right"></div>
+  <main class="shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">智能故障检测</p>
+        <h1>任务查询与导出</h1>
+        <p class="subtitle">按训练与评估任务检索、查看指标、检查数据来源并对比实验。</p>
+      </div>
+      <nav class="nav-links">
+        <a href="browser.html">历史故障数据库</a>
+        <a href="runner.html">智能检测算法评估</a>
+        <a class="active" href="reports.html">任务查询与导出</a>
+        <a href="monitor.html">软件性能监控</a>
+        <a href="index.html">返回首页</a>
+      </nav>
+    </header>
+
+    <section class="panel task-history-panel" aria-labelledby="taskHistoryHeading">
+      <div class="panel-header">
+        <h2 id="taskHistoryHeading">任务历史</h2>
+        <div><span id="taskHistoryCount" class="pill">读取中</span><button type="button" id="refreshTaskHistory">刷新</button></div>
+      </div>
+      <p id="taskHistorySummary" class="task-history-stage" role="status" aria-live="polite">统计最近 50 项任务；正在读取状态摘要…</p>
+      <div id="taskHistoryList" class="task-history-list" role="status" aria-live="polite">
+        <p class="task-history-loading">正在读取任务历史…</p>
+      </div>
+    </section>
+
+    <section class="page-grid-wide">
+      <section class="panel">
+        <div class="panel-header">
+          <h2>实验管理</h2>
+        </div>
+        
+        <!-- 实验类型Tab切换 -->
+        <div class="experiment-type-tabs">
+          <button class="experiment-type-tab-btn" data-type="training">训练实验</button>
+          <button class="experiment-type-tab-btn" data-type="evaluation">评估实验</button>
+          <button class="experiment-type-tab-btn active" data-type="all">全部任务</button>
+        </div>
+        
+        <div class="report-search-row">
+          <input id="reportSearch" type="search" placeholder="搜索任务编号、算法、模型、参量…" aria-label="检索训练或评估任务" autocomplete="off" />
+          <button id="reportSearchClear" type="button" title="清除检索">清空</button>
+        </div>
+        <div class="report-search-row report-search-filters">
+          <select id="reportStatus" aria-label="按任务状态筛选">
+            <option value="all">全部状态</option>
+            <option value="success">成功</option>
+            <option value="error">失败</option>
+          </select>
+          <span id="reportSearchCount" role="status" aria-live="polite"></span>
+        </div>
+        <details class="report-compare-panel" id="reportComparePanel">
+          <summary>对比两个实验的数据输入条件</summary>
+          <div class="report-compare-inputs">
+            <select id="compareLeft" aria-label="第一个实验"></select>
+            <select id="compareRight" aria-label="第二个实验"></select>
+            <button type="button" id="compareBtn">检查可比性</button>
+            <button type="button" id="exportComparisonG1Btn" disabled>导出比较报告 JSON</button>
+          </div>
+          <div id="compareResult" role="status" aria-live="polite"></div>
+        </details>
+        <div id="experimentList" class="summary-list"></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <h2>实验明细与指标</h2>
+          <span id="detailMeta" class="pill">选择实验查看</span>
+          <section id="g1EvidenceCard" class="g1-evidence-card" aria-live="polite" hidden></section>
+          <section id="g1EventEvidence" class="g1-event-evidence" hidden></section>
+        </div>
+
+        <!-- 统计概览 -->
+        <div id="statsOverview" class="stats-overview" style="display: none;">
+          <div class="stat-card">
+            <div class="stat-value" id="statTotal">0</div>
+            <div class="stat-label">Total Detectors</div>
+          </div>
+          <div class="stat-card success">
+            <div class="stat-value" id="statSuccess">0</div>
+            <div class="stat-label">Success</div>
+          </div>
+          <div class="stat-card error">
+            <div class="stat-value" id="statError">0</div>
+            <div class="stat-label">Errors</div>
+          </div>
+          <div class="stat-card warning">
+            <div class="stat-value" id="statAccuracy">0%</div>
+            <div class="stat-label">Avg Accuracy</div>
+          </div>
+        </div>
+
+        <!-- 视图切换和导出 -->
+        <div id="viewSwitcher" class="view-switcher" style="display: none;">
+          <button class="view-btn active" data-view="table">表格视图</button>
+          <button class="view-btn" data-view="cards">卡片视图</button>
+          <button id="exportBtn" class="view-btn export-btn" style="margin-left: auto;">导出CSV</button>
+          <button id="exportG1EvidenceBtn" class="view-btn export-btn" type="button">导出证据报告JSON</button>
+        </div>
+
+        <!-- 表格视图 -->
+        <div id="tableContainer" class="table-wrap">
+          <table id="detailTable"></table>
+        </div>
+
+        <!-- 卡片视图 -->
+        <div id="cardsContainer" class="detail-cards" style="display: none;">
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script src="result-chart.js?event_score=2"></script>
+  <script src="task-client.js?v=p3d6"></script>
+  <script src="reports.js?report_search=1&amp;provenance=1&amp;compare=1&amp;tasks=p3d6"></script>
+</body>
+</html>

@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="zh-CN"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>模拟故障数据库 - AAS</title><link rel="stylesheet" href="styles-light.css">
+<style>
+.sim-grid{display:grid;grid-template-columns:minmax(320px,370px) minmax(420px,1fr);align-items:start;gap:16px}
+.sim-card{background:var(--card,#fff);border:1px solid #dee5f0;border-radius:14px;padding:20px;box-shadow:0 3px 16px #14264b0b}
+.sim-card h2{font-size:19px;margin:0 0 12px}.sim-note{font-size:13px;line-height:1.65;color:#64748b;margin:8px 0 16px}
+.sim-card label{display:block;margin:12px 0 5px;font-weight:600;font-size:13px}
+.sim-card input,.sim-card select{box-sizing:border-box;width:100%;min-height:38px;border:1px solid #d5dfea;border-radius:7px;padding:8px;background:var(--card,#fff);color:inherit}
+.sim-card input:disabled,.sim-card select:disabled{opacity:.6}
+.sim-two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.sim-actions{display:flex;align-items:center;gap:10px;margin-top:18px;flex-wrap:wrap}
+.sim-card button{border:0;border-radius:8px;background:#2c8aa9;color:#fff;padding:9px 16px;cursor:pointer;font-weight:600}
+.sim-card button.secondary{background:#eef3f8;color:#29445a}.sim-card button:disabled{opacity:.5;cursor:not-allowed}
+.sim-card button.danger{background:#fff0f0;color:#c12f3d;border:1px solid #ffc4c4;padding:7px 11px}
+.sim-card button:focus-visible, .sim-card select:focus-visible{outline:2px solid #318dc4;outline-offset:2px}
+#simStatus{white-space:pre-wrap;font-size:13px;margin-top:12px;line-height:1.5;min-height:18px}
+.sim-table-wrap{max-height:320px;overflow:auto;border:1px solid #e1e8f1;border-radius:9px}
+.sim-filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(132px,1fr));gap:8px;align-items:end;margin:2px 0 10px}
+.sim-filters label{margin:0;font-weight:600;font-size:12px;color:#43566b}
+.sim-filters input,.sim-filters select{width:100%;box-sizing:border-box;min-height:34px;font-size:13px}
+.sim-filters button{min-height:34px;padding:6px 12px;font-size:13px}
+.sim-filter-bar{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px;font-size:12px;color:#64748b}
+.sim-card table{width:100%;border-collapse:collapse;font-size:13px}
+.sim-card th,.sim-card td{text-align:left;padding:10px 8px;border-bottom:1px solid #edf0f5;word-break:break-word}
+.sim-card th{position:sticky;top:0;background:var(--card,#fff);z-index:1}
+.sim-card tr[data-id]{cursor:pointer}.sim-card tr[data-id]:hover{background:#f1f7fb}.sim-card tr.selected{background:#e5f4f9}
+.sim-card td:last-child,.sim-card th:last-child{text-align:right;width:70px}
+.sim-card td:last-child,.sim-card th:last-child{width:270px;white-space:nowrap}.sim-export-link{display:inline-block;margin-right:6px;padding:7px 10px;border-radius:8px;background:#e4f2fa;color:#176385;text-decoration:none;font-size:12px;font-weight:650}.sim-export-link:hover{text-decoration:underline}
+.sim-chart{width:100%;height:auto;min-height:220px;max-height:320px;margin-top:9px;border:1px solid #e2e8f0;border-radius:9px;background:#fff}
+.sim-chart .fault-zone{fill:#ec6c752b}.sim-chart .grid-line{stroke:#e4eaf2;stroke-width:1}.sim-chart .injected{fill:none;stroke:#318abb;stroke-width:2}.sim-chart .original{fill:none;stroke:#6b8894;stroke-width:1.6;stroke-dasharray:5 4}
+.sim-legend{font-size:12px;color:#64748b;margin:6px 0}.sim-legend span{display:inline-block;width:10px;height:10px;border-radius:50%;margin:0 5px 0 12px}
+#simChartTitle{margin:20px 0 7px;font-size:15px}.sim-error{color:#bd3347}
+@media(max-width:950px){.sim-grid{grid-template-columns:1fr}}@media(max-width:520px){.sim-two-col{grid-template-columns:1fr}.sim-card{padding:13px}}
+.sim-plugin-params{border:1px solid #d4e1eb;border-radius:8px;padding:12px;margin:10px 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}.sim-plugin-params[hidden]{display:none}.sim-plugin-params label{display:block;margin:0}.sim-plugin-params input,.sim-plugin-params select{width:100%;box-sizing:border-box}.sim-plugin-params small{display:block;color:#718096;margin-top:5px}
+.sim-mode-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}.sim-mode-tabs button{padding:10px 18px;border:1px solid #cbd9e7;border-radius:8px;background:#fff;color:#264457;cursor:pointer}.sim-mode-tabs button.active{background:#247e9e;color:white;border-color:#247e9e}
+.sim-csv-grid{display:grid;grid-template-columns:minmax(290px,380px) minmax(420px,1fr);gap:16px;align-items:start}.sim-csv-column{display:grid;gap:16px}
+.sim-csv-grid .sim-card{min-width:0}.sim-csv-preview{overflow-x:auto;max-height:240px}.sim-csv-preview table{width:100%;white-space:nowrap}.sim-csv-help{color:#526b7e;font-size:12px;line-height:1.55}
+.sim-csv-actions{display:flex;gap:12px;flex-wrap:wrap;align-items:center}.sim-csv-actions a{padding:8px 13px;border-radius:8px;color:#175e84;background:#e6f3fa;text-decoration:none;font-size:13px}.sim-csv-actions a[hidden]{display:none}
+.sim-csv-plot{display:block;width:100%;height:auto;min-height:220px;max-height:350px;background:#fff;border:1px solid #dfe8f0;border-radius:8px;margin-top:12px}.sim-csv-status{font-size:13px;line-height:1.6;white-space:pre-wrap;margin:10px 0}.sim-csv-status.error{color:#b42339}.csv-version-tools{display:flex;align-items:end;gap:8px;flex-wrap:wrap;margin-top:14px}.csv-version-tools label{margin:0}.csv-version-tools select{min-width:180px;flex:1}.csv-event-row{display:flex;align-items:center;justify-content:space-between;gap:8px;border-bottom:1px solid #edf0f5;padding:3px 0}.csv-event-row p{margin:5px 0}.csv-event-row button{flex-shrink:0}.sim-csv-format-confirm{display:flex;align-items:center;gap:8px;font-size:13px;margin:10px 0}.sim-csv-format-confirm input{width:auto;min-width:16px}
+[hidden]{display:none!important}@media(max-width:950px){.sim-csv-grid{grid-template-columns:1fr}}
+</style><link rel="stylesheet" href="csv-import-wizard.css"/></head>
+<body class="compact-ui"><main class="shell"><header class="topbar"><div><h1>模拟故障数据库</h1></div><nav class="nav-links"><a href="browser.html">历史故障数据库</a><a href="runner.html">智能检测算法评估</a><a href="reports.html">任务查询与导出</a></nav></header>
+<div class="sim-mode-tabs" role="tablist" aria-label="故障模拟数据来源"><button type="button" class="active" data-sim-mode="csv" aria-selected="true">本地 CSV 故障模拟</button><button type="button" data-sim-mode="historical" aria-selected="false">历史数据库故障模拟</button></div>
+<section id="simCsvWorkspace" aria-label="本地 CSV 数据与逐帧注入">
+<div class="sim-csv-grid"><div class="sim-csv-column">
+<section class="sim-card"><h2>1. 导入本地数据</h2>
+<p class="sim-note">支持 CSV / CSV.GZ、UTF-8（含 BOM）/GB18030，以及逗号、分号、TAB 分隔；上传文件最多 8 MB，解压后最多 12 MB、5 万帧。保留所有字段和已有标签，不写入历史主库。</p>
+<section id="csvImportWizard"><fieldset data-csv-stage="file">
+<label for="csvFile">选择 CSV / CSV.GZ 文件</label><input id="csvFile" type="file" accept=".csv,.csv.gz,text/csv,application/gzip" />
+<div class="sim-two-col sim-csv-format"><div><label for="csvEncoding">文件编码</label><select id="csvEncoding"><option value="auto">自动识别</option><option value="utf-8">UTF-8（含 BOM）</option><option value="gb18030">GB18030 / GBK</option></select></div><div><label for="csvDelimiter">列分隔符</label><select id="csvDelimiter"><option value="auto">自动识别</option><option value=",">逗号 ,</option><option value=";">分号 ;</option><option value="&#9;">制表符 TAB</option></select></div></div>
+<label class="sim-csv-format-confirm"><input id="csvFormatConfirmed" type="checkbox" disabled /> 已核对识别结果，确认编码与分隔符正确</label>
+<div class="sim-actions"><button id="csvInspect" type="button" class="secondary">检查文件与字段</button></div>
+</fieldset><fieldset data-csv-stage="fields"><p id="csvImportColumns" class="sim-csv-help"></p>
+<div class="sim-csv-preview"><strong>质量检查（只读）</strong><p id="csvQualitySummary" class="sim-note">检查 CSV 后显示缺失、无效值及时间问题。</p><div id="csvQualityIssues" class="sim-note"></div></div><div id="csvPreviewTable" class="sim-csv-preview" tabindex="0" aria-label="CSV 样例数据，可横向滚动"></div><button id="csvReview" type="button">核对完成，继续确认导入</button>
+</fieldset><fieldset data-csv-stage="review"><div class="sim-actions"><button id="csvImport" type="button" disabled>确认导入模拟库</button></div></fieldset><fieldset data-csv-stage="done"></fieldset></section>
+<p id="csvImportStatus" class="sim-csv-status" role="status" aria-live="polite">尚未选择 CSV。</p>
+</section>
+<section class="sim-card"><h2>2. 基于选中版本注入故障</h2>
+<label for="csvDatasetSelect">数据集 / 已保存版本</label><select id="csvDatasetSelect"><option value="">正在加载…</option></select>
+<p id="csvVersions" class="sim-csv-help">一个版本可继续派生新的故障版本，旧版本始终保留。</p>
+<div class="sim-two-col"><div><label for="csvColumn">注入参量</label><select id="csvColumn"></select></div><div><label for="csvFaultType">故障类型</label><select id="csvFaultType"><option value="bias">偏置</option><option value="drift">线性漂移</option><option value="stuck">固定值</option><option value="spike">周期尖峰</option></select></div></div>
+<div class="sim-two-col"><div><label for="csvStartFrame">开始帧（包含）</label><input id="csvStartFrame" type="number" step="1" min="1" value="1" /></div><div><label for="csvEndFrame">结束帧（包含）</label><input id="csvEndFrame" type="number" step="1" min="1" value="1" /></div></div>
+<label for="csvMagnitude" id="csvMagnitudeLabel">偏置幅值（按当前参量单位）</label><input id="csvMagnitude" type="number" step="any" value="5" /><p id="csvFaultHelp" class="sim-csv-help" role="status" aria-live="polite">在选定帧区间内，对参量叠加指定幅值；正值增加，负值减少。</p>
+<p id="csvFrameHelp" class="sim-csv-help">帧从 1 开始编号。区间两端均包含；允许在同一参量或不同参量上重复注入。</p>
+<div class="sim-actions"><button id="csvFaultPreview" type="button" class="secondary">预览效果</button><button id="csvFaultSave" type="button" disabled>另存为新版本</button></div>
+<p id="csvStatus" class="sim-csv-status" role="status" aria-live="polite"></p>
+</section></div>
+<section class="sim-card"><h2>3. 查看曲线与导出数据</h2><p class="sim-note">横轴为帧号，右侧展示当前数据版本；预览时对比本次注入前后效果。曲线可抽样显示，导出始终包含完整数据表。</p>
+<div class="sim-csv-actions"><a id="csvExport" hidden>导出完整 CSV（Excel 安全）</a><a id="csvExportRaw" hidden>导出原始值 CSV（用于算法）</a></div>
+<svg id="csvPreviewPlot" class="sim-csv-plot" viewBox="0 0 900 330" role="img" aria-label="基于帧号的模拟遥测曲线"></svg>
+<p id="csvPlotDescription" class="sim-note">导入文件或选择已有版本后显示曲线。</p>
+<div id="csvEventHistory" class="sim-csv-help"></div>
+<div class="csv-version-tools">
+ <label for="csvAncestorSelect">祖先版本</label><select id="csvAncestorSelect"><option value="">选择祖先版本</option></select>
+ <button id="csvCompareButton" type="button" class="secondary" disabled>比较版本</button>
+ <button id="csvRollbackButton" type="button" class="danger" disabled>预览回退并另存</button>
+</div>
+<p id="csvCompareSummary" class="sim-csv-status" role="status" aria-live="polite">选择祖先版本后，可比较曲线或回退到该版本。</p>
+</section></div></section>
+<div id="simHistoricalWorkspace" hidden>
+<div class="sim-grid">
+<section class="sim-card" aria-labelledby="simFormTitle">
+<h2 id="simFormTitle">生成故障样本</h2>
+<p class="sim-note">可选择全部具有可用正常采样的卫星型号，包括历史故障运行的故障前区间。系统只在明确标注正常的数据上注入；预览不写库，保存不修改原始数据。</p>
+<label for="simModel">卫星型号</label><select id="simModel"><option value="">加载中…</option></select>
+<div class="sim-two-col"><div><label for="simSubsystem">分系统</label><select id="simSubsystem"></select></div><div><label for="simDevice">部件</label><select id="simDevice"></select></div></div>
+<label for="simColumn">注入参量</label><select id="simColumn"></select>
+<label for="simSource">来源运行</label><select id="simSource"></select>
+<label for="simType">故障类型</label><select id="simType"><option value="">加载故障类型…</option></select>
+<div class="sim-two-col"><div><label for="simStartFrame">开始帧（包含）</label><input id="simStartFrame" type="number" min="1" step="1" value="1"></div><div><label for="simEndFrame">结束帧（包含）</label><input id="simEndFrame" type="number" min="1" step="1" value="600"></div></div>
+<p id="simTimeHint" class="sim-note" aria-live="polite">选定来源及读取帧数后，选择从第几帧至第几帧注入（首尾帧都包含）。</p>
+<div id="simFaultPluginHelp" class="sim-note" aria-live="polite"></div><div id="simFaultPluginParams" class="sim-plugin-params" hidden></div>
+<div class="sim-two-col"><div id="simMagnitudeField"><label for="simMagnitude" id="simMagnitudeLabel">注入幅值 / 固定值</label><input id="simMagnitude" type="number" step="any" value="18"></div><div><label for="simPoints">最多读取帧数</label><input id="simPoints" type="number" min="8" max="4000" step="1" value="600"></div></div>
+<div class="sim-actions"><button id="simDryRun" type="button" class="secondary">预览</button><button id="simSave" type="button" disabled>保存</button></div>
+<p id="simStatus" role="status" aria-live="polite"></p>
+</section>
+<section class="sim-card" aria-labelledby="simRecordsTitle">
+<div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h2 id="simRecordsTitle">故障模拟记录</h2><button id="simRefresh" class="secondary" type="button">刷新</button></div>
+<p class="sim-note">选中记录查看故障曲线；「导出 CSV」输出完整单参量数据（含帧号、模拟标签）。点击「继续注入」将记录作为新数据版本移入本地 CSV 模拟工作区，可再次叠加故障；不改变历史原记录。</p>
+<div class="sim-filters">
+<div><label for="simFilterText">关键字</label><input id="simFilterText" type="search" placeholder="记录号 / 型号 / 参量 / 来源" /></div>
+<div><label for="simFilterType">故障类型</label><select id="simFilterType"><option value="">全部故障类型</option></select></div>
+<div><label for="simFilterColumn">注入参量</label><select id="simFilterColumn"><option value="">全部参量</option></select></div>
+<div><label for="simFilterSort">排序</label><select id="simFilterSort"><option value="id_desc">最新在前</option><option value="id_asc">最早在前</option><option value="onset_desc">故障开始帧</option></select></div>
+<div><button id="simFilterReset" class="secondary" type="button">清除筛选</button></div>
+</div>
+<div class="sim-filter-bar"><span id="simFilterCount">共 0 条</span><span id="simFilterHint"></span></div>
+<div class="sim-table-wrap"><table><thead><tr><th>#</th><th>模拟型号</th><th>注入参量</th><th>故障</th><th>起止帧</th><th>幅值</th><th>故障帧数</th><th>操作</th></tr></thead><tbody id="simEntries"><tr><td colspan="8">加载中…</td></tr></tbody></table></div>
+<h3 id="simChartTitle">故障数据预览</h3>
+<div class="sim-legend"><span style="background:#318abb"></span>注入后<span style="background:#6b8894"></span>注入前（未保存的预览）<span style="background:#ecb8bb"></span>故障区间</div>
+<svg id="simPreview" class="sim-chart" viewBox="0 0 840 260" role="img" aria-label="模拟故障数据库遥测曲线"></svg>
+<p id="simChartInfo" class="sim-note">选择保存的记录或点击左侧“预览”查看注入效果。</p>
+</section>
+</div></div></main><script src="simulation-v2.js?v=p3a-csv-format-20261106"></script><script src="csv-import-wizard.js?v=p3g0-3"></script><script src="simulation-csv-workspace.js?v=p3g0-3"></script></body></html>

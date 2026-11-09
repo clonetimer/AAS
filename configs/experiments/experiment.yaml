@@ -1,0 +1,20 @@
+experiment:
+  output_dir: outputs
+
+dataset:
+  file: datasets/history_sample.db
+  format: sqlite
+  mode: history_db
+  table: GF1_subsys1_battery_capacity
+  feature_cols: ["value"]
+  label_col: "label"
+
+detectors:
+  - name: dummy_detector
+    config_path: configs/detectors/dummy_detector.yaml
+
+runtime:
+  timeout: 300
+
+metrics:
+  contamination: 0.05

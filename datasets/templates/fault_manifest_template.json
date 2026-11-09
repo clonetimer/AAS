@@ -1,0 +1,32 @@
+{
+  "name": "sample_history_manifest",
+  "dataset": {
+    "name": "sample_history_manifest",
+    "description": "Template manifest for importing telemetry and fault records into a history DB"
+  },
+  "telemetry": {
+    "file": "datasets/templates/telemetry_template.csv"
+  },
+  "fault_records": [
+    {
+      "fault_id": "F001",
+      "start_time": "2026-04-08T00:00:20",
+      "end_time": "2026-04-08T00:00:22",
+      "label": 1,
+      "description": "示例故障区间，高值突变",
+      "severity": "high",
+      "affected_component": "power_unit",
+      "log_text": "telemetry spike observed"
+    },
+    {
+      "fault_id": "F002",
+      "start_time": "2026-04-09T12:15:00",
+      "end_time": "2026-04-09T12:16:30",
+      "label": 1,
+      "description": "示例故障区间，短时波动",
+      "severity": "medium",
+      "affected_component": "thermal_sensor",
+      "log_text": "intermittent fluctuation observed"
+    }
+  ]
+}

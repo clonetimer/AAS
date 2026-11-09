@@ -1,0 +1,342 @@
+{
+  "version": "20261020",
+  "source": "AAS_56_telemetry_subsystems_components_20261020.csv",
+  "items": {
+    "eps.battery_energy_j": {
+      "subsystem": "eps",
+      "device": "battery",
+      "variable": "energy_j",
+      "unit": "J"
+    },
+    "eps.bus_load_power_w": {
+      "subsystem": "eps",
+      "device": "electric_power_bus",
+      "variable": "load_power_w",
+      "unit": "W"
+    },
+    "eps.solar_array_power_w": {
+      "subsystem": "eps",
+      "device": "solar_array",
+      "variable": "power_w",
+      "unit": "W"
+    },
+    "adcs.pointing_error_deg": {
+      "subsystem": "adcs",
+      "device": "attitude_control",
+      "variable": "pointing_error_deg",
+      "unit": "deg"
+    },
+    "data.storage_bits": {
+      "subsystem": "data",
+      "device": "data_storage",
+      "variable": "storage_bits",
+      "unit": "bit"
+    },
+    "payload.active": {
+      "subsystem": "payload",
+      "device": "payload_instrument",
+      "variable": "active",
+      "unit": "1"
+    },
+    "payload.generated_bps": {
+      "subsystem": "payload",
+      "device": "payload_instrument",
+      "variable": "generated_bps",
+      "unit": "bit/s"
+    },
+    "comm.downlink_rate_bps": {
+      "subsystem": "comm",
+      "device": "communication_link",
+      "variable": "downlink_rate_bps",
+      "unit": "bit/s"
+    },
+    "comm.geometric_access": {
+      "subsystem": "comm",
+      "device": "communication_link",
+      "variable": "geometric_access",
+      "unit": "1"
+    },
+    "comm.requested_rate_bps": {
+      "subsystem": "comm",
+      "device": "communication_link",
+      "variable": "requested_rate_bps",
+      "unit": "bit/s"
+    },
+    "propulsion.burn_commanded": {
+      "subsystem": "propulsion",
+      "device": "thruster_control",
+      "variable": "burn_commanded",
+      "unit": ""
+    },
+    "propulsion.burn_permitted": {
+      "subsystem": "propulsion",
+      "device": "thruster_control",
+      "variable": "burn_permitted",
+      "unit": ""
+    },
+    "thermal.battery_heater_power_w": {
+      "subsystem": "thermal",
+      "device": "battery_heater",
+      "variable": "power_w",
+      "unit": "W"
+    },
+    "adcs.star_tracker.valid": {
+      "subsystem": "adcs",
+      "device": "star_tracker",
+      "variable": "valid",
+      "unit": "1"
+    },
+    "adcs.sun_sensor.valid": {
+      "subsystem": "adcs",
+      "device": "sun_sensor",
+      "variable": "valid",
+      "unit": "1"
+    },
+    "navigation.position_m_x": {
+      "subsystem": "navigation",
+      "device": "orbit_state",
+      "variable": "m_x",
+      "unit": "m"
+    },
+    "navigation.position_m_y": {
+      "subsystem": "navigation",
+      "device": "orbit_state",
+      "variable": "m_y",
+      "unit": "m"
+    },
+    "navigation.position_m_z": {
+      "subsystem": "navigation",
+      "device": "orbit_state",
+      "variable": "m_z",
+      "unit": "m"
+    },
+    "navigation.velocity_m_s_x": {
+      "subsystem": "navigation",
+      "device": "orbit_state",
+      "variable": "m_s_x",
+      "unit": "m/s"
+    },
+    "navigation.velocity_m_s_y": {
+      "subsystem": "navigation",
+      "device": "orbit_state",
+      "variable": "m_s_y",
+      "unit": "m/s"
+    },
+    "navigation.velocity_m_s_z": {
+      "subsystem": "navigation",
+      "device": "orbit_state",
+      "variable": "m_s_z",
+      "unit": "m/s"
+    },
+    "eps.pdu.payload_enabled": {
+      "subsystem": "eps",
+      "device": "power_distribution_unit",
+      "variable": "payload_enabled",
+      "unit": ""
+    },
+    "eps.pdu.payload_commanded": {
+      "subsystem": "eps",
+      "device": "power_distribution_unit",
+      "variable": "payload_commanded",
+      "unit": ""
+    },
+    "eps.pdu.adcs_enabled": {
+      "subsystem": "eps",
+      "device": "power_distribution_unit",
+      "variable": "adcs_enabled",
+      "unit": ""
+    },
+    "eps.pdu.adcs_commanded": {
+      "subsystem": "eps",
+      "device": "power_distribution_unit",
+      "variable": "adcs_commanded",
+      "unit": ""
+    },
+    "eps.pdu.comm_enabled": {
+      "subsystem": "eps",
+      "device": "power_distribution_unit",
+      "variable": "comm_enabled",
+      "unit": ""
+    },
+    "eps.pdu.comm_commanded": {
+      "subsystem": "eps",
+      "device": "power_distribution_unit",
+      "variable": "comm_commanded",
+      "unit": ""
+    },
+    "eps.pdu.heater_enabled": {
+      "subsystem": "eps",
+      "device": "power_distribution_unit",
+      "variable": "heater_enabled",
+      "unit": ""
+    },
+    "eps.pdu.heater_commanded": {
+      "subsystem": "eps",
+      "device": "power_distribution_unit",
+      "variable": "heater_commanded",
+      "unit": ""
+    },
+    "adcs.sensor.gyro_measured_rad_s_x": {
+      "subsystem": "adcs",
+      "device": "gyroscope",
+      "variable": "gyro_measured_rad_s_x",
+      "unit": "rad/s"
+    },
+    "adcs.sensor.gyro_measured_rad_s_y": {
+      "subsystem": "adcs",
+      "device": "gyroscope",
+      "variable": "gyro_measured_rad_s_y",
+      "unit": "rad/s"
+    },
+    "adcs.sensor.gyro_measured_rad_s_z": {
+      "subsystem": "adcs",
+      "device": "gyroscope",
+      "variable": "gyro_measured_rad_s_z",
+      "unit": "rad/s"
+    },
+    "adcs.sensor.accel_measured_m_s2_x": {
+      "subsystem": "adcs",
+      "device": "accelerometer",
+      "variable": "accel_measured_m_s2_x",
+      "unit": "m/s²"
+    },
+    "adcs.sensor.accel_measured_m_s2_y": {
+      "subsystem": "adcs",
+      "device": "accelerometer",
+      "variable": "accel_measured_m_s2_y",
+      "unit": "m/s²"
+    },
+    "adcs.sensor.accel_measured_m_s2_z": {
+      "subsystem": "adcs",
+      "device": "accelerometer",
+      "variable": "accel_measured_m_s2_z",
+      "unit": "m/s²"
+    },
+    "adcs.magnetometer.tesla_x": {
+      "subsystem": "adcs",
+      "device": "magnetometer",
+      "variable": "tesla_x",
+      "unit": "T"
+    },
+    "adcs.magnetometer.tesla_y": {
+      "subsystem": "adcs",
+      "device": "magnetometer",
+      "variable": "tesla_y",
+      "unit": "T"
+    },
+    "adcs.magnetometer.tesla_z": {
+      "subsystem": "adcs",
+      "device": "magnetometer",
+      "variable": "tesla_z",
+      "unit": "T"
+    },
+    "adcs.sun_sensor.direction_b_x": {
+      "subsystem": "adcs",
+      "device": "sun_sensor",
+      "variable": "direction_b_x",
+      "unit": "1"
+    },
+    "adcs.sun_sensor.direction_b_y": {
+      "subsystem": "adcs",
+      "device": "sun_sensor",
+      "variable": "direction_b_y",
+      "unit": "1"
+    },
+    "adcs.sun_sensor.direction_b_z": {
+      "subsystem": "adcs",
+      "device": "sun_sensor",
+      "variable": "direction_b_z",
+      "unit": "1"
+    },
+    "adcs.star_tracker.q0": {
+      "subsystem": "adcs",
+      "device": "star_tracker",
+      "variable": "q0",
+      "unit": "1"
+    },
+    "adcs.star_tracker.q1": {
+      "subsystem": "adcs",
+      "device": "star_tracker",
+      "variable": "q1",
+      "unit": "1"
+    },
+    "adcs.star_tracker.q2": {
+      "subsystem": "adcs",
+      "device": "star_tracker",
+      "variable": "q2",
+      "unit": "1"
+    },
+    "adcs.star_tracker.q3": {
+      "subsystem": "adcs",
+      "device": "star_tracker",
+      "variable": "q3",
+      "unit": "1"
+    },
+    "adcs.rw.measured_speed_rad_s_0": {
+      "subsystem": "adcs",
+      "device": "reaction_wheel",
+      "variable": "measured_speed_rad_s_0",
+      "unit": "rad/s"
+    },
+    "adcs.rw.measured_speed_rad_s_1": {
+      "subsystem": "adcs",
+      "device": "reaction_wheel",
+      "variable": "measured_speed_rad_s_1",
+      "unit": "rad/s"
+    },
+    "adcs.rw.measured_speed_rad_s_2": {
+      "subsystem": "adcs",
+      "device": "reaction_wheel",
+      "variable": "measured_speed_rad_s_2",
+      "unit": "rad/s"
+    },
+    "thermal.battery_temp_c": {
+      "subsystem": "thermal",
+      "device": "battery_thermal_monitor",
+      "variable": "temp_c",
+      "unit": "°C"
+    },
+    "thermal.electronics_temp_c": {
+      "subsystem": "thermal",
+      "device": "electronics_thermal_monitor",
+      "variable": "temp_c",
+      "unit": "°C"
+    },
+    "thermal.payload_temp_c": {
+      "subsystem": "thermal",
+      "device": "payload_thermal_monitor",
+      "variable": "temp_c",
+      "unit": "°C"
+    },
+    "thermal.adcs_temp_c": {
+      "subsystem": "thermal",
+      "device": "adcs_thermal_monitor",
+      "variable": "temp_c",
+      "unit": "°C"
+    },
+    "thermal.structure_temp_c": {
+      "subsystem": "thermal",
+      "device": "structure_thermal_monitor",
+      "variable": "temp_c",
+      "unit": "°C"
+    },
+    "thermal.solar_panel_temp_c": {
+      "subsystem": "thermal",
+      "device": "solar_panel_thermal_monitor",
+      "variable": "temp_c",
+      "unit": "°C"
+    },
+    "thermal.comm_temp_c": {
+      "subsystem": "thermal",
+      "device": "comm_thermal_monitor",
+      "variable": "temp_c",
+      "unit": "°C"
+    },
+    "thermal.propulsion_temp_c": {
+      "subsystem": "thermal",
+      "device": "propulsion_thermal_monitor",
+      "variable": "temp_c",
+      "unit": "°C"
+    }
+  }
+}

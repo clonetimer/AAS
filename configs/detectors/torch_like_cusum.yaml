@@ -1,0 +1,34 @@
+name: torch_like_cusum
+label: CUSUM · 累积和
+description: 源自 clonetimer，已适配 AAS V2 参数校验、训练评估和模型保存接口
+class_path: detectors.torch_like_adapters.TorchLikeCUSUMDetector
+type: statistical
+dependencies:
+- numpy
+min_training_samples: 2
+config:
+  k: 0.5
+  h: 5.0
+  min_std: 1.0e-08
+config_schema:
+- name: k
+  label: 容许漂移系数
+  type: float
+  min: 0
+  max: 10
+  default: 0.5
+- name: h
+  label: 累积报警限
+  type: float
+  min: 0.001
+  max: 1000
+  default: 5.0
+- name: min_std
+  label: 标准差下限
+  type: float
+  min: 1.0e-12
+  max: 1.0
+  default: 1.0e-08
+decision_mode: score_threshold
+decision_modes:
+- score_threshold

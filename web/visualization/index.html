@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>智能故障检测算法评估系统</title>
+  <link rel="stylesheet" href="workbench.css" />
+</head>
+<body class="wb">
+  <div class="wb-app" id="app">
+    <aside class="wb-sidebar">
+      <div class="wb-brand">
+        <div class="wb-logo">AAS</div>
+        <div class="wb-brand-text">
+          <div class="wb-brand-title">智能故障检测算法评估系统</div>
+        </div>
+      </div>
+
+      <nav class="wb-nav" id="nav"></nav>
+
+      <div class="wb-sidebar-footer">
+        <button class="wb-theme-toggle" id="themeToggle" title="切换浅色 / 深色">
+          <span class="wb-theme-icon">🌙</span><span class="wb-theme-label">深色</span>
+        </button>
+        <a class="wb-footer-label" href="/">返回首页 ↗</a>
+      </div>
+    </aside>
+
+    <div class="wb-main">
+      <header class="wb-header">
+        <button class="wb-collapse" id="collapseBtn" title="收起 / 展开侧栏">☰</button>
+        <div class="wb-breadcrumb">
+          <span class="wb-crumb-root">工作台</span>
+          <span class="wb-crumb-sep">/</span>
+          <span class="wb-crumb-current" id="crumbCurrent">历史故障数据库</span>
+        </div>
+        <div class="wb-header-actions">
+          <a class="wb-open-new" href="/" title="返回首页">⌂ 首页</a>
+          <span class="wb-status" id="wbDbStatus" role="status"><span class="wb-dot"></span> 正在检查数据源</span>
+          <button type="button" class="wb-open-new" id="wbLogout" style="cursor:pointer">退出登录</button>
+          <a class="wb-open-new" id="openNew" href="browser.html" target="_blank" title="在新窗口打开当前模块">⧉ 新窗口</a>
+        </div>
+      </header>
+
+      <main class="wb-content">
+        <iframe id="workspace" class="wb-iframe" src="about:blank" title="工作台内容" allow="fullscreen" allowfullscreen></iframe>
+      </main>
+    </div>
+  </div>
+
+  <script src="workbench.js"></script>
+</body>
+</html>

@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>检测算法管理 · AAS</title>
+  <link rel="stylesheet" href="styles-light.css?layout_compact=1" />
+  <style>
+    .pg { max-width: 1480px; margin: 0 auto; padding: 24px 24px 56px; }
+    .pg-head { margin-bottom: 22px; }
+    .pg-head h1 { font-size: 24px; margin: 0 0 6px; }
+    .pg-head p { color: var(--muted); margin: 0; font-size: 13px; line-height: 1.6; }
+    .pg-section { margin-bottom: 28px; }
+    .pg-section-title { display:flex; align-items:end; justify-content:space-between; gap:12px; margin-bottom:12px; }
+    .pg-section-title h2 { font-size: 16px; margin: 0; }
+    .pg-section-title p { font-size: 12px; color: var(--muted); margin:0; }
+
+    .pg-summary { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin-bottom:16px; }
+    .pg-summary-item { border:1px solid var(--line); background:var(--surface); border-radius:10px; padding:12px 14px; }
+    .pg-summary-value { font-size:20px; font-weight:700; }
+    .pg-summary-label { font-size:11px; color:var(--muted); margin-top:2px; }
+
+    .pg-search-toolbar{display:flex;gap:12px;align-items:center;margin:0 0 13px}
+    .pg-search-toolbar input{flex:1;min-width:0;padding:9px 12px;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--text)}
+    .pg-search-toolbar span{font-size:12px;color:var(--muted);white-space:nowrap}
+    .pg-ready-track{height:7px;background:#e4ebf3;border-radius:9px;overflow:hidden;margin:10px 0 3px}
+    .pg-ready-fill{height:100%;background:#2b9d85;transition:width .18s ease}
+    .pg-ready-copy{font-size:11px;color:var(--muted);margin-bottom:6px}
+    .pg-items{max-height:245px;overflow:auto;scrollbar-gutter:stable}
+    .pg-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:12px; }
+    .pg-card { border:1px solid var(--line); border-radius:10px; padding:14px; background:var(--surface); box-shadow:0 1px 2px rgba(15,23,42,.04); }
+    .pg-card-head { display:flex; align-items:center; gap:8px; }
+    .pg-card h3 { margin:0; font-size:14px; }
+    .pg-count { font-size:11px; color:var(--muted); background:var(--accent-soft); border-radius:5px; padding:2px 6px; }
+    .pg-impact { display:flex; flex-wrap:wrap; gap:6px 10px; margin:9px 0 10px; color:var(--muted); font-size:11px; }
+    .pg-impact strong { color:var(--text); font-weight:600; }
+    .pg-entry { margin-left:auto; color:var(--accent-strong); font-size:12px; text-decoration:none; }
+    .pg-items { border-top:1px solid var(--line); padding-top:5px; }
+    .pg-item { padding:7px 0; border-bottom:1px solid color-mix(in srgb, var(--line) 65%, transparent); }
+    .pg-item:last-child { border-bottom:0; }
+    .pg-name-row { display:flex; align-items:center; gap:7px; min-width:0; }
+    .pg-name { font-weight:600; font-size:12px; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .pg-name code { color:var(--muted); font-weight:400; font-size:10px; margin-left:4px; }
+    .pg-desc { color:var(--muted); font-size:11px; margin-top:2px; line-height:1.45; }
+    .pg-badge { margin-left:auto; flex:none; font-size:10px; padding:2px 6px; border-radius:5px; border:1px solid transparent; }
+    .pg-ok { color:var(--success); background:color-mix(in srgb, var(--success) 9%, transparent); border-color:color-mix(in srgb, var(--success) 25%, transparent); }
+    .pg-warn { color:var(--warning); background:color-mix(in srgb, var(--warning) 9%, transparent); border-color:color-mix(in srgb, var(--warning) 25%, transparent); }
+    .pg-source { flex:none; font-size:10px; padding:2px 6px; border-radius:5px; border:1px solid var(--line); color:var(--muted); background:var(--panel); }
+    .pg-source-custom { color:var(--accent-strong); border-color:color-mix(in srgb, var(--accent) 30%, var(--line)); background:var(--accent-soft); }
+    .pg-actions { display:flex; justify-content:flex-end; margin-top:6px; }
+    .pg-uninstall { border:1px solid color-mix(in srgb, var(--danger) 32%, var(--line)); background:transparent; color:var(--danger); border-radius:7px; padding:5px 9px; font-size:10px; font-weight:650; cursor:pointer; }
+    .pg-uninstall:hover { background:color-mix(in srgb, var(--danger) 7%, transparent); border-color:var(--danger); }
+    .pg-uninstall:disabled { opacity:.55; cursor:default; }
+    .pg-loading { color:var(--muted); padding:18px 0; }
+
+    .pg-install { border:1px solid var(--line); border-radius:10px; background:var(--surface); }
+    .pg-install > summary { cursor:pointer; padding:13px 15px; font-size:13px; font-weight:650; }
+    .pg-install-body { padding:0 15px 15px; border-top:1px solid var(--line); }
+    /* 自定义插件工作区：左侧配置，右侧宽幅编辑；不改变原有表单字段或接口。 */
+    .pg-form { display:grid; grid-template-columns:minmax(300px, .78fr) minmax(0, 1.45fr); gap:20px; width:100%; padding-top:16px; align-items:start; }
+    .pg-install-config, .pg-install-editor { min-width:0; display:grid; gap:12px; align-content:start; border:1px solid var(--line); background:var(--surface); border-radius:11px; padding:16px; }
+    .pg-install-config { position:sticky; top:76px; max-height:calc(100vh - 96px); overflow-y:auto; scrollbar-gutter:stable; }
+    .pg-workspace-head { border-bottom:1px solid var(--line); padding-bottom:10px; }
+    .pg-workspace-head h3 { margin:0 0 4px; font-size:15px; color:var(--text); }
+    .pg-workspace-head p { margin:0; font-size:11px; line-height:1.55; color:var(--muted); }
+    .pg-install-editor textarea { display:block; width:100%; box-sizing:border-box; resize:vertical; font-size:12px; line-height:1.55; tab-size:2; overflow:auto; }
+    .pg-install-editor #yamlContent { min-height:180px; }
+    .pg-install-editor #codeContent { min-height:300px; }
+    .pg-install-editor label input { width:100%; box-sizing:border-box; }
+    .pg-editor-actions { display:flex; flex-wrap:wrap; align-items:center; gap:12px; padding-top:12px; border-top:1px solid var(--line); }
+    .pg-editor-actions .pg-msg { min-width:0; flex:1; overflow-wrap:anywhere; }
+    .pg-install-body { padding:0 18px 18px; }
+    @media (max-width:1100px) {
+      .pg-form { grid-template-columns:minmax(0,1fr); }
+      .pg-install-config { position:static; max-height:none; overflow:visible; }
+    }
+    .pg-form-two { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:10px; }
+    .pg-native-note { display:none; padding:10px 12px; border:1px solid color-mix(in srgb, var(--warning) 35%, var(--line)); border-radius:9px; background:color-mix(in srgb, var(--warning) 7%, var(--surface)); color:var(--muted); font-size:11px; line-height:1.55; }
+    .pg-native-note.show { display:block; }
+    .pg-library-info { display:none; padding:9px 11px; border:1px solid var(--line); border-radius:8px; background:var(--panel); color:var(--muted); font-size:11px; overflow-wrap:anywhere; }
+    .pg-library-info.show { display:block; }
+    .pg-native-build { display:none; padding:11px 12px; border:1px solid color-mix(in srgb, var(--accent) 22%, var(--line)); border-radius:9px; background:color-mix(in srgb, var(--accent-soft) 35%, var(--surface)); }
+    .pg-native-build.show { display:grid; gap:8px; }
+    .pg-native-build-head { display:grid; grid-template-columns:minmax(0,1fr) minmax(190px,250px) auto; gap:10px; align-items:end; }
+    .pg-native-build-copy { display:grid; gap:3px; min-width:0; }
+    .pg-native-build-copy strong { font-size:12px; color:var(--text); }
+    .pg-native-build-copy span { font-size:10.5px; line-height:1.5; color:var(--muted); }
+    .pg-native-build label { font-size:10.5px; }
+    .pg-native-build select { padding:7px 9px; }
+    .pg-native-build button { justify-self:auto; padding:8px 12px; white-space:nowrap; }
+    .pg-native-build-status { min-height:16px; color:var(--muted); font-size:10.5px; line-height:1.5; white-space:pre-wrap; overflow-wrap:anywhere; }
+    .pg-native-build-status.ok { color:var(--success); }
+    .pg-native-build-status.bad { color:var(--danger); }
+    .pg-form label { display:grid; gap:5px; font-size:12px; color:var(--muted); }
+    .pg-form input,.pg-form select,.pg-form textarea { font:inherit; padding:9px 10px; border:1px solid var(--line); border-radius:8px; background:var(--surface); color:var(--text); }
+    .pg-form textarea { min-height:100px; font-family:var(--font-mono); font-size:11px; }
+    .pg-form button { justify-self:start; padding:9px 16px; border-radius:8px; background:var(--accent); color:#fff; font-weight:650; }
+    .pg-form button:disabled { opacity:.55; cursor:default; }
+    .pg-template-box { display:flex; align-items:center; justify-content:space-between; gap:14px; padding:11px 12px; border:1px solid color-mix(in srgb, var(--accent) 24%, var(--line)); border-radius:9px; background:color-mix(in srgb, var(--accent-soft) 62%, var(--surface)); }
+    .pg-template-copy { min-width:0; display:grid; gap:3px; }
+    .pg-template-title { color:var(--text); font-size:12px; font-weight:700; }
+    .pg-template-note { color:var(--muted); font-size:11px; line-height:1.45; }
+    .pg-template-actions { display:flex; flex:none; flex-wrap:wrap; gap:7px; }
+    .pg-template-actions button { padding:7px 10px; border:1px solid var(--line); background:var(--surface); color:var(--text); font-size:11px; font-weight:600; }
+    .pg-template-actions button:hover { border-color:var(--accent); color:var(--accent-strong); }
+    .pg-template-actions .pg-clear-template { color:var(--muted); }
+    .pg-import-files { display:flex; flex-wrap:wrap; gap:8px; padding:10px; border:1px dashed var(--line); border-radius:9px; background:var(--panel); }
+    .pg-file-btn,.pg-validate-btn { display:inline-flex; align-items:center; gap:6px; padding:8px 11px; border:1px solid var(--line); border-radius:8px; background:var(--surface); color:var(--text); cursor:pointer; font-size:12px; font-weight:600; }
+    .pg-file-btn:hover,.pg-validate-btn:hover { border-color:var(--accent); }
+    .pg-file-btn input { display:none; }
+    .pg-validate-btn { background:var(--accent-soft) !important; color:var(--accent-strong) !important; }
+    .pg-validation { display:none; padding:10px 12px; border:1px solid var(--line); border-radius:9px; background:var(--panel); font-size:11px; line-height:1.6; }
+    .pg-validation.show { display:block; }
+    .pg-validation.ok { border-color:color-mix(in srgb, var(--success) 40%, var(--line)); }
+    .pg-validation.bad { border-color:color-mix(in srgb, var(--danger) 45%, var(--line)); }
+    .pg-validation-title { font-weight:700; color:var(--text); margin-bottom:4px; }
+    .pg-validation-row { color:var(--muted); overflow-wrap:anywhere; }
+    .pg-validation-error { color:var(--danger); }
+    .pg-validation-warn { color:var(--warning); }
+    .pg-msg { font-size:12px; line-height:1.5; }
+    .pg-hint { font-size:11px; color:var(--muted); margin:10px 0 0; line-height:1.55; }
+    .pg-dev-help { margin-top:12px; border-top:1px solid var(--line); padding-top:10px; width:100%; box-sizing:border-box; }
+    .pg-dev-help > summary { cursor:pointer; color:var(--muted); font-size:11px; font-weight:600; width:max-content; }
+    .pg-dev-help > summary:hover { color:var(--accent-strong); }
+    .pg-dev-list {
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:8px 12px;
+      width:100%;
+      margin:10px 0 0;
+      padding:0;
+      list-style:none;
+      counter-reset:dev-help;
+    }
+    .pg-dev-list li {
+      counter-increment:dev-help;
+      position:relative;
+      min-width:0;
+      padding:10px 12px 10px 40px;
+      border:1px solid var(--line);
+      border-radius:8px;
+      background:var(--panel);
+      color:var(--muted);
+      font-size:11px;
+      line-height:1.6;
+      overflow-wrap:anywhere;
+    }
+    .pg-dev-list li::before {
+      content:counter(dev-help);
+      position:absolute;
+      left:12px;
+      top:10px;
+      display:grid;
+      place-items:center;
+      width:20px;
+      height:20px;
+      border-radius:6px;
+      background:var(--accent-soft);
+      color:var(--accent-strong);
+      font:700 11px/1 var(--font-mono);
+    }
+    .pg-dev-list li:last-child:nth-child(odd) { grid-column:1 / -1; }
+    .pg-dev-list strong { color:var(--text); font-weight:700; }
+    @media (max-width:720px) {
+      .pg-summary { grid-template-columns:1fr; }
+      .pg { padding:18px 14px 40px; }
+      .pg-template-box { align-items:flex-start; flex-direction:column; }
+      .pg-form-two { grid-template-columns:1fr; }
+      .pg-native-build-head { grid-template-columns:1fr; align-items:stretch; }
+      .pg-dev-list { grid-template-columns:1fr; }
+      .pg-dev-list li:last-child:nth-child(odd) { grid-column:auto; }
+    }
+  </style>
+</head>
+<body class="compact-ui">
+  <div class="pg">
+    <header class="pg-head">
+      <h1>检测算法管理</h1>
+      <p>插件不是独立功能，而是挂到数据、仿真、训练、评估与报告链路上的扩展能力。这里集中管理检测算法及其扩展能力，并展示各插件实际作用的位置和当前状态。</p>
+    </header>
+
+    <section class="pg-section">
+      <div class="pg-summary" id="pluginSummary">
+        <div class="pg-summary-item"><div class="pg-summary-value">–</div><div class="pg-summary-label">已加载能力</div></div>
+        <div class="pg-summary-item"><div class="pg-summary-value">–</div><div class="pg-summary-label">运行期可用</div></div>
+        <div class="pg-summary-item"><div class="pg-summary-value">–</div><div class="pg-summary-label">依赖异常</div></div>
+      </div>
+      <div class="pg-section-title">
+        <h2>能力与作用位置</h2>
+        <p>Web 与 CLI 的作用范围会明确标注</p>
+      </div>
+      <div class="pg-search-toolbar"><input type="search" id="pluginSearch" placeholder="搜索插件名称、说明或技术标识…" aria-label="搜索已安装插件"><span id="pluginSearchCount" aria-live="polite"></span></div>
+      <div class="pg-grid" id="pluginGrid"><div class="pg-loading">加载中…</div></div>
+    </section>
+
+    <section class="pg-section">
+      <details id="customPluginInstall" class="pg-install">
+        <summary>安装自定义插件</summary>
+        <div class="pg-install-body">
+          <form id="installForm" class="pg-form">
+            <div class="pg-install-config" aria-label="插件基本配置">
+              <div class="pg-workspace-head"><h3>插件配置与文件导入</h3><p>先选择插件类型和实现语言，再加载示例或导入本地文件。右侧可直接编辑全部文件内容。</p></div>
+              <div class="pg-form-two">
+              <label>插件类型<select id="pluginType"></select></label>
+              <label>实现语言<select id="implementationLanguage">
+                <option value="python">Python</option>
+                <option value="c">C</option>
+                <option value="cpp">C++</option>
+              </select></label>
+            </div>
+            <div id="nativeSecurityNote" class="pg-native-note">C/C++ 插件使用独立 Native Plugin Host 子进程运行，DLL/SO 不直接加载到 AAS Python 主服务。宿主以 <code>python -I -S</code> 启动，仅使用标准库 ctypes，并通过认证的本机 IPC 传递数据；原生崩溃会终止宿主而不是主服务。AAS 本机编译同样清理 Python/venv/Conda 环境。注意：这仍不是恶意代码权限沙箱，只处理可信源码。</div>
+            <div class="pg-template-box" aria-live="polite">
+              <div class="pg-template-copy">
+                <div id="templateTitle" class="pg-template-title">示例模板</div>
+                <div id="templateNote" class="pg-template-note">当前内容为可编辑示例模板，可直接在此基础上修改。</div>
+              </div>
+              <div class="pg-template-actions">
+                <button id="restoreTemplateBtn" type="button">恢复示例</button>
+                <button id="clearTemplateBtn" class="pg-clear-template" type="button">清空</button>
+              </div>
+            </div>
+            <div class="pg-import-files">
+              <label class="pg-file-btn">导入 YAML
+                <input id="yamlFileInput" type="file" accept=".yaml,.yml,text/yaml,text/x-yaml" />
+              </label>
+              <label id="codeFileBtn" class="pg-file-btn"><span id="codeFileBtnText">导入 Python 实现</span>
+                <input id="codeFileInput" type="file" accept=".py,text/x-python" />
+              </label>
+              <label id="libraryFileBtn" class="pg-file-btn" style="display:none"><span>导入已编译库</span>
+                <input id="libraryFileInput" type="file" />
+              </label>
+              <button id="validatePluginBtn" class="pg-validate-btn" type="button">解析并校验</button>
+            </div>
+            <div id="nativeLibraryInfo" class="pg-library-info"></div>
+            <p id="codeRequirement" class="pg-hint"></p>
+            </div>
+            <div class="pg-install-editor" aria-label="插件文件编辑区">
+              <div class="pg-workspace-head"><h3>插件文件编辑区</h3><p>可完整编辑 YAML 描述和 Python / C / C++ 源码；文本区域支持拖动调整高度，保存前可解析校验。</p></div>
+            <div id="nativeBuildBox" class="pg-native-build">
+              <div class="pg-native-build-head">
+                <div class="pg-native-build-copy">
+                  <strong>本机隔离编译</strong>
+                  <span>调用系统 GCC/Clang/MSVC 子进程；不使用 Python 包作为 C/C++ 编译依赖，不接受任意编译参数。编译/ABI 校验完成后，实际运行仍由独立 Native Plugin Host 承载。也可以跳过编译，直接“导入已编译库”。</span>
+                </div>
+                <label>系统编译器<select id="nativeCompiler"></select></label>
+                <button id="compileNativeBtn" type="button">编译当前源码</button>
+              </div>
+              <div id="nativeBuildStatus" class="pg-native-build-status" aria-live="polite"></div>
+            </div>
+            <label>YAML 描述文件名<input id="yamlName" required /></label>
+            <label>YAML 内容<textarea id="yamlContent" required></textarea></label>
+            <label><span id="codeNameLabel">Python 文件名（条件必需）</span><input id="codeName" /></label>
+            <label><span id="codeContentLabel">Python 代码（条件必需）</span><textarea id="codeContent"></textarea></label>
+            <div id="pluginValidation" class="pg-validation" aria-live="polite"></div>
+            <div class="pg-editor-actions"><button type="submit" id="installBtn">安装并注册</button><span id="installMsg" class="pg-msg" aria-live="polite"></span></div>
+            </div>
+          </form>
+          <details class="pg-dev-help">
+            <summary>查看开发说明</summary>
+            <ol class="pg-dev-list">
+              <li><strong>Python 插件：</strong>使用 <code>class_path</code> + Python 类契约。检测算法按 <code>decision_mode</code> 实现对应能力，阈值策略属于检测算法内部参数；故障类型插件会直接出现在“模拟故障数据库”的故障类型列表。</li>
+              <li><strong>C/C++ 插件：</strong>检测算法和评估指标统一使用稳定 C ABI（<code>aas_native_v1</code>），C++ 导出函数使用 <code>extern &quot;C&quot;</code>。可由 AAS 调用系统 GCC/Clang/MSVC 编译源码，也可直接导入已编译 DLL/SO；安装前会进行 ABI 与导出函数校验。</li>
+              <li><strong>运行与安装：</strong>原生插件由独立 Native Plugin Host 承载，主进程通过认证本机 IPC 交换数据，插件崩溃不会直接带崩主服务；但它仍具有当前系统账号权限，不属于恶意代码安全沙箱。安装失败自动回滚，自定义插件可卸载，内置插件受系统保护。</li>
+            </ol>
+          </details>
+        </div>
+      </details>
+    </section>
+  </div>
+  <script src="plugins.js"></script>
+</body>
+</html>

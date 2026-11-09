@@ -1,0 +1,161 @@
+/* Phase 4 default V2 browser: left facets / candidate list, right trace / selection list */
+.v2-layout {display:grid;grid-template-columns:minmax(290px,36%) minmax(0,1fr);gap:16px;margin-bottom:15px;align-items:stretch}
+.v2-left,.v2-right {display:flex;flex-direction:column;gap:14px;min-width:0}
+.v2-panel {min-width:0}
+.v2-layout .panel-header {margin-bottom:10px}
+.v2-fields {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px 12px}
+.v2-fields .field {min-width:0;margin:0}
+.v2-time-row,.v2-actions {grid-column:1/-1}
+.v2-fields input,.v2-fields select {width:100%;max-width:100%;min-width:0}
+.v2-time-row {display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.v2-actions {display:flex;gap:9px;justify-content:flex-start;margin-top:7px}
+.v2-results {flex:1;min-height:255px;display:flex;flex-direction:column}
+.v2-result-list {flex:1;max-height:320px;overflow:auto;min-height:150px;border:1px solid var(--line,#d8e1ec);border-radius:8px;background:rgba(255,255,255,.42)}
+.v2-result {display:flex;gap:9px;padding:10px 11px;align-items:flex-start;border-bottom:1px solid rgba(130,144,165,.18);cursor:pointer;word-break:break-word}
+.v2-result:hover {background:rgba(70,116,170,.07)}
+.v2-result input {flex:none;margin-top:4px}
+.v2-result strong {font-size:13px}
+.v2-result small {display:block;margin-top:4px;opacity:.75;font-size:11px;line-height:1.5}
+.v2-status {min-height:26px;font-size:12px;line-height:1.5;color:var(--muted,#566176)}
+.v2-status.error {color:#b03434}
+.v2-plot-panel {min-height:480px;display:flex;flex-direction:column;flex:1}
+.v2-chart {width:100%;overflow:auto;min-height:360px;flex:1;background:rgba(255,255,255,.5);border:1px solid var(--line,#d8e1ec);border-radius:8px}
+.v2-chart svg {display:block;width:100%;min-width:570px;height:auto}
+.v2-selected-panel {min-height:115px}
+.v2-selected-list {display:flex;flex-direction:column;gap:7px}
+.v2-selected-row {display:flex;align-items:center;gap:9px;flex-wrap:wrap;font-size:12px}
+.v2-selected-row .v2-swatch {width:10px;height:10px;border-radius:100%;flex:none}
+.v2-selected-row .v2-selected-name {flex:1;min-width:120px}
+.v2-selected-row button {padding:3px 9px;font-size:11px}
+.v2-legacy-tools {border:1px solid var(--line,#d8e1ec);border-radius:8px;padding:12px;margin:18px 0}
+.v2-legacy-tools > summary {font-size:13px;font-weight:600;cursor:pointer}
+.v2-legacy-tools .browser-summary {margin-top:15px}
+@media(max-width:940px){.v2-layout{grid-template-columns:1fr}.v2-result-list{max-height:230px}}
+@media(max-width:520px){.v2-fields,.v2-time-row{grid-template-columns:1fr}.v2-time-row{grid-column:1/-1}}
+
+/* Phase 5: explicit V2-native import, separate from legacy-table tooling */
+.v2-native-import {border:1px solid var(--line,#d8e1ec);border-radius:9px;padding:13px;margin:14px 0;background:rgba(255,255,255,.55)}
+.v2-native-import > summary {font-weight:650;cursor:pointer;font-size:14px}
+.v2-native-import > .field-hint {margin:10px 0}
+.v2-import-grid {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px;padding:10px 0}
+.v2-import-grid .field {min-width:0}
+.v2-import-grid input,.v2-import-grid select {width:100%;min-width:0}
+.v2-import-actions {display:flex;gap:12px;align-items:end}
+#v2ImpStatus {grid-column:1/-1;white-space:pre-wrap;word-wrap:break-word}
+#v2ImpStatus.error {color:#b03434}
+@media(max-width:940px){.v2-import-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.v2-import-grid{grid-template-columns:1fr}}
+
+.v2-import-history{margin-top:10px}.v2-import-item{padding:7px 3px;border-bottom:1px solid var(--line,#d8e1ec)}
+
+/* Phase 6: governance is an explicitly expanded advanced tool. */
+#v2GovernancePanel {margin-top:18px;}
+#v2GovernancePanel h3 {font-size:1rem;margin:18px 0 10px;}
+#v2GovernancePanel .v2-import-history {margin-top:10px;display:grid;gap:7px;}
+#v2GovernancePanel .v2-gov-row {display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:10px;border:1px solid #dde4ed;border-radius:8px;overflow-wrap:anywhere;}
+#v2GovernancePanel .v2-gov-row > span {flex:1;min-width:240px;}
+#v2GovernancePanel button {min-width:80px;}
+
+/* Phase10 formal import page: wide-table metadata belongs to a full row. */
+#v2ImpMappingField {grid-column:1/-1}
+#v2ImpMappingField textarea {width:100%;min-height:90px;resize:vertical;font:12px/1.5 ui-monospace,monospace}
+#v2ImpNormalLabelField {grid-column:1/-1}
+#v2ImpVariableField[hidden],#v2ImpMappingField[hidden],#v2ImpNormalLabelField[hidden] {display:none!important}
+
+/* Phase 12 interactive zoom toolbar */
+.v2-chart-toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:7px}
+.v2-chart-toolbar .field-hint{margin-right:auto}
+.v2-chart-toolbar button{padding:5px 11px;border:1px solid #c7d7e5;border-radius:8px;background:var(--panel,#fff)}
+.v2-chart svg{cursor:crosshair;touch-action:pan-y}
+
+/* Phase 14: accessible import dialog and clear zoom controls. */
+.v2-chart svg{cursor:crosshair;user-select:none;touch-action:none}
+.v2-brush-selection{vector-effect:non-scaling-stroke;filter:drop-shadow(0 0 2px rgba(26,89,161,.25))}
+.v2-chart-toolbar button:disabled{opacity:.38;cursor:not-allowed}
+.v2-zoom-status{display:inline-block;min-width:90px;font-size:12px;color:#496987;margin:0 0 8px}
+.v2-import-dialog{padding:0;border:1px solid #cfdae6;border-radius:14px;width:min(1000px,94vw);max-width:94vw;height:min(820px,90vh);max-height:90vh;box-shadow:0 25px 75px #17294455;background:#fff;color:#223044;overflow:hidden}
+.v2-import-dialog::backdrop{background:#071b36a8;backdrop-filter:blur(2px)}
+.v2-dialog-header{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-bottom:1px solid #e1e8ef}
+.v2-dialog-header button{padding:6px 13px}
+.v2-import-dialog iframe{border:0;width:100%;height:calc(100% - 58px);display:block}
+
+.v2-prep-wide{grid-column:1/-1}
+.v2-prep-wide select{max-width:100%;text-overflow:ellipsis}
+body.import-embedded #v2ImportForm{grid-template-columns:repeat(2,minmax(0,1fr))}
+body.import-embedded #v2ImpMappingField,body.import-embedded #v2ImpNormalLabelField,body.import-embedded .v2-import-actions,body.import-embedded #v2ImpStatus{grid-column:1/-1}
+
+/* Phase 15: native date/time range picker in V2 data browser. */
+.v2-time-row .field input[type="datetime-local"]{width:100%;min-width:0;font-size:12px;font-variant-numeric:tabular-nums}
+.v2-time-help{grid-column:1/-1;margin:-4px 0 0;font-size:11px;color:#66778a;line-height:1.5}
+
+/* Phase 27: export is a contextual chart action, adjacent to zoom controls. */
+.v2-chart-toolbar .v2-toolbar-divider{height:22px;width:1px;background:#cad5e1;flex:none;margin:0 2px}
+.v2-chart-toolbar .v2-export-button{background:#2788ac;color:white;border-color:#2788ac;font-weight:650;white-space:nowrap}
+.v2-chart-toolbar .v2-export-button:hover:not(:disabled){background:#20779b;border-color:#20779b}
+.v2-chart-toolbar .v2-export-button:disabled{background:#dbe6ef;border-color:#dbe6ef;color:#73869a}
+#v2ExportStatus{min-height:0}
+@media(max-width:680px){.v2-chart-toolbar .v2-toolbar-divider{display:none}.v2-chart-toolbar .v2-export-button{flex:1 1 100%}}
+
+/* Phase28: selected-feature-constrained datetime pickers and inline rejection. */
+.v2-fields .v2-time-help,.v2-fields .v2-time-error{grid-column:1/-1}
+.v2-time-row input[type="datetime-local"]:disabled{opacity:.58;background:var(--panel,#f2f5f9);cursor:not-allowed}
+.v2-time-error{margin:-2px 0 3px;font-size:12px;line-height:1.5;color:#af2828}
+.v2-time-error[hidden]{display:none}
+
+/* Phase31-R1: hidden-by-default finder dialog. Keep Phase30 grid untouched. */
+.v2-filter-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.v2-filter-tools button{white-space:nowrap}
+.v2-fault-dialog{box-sizing:border-box;padding:0;border:1px solid #cfdae6;border-radius:14px;width:min(780px,94vw);max-width:94vw;max-height:min(680px,90vh);box-shadow:0 25px 75px #17294455;background:#fff;color:#223044;overflow:hidden}
+.v2-fault-dialog[open]{display:flex;flex-direction:column}
+.v2-fault-dialog::backdrop{background:#071b3680;backdrop-filter:blur(2px)}
+.v2-fault-dialog .v2-dialog-header{flex:none}
+.v2-fault-dialog-body{min-height:0;overflow-y:auto;padding:15px 18px 18px;display:flex;flex-direction:column;gap:10px}
+.v2-fault-dialog-body>.field-hint{margin:0;font-size:12px;line-height:1.55}
+.v2-fault-controls{display:grid;grid-template-columns:minmax(180px,1fr) minmax(180px,1fr);gap:12px;align-items:end}
+.v2-fault-controls .field{min-width:0;margin:0}
+.v2-fault-controls select{width:100%;min-width:0}
+.v2-fault-controls button{min-height:38px}
+.v2-fault-dialog .v2-status{min-height:0;margin:0}
+.v2-fault-list{display:flex;flex-direction:column;gap:8px;max-height:min(360px,45vh);overflow:auto}
+.v2-fault-item{display:flex;align-items:flex-start;gap:12px;padding:11px 12px;border:1px solid #d7e2ec;border-radius:9px;background:#f9fbfe}
+.v2-fault-item-body{flex:1;min-width:0;font-size:12px;line-height:1.5;overflow-wrap:anywhere}
+.v2-fault-item-body strong{display:block;font-size:13px;color:#223d59}
+.v2-fault-item-body small{display:block;color:#566c7c;margin-top:3px}
+.v2-fault-item button{padding:6px 10px;flex:none;white-space:nowrap}
+.v2-fault-disclaimer{border-top:1px solid #e1e8ef;padding-top:9px}
+@media(max-width:600px){.v2-filter-tools{gap:5px}.v2-filter-tools button{padding:7px 8px}.v2-fault-controls{grid-template-columns:1fr}.v2-fault-item{flex-wrap:wrap}.v2-fault-item button{margin-left:auto}}
+@media(max-width:360px){.v2-layout .panel-header:has(.v2-filter-tools){flex-wrap:wrap}.v2-filter-tools{justify-content:flex-start}}
+
+/* Phase 43: auxiliary fault association analysis, contained within existing modal. */
+.v2-association-panel{border-top:1px solid #e0e8f0;padding-top:12px;display:flex;flex-direction:column;gap:9px}
+.v2-association-header{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.v2-association-header strong{font-size:14px;color:#263e5c}
+.v2-association-tools{display:grid;grid-template-columns: minmax(160px,1fr) minmax(190px,1fr);gap:12px;align-items:end}
+.v2-association-tools .field{margin:0;min-width:0}.v2-association-tools select{width:100%}
+.v2-association-tools button{min-height:38px}
+.v2-association-pill{display:inline-flex;border:1px solid #d5dfeb;border-radius:18px;padding:2px 8px;font-size:11px;font-weight:600;color:#566b83;background:#f1f5fa}
+.v2-association-pill[data-category="source"]{background:#fceaea;border-color:#edc6c6;color:#9b3a3a}
+.v2-association-pill[data-category="affected"]{background:#fff5df;border-color:#ead4a0;color:#8d6418}
+.v2-association-pill[data-category="no_clear_change"]{background:#ecf5f1;border-color:#bddfd0;color:#366a54}
+.v2-association-item .v2-fault-item-body strong{margin-top:4px}
+@media(max-width:600px){.v2-association-tools{grid-template-columns:1fr}.v2-association-header{display:block}}
+
+/* P3-E: bounded catalog pages and server-backed time-window controls. */
+.v2-pagination{display:flex;align-items:center;justify-content:center;gap:10px;padding:8px 2px;flex:none}
+.v2-pagination button{padding:5px 12px;border:1px solid var(--line,#d8e1ec);border-radius:7px;background:var(--panel,#fff);font-size:12px}
+.v2-pagination button:disabled{opacity:.4;cursor:not-allowed}
+.v2-pagination span{font-size:12px;color:var(--muted,#566176);font-variant-numeric:tabular-nums}
+#v2PlotMeta{max-width:min(72%,720px);white-space:normal;text-align:right;font-size:11px;line-height:1.5}
+
+/* P3-E: single-channel, cursor-paginated sample detail. */
+.v2-detail-toolbar{display:flex;align-items:end;gap:8px;flex-wrap:wrap;margin:8px 0}
+.v2-detail-toolbar .field{min-width:220px;flex:1}
+.v2-detail-toolbar button{padding:7px 12px;white-space:nowrap}
+.v2-detail-table-wrap{max-width:100%;max-height:420px;overflow:auto;border:1px solid var(--line,#d8e1ec);border-radius:8px}
+.v2-detail-table{width:100%;border-collapse:collapse;font-size:12px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.v2-detail-table th,.v2-detail-table td{padding:7px 9px;border-bottom:1px solid var(--line,#e3e8ef);text-align:left}
+.v2-detail-table th{position:sticky;top:0;background:var(--panel,#fff);z-index:1;color:var(--muted,#566176);font-weight:650}
+.v2-detail-table tbody tr:nth-child(even){background:rgba(127,143,166,.055)}
+.v2-detail-table tbody tr:last-child td{border-bottom:0}
+.v2-detail-table tbody td[colspan]{text-align:center;color:var(--muted,#566176);padding:18px}
+@media(max-width:600px){.v2-detail-toolbar .field{flex-basis:100%}.v2-detail-toolbar button{flex:1}}

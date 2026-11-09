@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>智能检测算法评估 - AAS</title><link rel="stylesheet" href="styles-light.css"><link rel="stylesheet" href="runner-v2.css"><link rel="stylesheet" href="runner-workflow-guide.css"><link rel="stylesheet" href="csv-import-wizard.css"><style>.v2-user-csv-picker{border:1px solid #dce5ee;border-radius:10px;padding:10px 12px;margin:12px 0;background:#f8fbfd}.v2-user-csv-actions{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}.v2-user-csv-actions button{border:1px solid #e2b9bd;border-radius:7px;padding:6px 10px;background:#fff6f6;color:#9d2935}.v2-user-csv-actions button:disabled{opacity:.45}.v2-user-csv-picker .field{margin:5px 0}.v2-user-csv-help{margin:8px 0 0;padding:8px 10px;border-top:1px solid #e3eaf1;color:#526477;font-size:.9em}.v2-user-csv-help summary{cursor:pointer;font-weight:600}.v2-user-csv-help p{margin:7px 0 0;line-height:1.55}.v2-user-csv-meta{display:block;min-width:0;overflow-wrap:anywhere}</style></head>
+<body class="compact-ui"><main class="shell">
+<header class="topbar"><div><p class="eyebrow">智能检测算法评估</p><h1>智能检测算法评估</h1><p class="subtitle">按卫星型号、时间或帧范围和参量选择数据；算法自动使用合规的训练与测试分组。</p></div><nav class="nav-links"><a href="browser.html">历史故障数据库 / 导入</a><a class="active" href="runner.html">智能检测算法评估</a><a href="reports.html">任务查询与导出</a><a href="index.html">首页</a></nav></header>
+<div id="v2Connection" role="status" aria-live="polite" class="field-hint" style="margin:8px 0 14px"></div><section class="panel runner-workflow-guide" aria-labelledby="runnerWorkflowTitle"><div class="runner-workflow-head"><div><h2 id="runnerWorkflowTitle">一次算法评估 · 操作指引</h2><p>按步骤进入现有功能页面；指引不会自动导入数据、启动训练或提交评估。</p></div><span id="runnerWorkflowHint" role="status" aria-live="polite">从数据准备开始</span></div><div class="runner-workflow-steps"><button type="button" data-runner-step="data">① 选择数据</button><button type="button" data-runner-step="check">② 检查数据</button><button type="button" data-runner-step="train">③ 训练模型</button><button type="button" data-runner-step="test">④ 选择测试数据</button><button type="button" data-runner-step="evaluate">⑤ 评估或仅推理</button><button type="button" data-runner-step="result">⑥ 查看结果</button></div></section><div class="v2-mode-buttons"><button class="active" id="tabTrain" type="button">训练</button><button id="tabEval" type="button">模型评估</button></div>
+<section id="trainView" class="v2-run-grid is-idle">
+<aside class="panel v2-run-settings">
+  <h2>① 筛选训练数据</h2>
+  <details id="trainCsvImport" class="v2-csv-import"><summary>从本地 CSV 导入训练数据</summary>
+    <p class="field-hint">CSV 保存到独立持久化训练工作区，不写入历史数据库。支持 UTF-8、GB18030 及逗号/分号/TAB 分隔的 CSV/CSV.GZ；可含 <code>time_s</code> 秒制时间，或使用 <code>frame</code> 帧号；两者均无时须确认原始行序。训练须有全 0 标签，或由您确认全部正常。</p>
+    <section id="trainCsvWizard"><fieldset data-csv-stage="file">
+    <label class="field"><span>训练 CSV 文件</span><input id="trainCsvFile" type="file" accept=".csv,.csv.gz,text/csv,application/gzip"></label>
+    <div class="v2-run-filters"><label class="field"><span>文件编码（检查后确认）</span><select id="trainCsvEncoding"><option value="auto">自动识别</option><option value="utf-8">UTF-8（含 BOM）</option><option value="gb18030">GB18030 / GBK（常见 Excel 格式）</option></select></label><label class="field"><span>列分隔符（检查后确认）</span><select id="trainCsvDelimiter"><option value="auto">自动识别</option><option value=",">逗号 ,</option><option value=";">分号 ;</option><option value="&#9;">制表符 TAB</option></select></label></div>
+    <label class="field"><input id="trainCsvFormatConfirmed" type="checkbox"> 已核对上述文件编码和列分隔符，确认与本地 CSV 实际格式一致</label>
+    <div class="v2-csv-import-actions"><button id="trainCsvInspect" type="button">检查文件与字段</button></div>
+    </fieldset><fieldset data-csv-stage="fields">
+    <div class="v2-run-filters"><label class="field"><span>卫星型号/数据别名</span><input id="trainCsvModel" value="USER-SAT" maxlength="80"></label><label class="field"><span>时间基准或帧序列 ID</span><input id="trainCsvReference" value="local-csv-run" maxlength="120"></label></div>
+    <label class="field"><input id="trainCsvRowOrderConfirmed" type="checkbox"> 无时间列和显式 frame 列时，确认原始 CSV 行序从帧 1 开始</label>
+    <div class="v2-run-filters"><label class="field"><span>分系统（普通列）</span><input id="trainCsvSubsystem" value="ADCS"></label><label class="field"><span>部件（普通列）</span><input id="trainCsvDevice" value="external"></label><label class="field"><span>单位（通用）</span><input id="trainCsvUnit" value="unitless"></label></div>
+    <div id="trainCsvColumns" class="v2-csv-columns" role="group" aria-label="选择训练遥测列"></div>
+    <label class="field"><input id="trainCsvNormalConfirmed" type="checkbox"> 如果 CSV 没有 label/fault_label，确认所有帧均为正常运行样本</label>
+    <div class="v2-csv-import-actions"><button id="trainCsvPreview" type="button" disabled>预检导入</button></div>
+    </fieldset><fieldset data-csv-stage="review"><div class="v2-csv-import-actions"><button id="trainCsvCommit" type="button" disabled>确认导入训练来源</button></div></fieldset><fieldset data-csv-stage="done"></fieldset></section>
+    <div class="v2-csv-task-controls"><progress aria-label="训练 CSV 导入进度" aria-describedby="trainCsvProgressMeta" id="trainCsvProgress" max="100" value="0"></progress><span id="trainCsvProgressMeta" class="field-hint" aria-live="polite"></span><button id="trainCsvCancel" type="button" disabled>取消当前操作</button></div>
+    <p id="trainCsvStatus" role="status" class="field-hint" aria-live="polite"></p>
+  </details>
+  <section class="v2-user-csv-picker" aria-label="训练数据来源">
+    <div class="v2-run-filters"><label class="field"><span>训练数据来源</span><select id="trainDataSource"><option value="history">历史数据库</option><option value="user_csv">我的训练 CSV（独立工作区）</option></select></label>
+      <label class="field"><span>已保存训练 CSV</span><select id="trainUserCsvDataset" disabled><option value="">请选择我的 CSV</option></select></label></div>
+    <div class="v2-user-csv-actions"><span id="trainUserCsvMeta" class="field-hint v2-user-csv-meta">用户 CSV 独立保存，不写入历史数据库；退出和重启后仍保留。</span><button id="trainUserCsvDelete" type="button" disabled>删除所选 CSV</button></div>
+    <details class="v2-user-csv-help"><summary>为什么训练 CSV 不导入历史数据库？</summary><p>这里导入的文件只用于当前训练流程，保存在“我的训练 CSV”独立工作区。它不会改变历史故障数据库，也不会自动被历史库浏览页面检索。你可以在训练工作区重复使用；只有主动删除才会清理。正在被任务使用的文件暂时不能删除。</p></details>
+  </section>
+  <p class="field-hint">按卫星型号、分系统、部件、参量和日期筛选正常训练样本；训练标签只用于确认正常基线，不当作模型输入特征。</p>
+  <label class="field"><span>运行标识（合成别名）</span><select id="trainSourceModel"><option value="">全部训练型号</option></select></label>
+  <div id="trainRuns" hidden></div>
+  <div class="v2-run-filters"><label class="field"><span>分系统</span><select id="featureSubsystem"><option value="">全部分系统</option></select></label><label class="field"><span>部件</span><select id="featureDevice"><option value="">全部部件</option></select></label></div>
+  <label class="field"><span>参量搜索</span><input id="featureSearch" type="search" placeholder="搜索转速、温度、功率…"></label>
+  <div id="featureColumns" class="v2-run-channels" role="group" aria-label="训练参量"></div><p id="featureSelected" class="field-hint">请选择参量</p>
+  <div class="v2-run-filters"><label class="field"><span>开始时间</span><input id="trainStart" type="datetime-local" step="1"></label><label class="field"><span>结束时间</span><input id="trainEnd" type="datetime-local" step="1"></label></div><div class="v2-time-coverage" id="trainTimeCoverage" role="status" aria-live="polite">选择参量后将显示可用时间范围。</div>
+  <button id="previewTrain" type="button">预览所选训练数据</button>
+  <h2>② 选择算法</h2><label class="field"><span>异常检测算法</span><select id="trainAlgorithm"></select></label>
+  <h2>③ 配置参数</h2>
+  <div class="v2-run-filters"><label class="field"><span>训练/验证比例</span><input id="trainRatio" type="number" min="0.5" max="0.95" step="0.05" value="0.8"></label><label class="field"><span>归一化</span><select id="trainNormalization"><option value="min_max">Min-Max</option><option value="z_score">Z-score</option><option value="none">不归一化</option></select></label></div>
+  <details class="v2-alg-config" id="trainAdvancedParams"><summary>模型超参数（按需展开）</summary><div id="trainAlgorithmParams" class="v2-param-list"></div></details>
+  <details class="v2-alg-config"><summary>高级时间对齐配置</summary><div class="v2-run-filters"><label class="field"><span>对齐方式</span><select id="trainMethod"><option value="exact">精确时间戳</option><option value="previous">因果匹配</option><option value="nearest">最近邻</option></select></label><label class="field"><span>容差（秒）</span><input id="trainTolerance" type="number" min="0" max="3600" step="any" value="0"></label></div></details>
+  <h2>④ 执行训练</h2><button id="runTrain" type="button" class="primary">开始训练</button>
+</aside>
+<section class="panel v2-run-main" aria-label="训练工作区">
+  <div class="v2-workspace-head"><h2>训练工作区</h2><span id="trainWorkspaceState" class="v2-workspace-state">尚未预览</span></div>
+  <div class="v2-workspace-tabs" role="tablist" aria-label="训练工作区视图">
+    <button type="button" class="active" id="trainDataTab" data-view="data" role="tab" aria-selected="true" aria-controls="trainDataPanel">数据预览</button>
+    <button type="button" id="trainProgressTab" data-view="progress" role="tab" aria-selected="false" aria-controls="trainProgressPanel">训练过程</button>
+    <button type="button" id="trainResultTab" data-view="result" role="tab" aria-selected="false" aria-controls="trainResultPanel">训练结果</button>
+  </div>
+  <section id="trainDataPanel" class="v2-workspace-panel" role="tabpanel" aria-labelledby="trainDataTab"><p class="field-hint">图中数据来自当前选定的训练参量及运行，每次预览只读取已有数据，不执行训练。</p><div id="trainPreview" class="v2-run-preview"></div><div id="trainDataPlot" class="v2-data-plot"></div></section>
+  <section id="trainProgressPanel" class="v2-workspace-panel" role="tabpanel" aria-labelledby="trainProgressTab" hidden>
+    <p id="trainProgressLabel" role="status" aria-live="polite">尚未开始训练</p>
+    <progress id="trainProgressBar" max="100" value="0"></progress><div id="trainProgressMeta" class="field-hint"></div><button id="cancelTrainTask" class="v2-task-cancel" type="button" disabled>取消训练</button>
+  </section>
+  <section id="trainResultPanel" class="v2-workspace-panel" role="tabpanel" aria-labelledby="trainResultTab" hidden>
+    <p id="trainResultEmpty" class="field-hint">训练完成后，将在此显示验证指标、异常判定曲线和发布入口。</p><section id="trainFailurePanel" class="v2-task-diagnostic" role="alert" aria-live="assertive" hidden></section><div id="trainResultChart" class="v2-result-chart" aria-label="训练验证曲线"></div>
+    <div id="trainOutput" class="v2-run-output" role="status" aria-live="polite"></div>
+    <div id="publishPanel" class="v2-publish" hidden><h3>发布模型</h3><label class="field"><span>模型名称</span><input id="publishName" placeholder="例如 RW 正常训练基线"></label><label class="field"><span>模型说明</span><input id="publishDesc"></label><button id="publishModel" type="button" class="primary">发布模型</button></div>
+  </section>
+</section>
+</section>
+<section id="evalView" class="v2-run-grid is-idle" hidden>
+<aside class="panel v2-run-settings"><h2>① 筛选测试数据</h2>
+  <details id="evalCsvImport" class="v2-csv-import"><summary>从本地 CSV 导入评估数据</summary>
+    <p class="field-hint">CSV 保存到独立持久化测试工作区，不写入历史数据库，并保留原有标签。有真实 0/1 标签时可评估指标；没有真实标签时仅对已发布模型运行推理，展示异常分数和报警，不生成监督指标。导入后会自动切换相应操作模式。</p>
+    <section id="evalCsvWizard"><fieldset data-csv-stage="file">
+    <label class="field"><span>评估 CSV 文件</span><input id="evalCsvFile" type="file" accept=".csv,.csv.gz,text/csv,application/gzip"></label>
+    <div class="v2-run-filters"><label class="field"><span>文件编码（检查后确认）</span><select id="evalCsvEncoding"><option value="auto">自动识别</option><option value="utf-8">UTF-8（含 BOM）</option><option value="gb18030">GB18030 / GBK（常见 Excel 格式）</option></select></label><label class="field"><span>列分隔符（检查后确认）</span><select id="evalCsvDelimiter"><option value="auto">自动识别</option><option value=",">逗号 ,</option><option value=";">分号 ;</option><option value="&#9;">制表符 TAB</option></select></label></div>
+    <label class="field"><input id="evalCsvFormatConfirmed" type="checkbox"> 已核对上述文件编码和列分隔符，确认与本地 CSV 实际格式一致</label>
+    <div class="v2-csv-import-actions"><button id="evalCsvInspect" type="button">检查文件与字段</button></div>
+    </fieldset><fieldset data-csv-stage="fields">
+    <div class="v2-run-filters"><label class="field"><span>卫星型号/数据别名</span><input id="evalCsvModel" value="USER-SAT" maxlength="80"></label><label class="field"><span>时间基准或帧序列 ID</span><input id="evalCsvReference" value="local-csv-run" maxlength="120"></label></div>
+    <label class="field"><input id="evalCsvRowOrderConfirmed" type="checkbox"> 无时间列和显式 frame 列时，确认原始 CSV 行序从帧 1 开始</label>
+    <div class="v2-run-filters"><label class="field"><span>分系统（普通列）</span><input id="evalCsvSubsystem" value="ADCS"></label><label class="field"><span>部件（普通列）</span><input id="evalCsvDevice" value="external"></label><label class="field"><span>单位（通用）</span><input id="evalCsvUnit" value="unitless"></label></div>
+    <div id="evalCsvColumns" class="v2-csv-columns" role="group" aria-label="选择评估遥测列"></div>
+    <label class="field"><input id="evalCsvUnknownConfirmed" type="checkbox"> 如果 CSV 没有 label/fault_label，确认按未知真值导入（不自动判定正常）</label>
+    <div class="v2-csv-import-actions"><button id="evalCsvPreview" type="button" disabled>预检导入</button></div>
+    </fieldset><fieldset data-csv-stage="review"><div class="v2-csv-import-actions"><button id="evalCsvCommit" type="button" disabled>确认导入评估来源</button></div></fieldset><fieldset data-csv-stage="done"></fieldset></section>
+    <div class="v2-csv-task-controls"><progress aria-label="评估 CSV 导入进度" aria-describedby="evalCsvProgressMeta" id="evalCsvProgress" max="100" value="0"></progress><span id="evalCsvProgressMeta" class="field-hint" aria-live="polite"></span><button id="evalCsvCancel" type="button" disabled>取消当前操作</button></div>
+    <p id="evalCsvStatus" role="status" class="field-hint" aria-live="polite"></p>
+  </details>
+  <section class="v2-user-csv-picker" aria-label="测试数据来源">
+    <div class="v2-run-filters"><label class="field"><span>测试数据来源</span><select id="evalDataSource"><option value="history">历史数据库</option><option value="user_csv">我的测试 CSV（独立工作区）</option></select></label>
+      <label class="field"><span>已保存测试 CSV</span><select id="evalUserCsvDataset" disabled><option value="">请选择我的 CSV</option></select></label></div>
+    <div class="v2-user-csv-actions"><span id="evalUserCsvMeta" class="field-hint v2-user-csv-meta">用户 CSV 独立保存，不写入历史数据库；无标签文件保持未知真值。</span><button id="evalUserCsvDelete" type="button" disabled>删除所选 CSV</button></div>
+    <details class="v2-user-csv-help"><summary>为什么测试 CSV 不导入历史数据库？</summary><p>这里导入的文件只用于模型评估或无标签推理，保存在“我的测试 CSV”独立工作区。它不会改变历史故障数据库。真实 0/1 标签按原样保留；没有标签时保持未知真值，不会自动当作正常。文件会持续保存，只有主动删除才会清理。</p></details>
+  </section>
+  <div class="v2-run-filters"><label class="field"><span>评估数据划分</span><select id="evalTargetSplit"><option value="validation">验证集</option><option value="test_confirmation">确认测试</option><option value="ood_scene">OOD 场景</option><option value="ood_joint">OOD 组合</option><option value="ood_severity">OOD 严重度</option><option value="test">用户导入测试</option></select></label><label class="field"><span>运行标识（合成别名）</span><select id="evalSourceModel"><option value="">全部测试型号</option></select></label></div><div id="evalRuns" hidden></div>
+  <div class="v2-run-filters"><label class="field"><span>分系统</span><select id="evalFeatureSubsystem"><option value="">全部分系统</option></select></label><label class="field"><span>部件</span><select id="evalFeatureDevice"><option value="">全部部件</option></select></label></div>
+  <label class="field"><span>搜索参量</span><input id="evalFeatureSearch" type="search" placeholder="例如 speed、gyro…"></label>
+  <div id="evalFeatureColumns" class="v2-run-channels" role="group" aria-label="测试参量列"></div>
+  <p id="evalFeatureSelected" class="field-hint">可先选测试参量，再筛选兼容模型；模型使用训练时确定的特征顺序。</p>
+  <div class="v2-run-filters"><label class="field"><span>开始时间</span><input id="evalStart" type="datetime-local" step="1"></label><label class="field"><span>结束时间</span><input id="evalEnd" type="datetime-local" step="1"></label></div><div class="v2-time-coverage" id="evalTimeCoverage" role="status" aria-live="polite">选择参量或模型后将显示可用时间范围。</div>
+  <button id="previewEval" type="button">预览测试数据</button>
+  <h2>② 选择已发布模型</h2><label class="field"><span>模型</span><select id="evalModel"></select></label><p id="evalContract" class="field-hint"></p>
+  <details class="v2-csv-import"><summary>导入模型文件 / 导出当前模型</summary>
+    <p class="field-hint">为防止加载恶意序列化文件，只接受本安装实例签发的 <code>.aas.zip</code> 认证模型包；普通 pickle、joblib、Python 脚本及其他 ZIP 均不支持。请先从本系统导出模型，再在此导入。</p>
+    <a id="evalModelExport" hidden>导出当前已发布模型（AAS 认证包）</a>
+    <label class="field"><span>选择本机已签发的模型包</span><input id="evalModelFile" type="file" accept=".aas.zip,application/zip"></label>
+    <label class="field"><span>导入后的模型名称</span><input id="evalModelImportName" value="导入的诊断模型" maxlength="100"></label>
+    <div class="v2-csv-import-actions"><button id="evalModelImport" type="button">校验并导入模型</button></div>
+    <p id="evalModelImportStatus" class="field-hint" role="status" aria-live="polite"></p>
+  </details>
+  <div id="evalTruthControls"><h2>③ 设置评估真值</h2>
+  <label class="field"><span>评估目标</span><select id="evalLabelScope">
+    <option value="run">卫星运行异常（运行级标签）</option>
+    <option value="component">指定部件故障（位置凭据）</option>
+    <option value="parameter">指定参量事件（显式区间）</option>
+  </select></label>
+  <label class="field" id="evalLabelEntityField" hidden><span>故障对象</span><select id="evalLabelEntity"></select></label>
+  <p id="evalLabelHelp" class="field-hint" role="status">当前评估整次运行是否异常，不代表每个部件或参量本身故障。</p></div>
+  <h2>④ 进行评估</h2><button id="runEval" type="button" class="primary">开始评估（不重新训练）</button>
+</aside>
+<section class="panel v2-run-main" aria-label="模型评估工作区">
+  <div class="v2-workspace-head"><h2>评估工作区</h2><span id="evalWorkspaceState" class="v2-workspace-state">尚未预览</span></div>
+  <div class="v2-workspace-tabs" role="tablist" aria-label="评估工作区视图">
+    <button type="button" class="active" id="evalDataTab" data-view="data" role="tab" aria-selected="true" aria-controls="evalDataPanel">测试数据预览</button>
+    <button type="button" id="evalProgressTab" data-view="progress" role="tab" aria-selected="false" aria-controls="evalProgressPanel">评估过程</button><button type="button" id="evalResultTab" data-view="result" role="tab" aria-selected="false" aria-controls="evalResultPanel">评估结果</button>
+  </div>
+  <section id="evalDataPanel" class="v2-workspace-panel" role="tabpanel" aria-labelledby="evalDataTab"><p class="field-hint">查看当前测试参量、来源运行与可用帧范围；有标签运行会展示真值，无标签测试只展示原始遥测。已完成的结果仍可随时切回查看。</p><div id="evalPreview" class="v2-run-preview"></div><div id="evalDataPlot" class="v2-data-plot"></div></section>
+  <section id="evalProgressPanel" class="v2-workspace-panel" role="tabpanel" aria-labelledby="evalProgressTab" hidden><p id="evalProgressLabel" role="status" aria-live="polite">尚未开始评估</p><progress id="evalProgressBar" max="100" value="0"></progress><div id="evalProgressMeta" class="field-hint"></div><button id="cancelEvalTask" class="v2-task-cancel" type="button" disabled>取消评估/推理</button></section>
+  <section id="evalResultPanel" class="v2-workspace-panel" role="tabpanel" aria-labelledby="evalResultTab" hidden><p id="evalResultEmpty" class="field-hint">评估完成后，将在此显示真实标签、报警点和检测指标。</p><section id="evalFailurePanel" class="v2-task-diagnostic" role="alert" aria-live="assertive" hidden></section><div id="evalResultChart" class="v2-result-chart" aria-label="评估真值与报警曲线"></div><div id="evalOutput" class="v2-run-output" role="status" aria-live="polite"></div></section>
+</section>
+</section>
+</main><script src="aas-report-navigation.js?v=p0"></script><script src="task-client.js?v=p3d6"></script><script src="runner-v2.js?v=score1"></script><script src="runner-workflow-guide.js?v=p3g0"></script><script src="csv-import-wizard.js?v=p3g0-3"></script><script src="runner-csv-import.js?v=p3g0-3"></script><script src="runner-model-bundle.js?v=p1b"></script></body></html>

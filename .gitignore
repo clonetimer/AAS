@@ -1,0 +1,25 @@
+# Runtime data and local credentials
+configs/.aas_admin.json
+datasets/
+models/
+logs/
+outputs/
+.venv/
+node_modules/
+
+# Python and test caches
+__pycache__/
+.pytest_cache/
+*.py[cod]
+*.pyo
+.mypy_cache/
+.ruff_cache/
+
+# Local work and packaging
+.worktrees/
+.superpowers/
+*.sqlite
+*.sqlite3
+*.db
+*.building
+*.log

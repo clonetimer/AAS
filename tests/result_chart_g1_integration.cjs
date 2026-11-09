@@ -1,0 +1,16 @@
+const fs=require('fs'),path=require('path'),vm=require('vm');
+const base=path.join(__dirname,'../web/visualization');
+const source=fs.readFileSync(path.join(base,'result-chart.js'),'utf8');
+const ctx={console,Date,JSON,Number,Array,globalThis:{}};vm.createContext(ctx);vm.runInContext(source,ctx);
+const api=ctx.globalThis.AASResultChart;
+if(!api||typeof api.evidenceSummary!=='function'||typeof api.buildReportSnapshot!=='function')throw new Error('G1 APIs not exported');
+const trace={algorithm:'cusum',score_only:true,chart_trace:{rows:[{timestamp:0,label:null},{timestamp:1,label:null}],scores:[.1,.9],pred_labels:[0,1],decision_threshold:.5,event_overlay:{items:[{event_id:'E1',label:1,start_timestamp:0,end_timestamp:1}]}}};
+const evidence=api.evidenceSummary(trace,{source_name:'user-test.csv',source_sha256:'sha'});
+if(evidence.truth_verified||evidence.label_status!=='unknown')throw new Error('unknown truth must remain unknown');
+const snap=api.buildReportSnapshot(trace,{result_sha256:'digest'});
+if(snap.metrics!==null||snap.unknown_truth_preserved!==true||snap.events.length!==1)throw new Error('report snapshot incorrect');
+const report=fs.readFileSync(path.join(base,'reports.js'),'utf8');
+if(!report.includes("payload?.rows?.find(row=>row.chart_trace)?.chart_trace"))throw new Error('report page must use real archived chart_trace');
+const html=fs.readFileSync(path.join(base,'reports.html'),'utf8');
+for(const id of ['g1EvidenceCard','g1EventEvidence','exportG1EvidenceBtn'])if(!html.includes(id))throw new Error('missing G1 report UI '+id);
+console.log('G1 result-chart/report-page integration contract: PASS');
