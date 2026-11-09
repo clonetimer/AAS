@@ -1,0 +1,20 @@
+--- a/web/visualization/runner-v2.js
++++ b/web/visualization/runner-v2.js
+@@
+ const roleCatalogs={train:null,eval:null};let historyCatalog=null;
++// Bounded allowlist: preferences only, never credentials, task IDs, CSV bytes,
++// previews, receipts or preflight authorization.
++const DRAFT_KEY='aas.runner.safe-draft.v1',DRAFT_MAX=4096;
++const DRAFT_FIELDS={train:['trainDataSource','trainUserCsvDataset','trainStart','trainEnd','trainAlgorithm'],eval:['evalDataSource','evalUserCsvDataset','evalStart','evalEnd','evalSourceModel','evalTargetSplit']};
++function readRunnerDraft(){try{const raw=localStorage.getItem(DRAFT_KEY);if(!raw||raw.length>DRAFT_MAX)return null;const value=JSON.parse(raw);return value?.version===1&&value.fields&&typeof value.fields==='object'?value.fields:null;}catch(_){return null;}}
++function saveRunnerDraft(){const fields={};for(const ids of Object.values(DRAFT_FIELDS))for(const id of ids){const node=$(id);if(node&&String(node.value||'').length<=256)fields[id]=String(node.value||'');}const raw=JSON.stringify({version:1,saved_at:new Date().toISOString(),fields});if(raw.length<=DRAFT_MAX){try{localStorage.setItem(DRAFT_KEY,raw);}catch(_){}}}
++function restoreRunnerDraft(fields){if(!fields)return;for(const ids of Object.values(DRAFT_FIELDS))for(const id of ids){const node=$(id),value=fields[id];if(!node||typeof value!=='string'||value.length>256)continue;if(node.tagName==='SELECT'&&![...node.options].some(option=>option.value===value))continue;if(node.type==='datetime-local'&&value&&!/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}(:\\d{2})?$/.test(value))continue;node.value=value;}}
+@@
+ async function initialize(){
++ const savedDraft=readRunnerDraft();
+@@
+  await loadParameters();await refreshModels();
++ restoreRunnerDraft(savedDraft);
++ for(const ids of Object.values(DRAFT_FIELDS))for(const id of ids){const node=$(id);if(node&&!node.dataset.draftBound){node.dataset.draftBound='1';node.addEventListener('change',saveRunnerDraft);node.addEventListener('input',saveRunnerDraft);}}
++ window.addEventListener('pagehide',saveRunnerDraft);saveRunnerDraft();
+ }

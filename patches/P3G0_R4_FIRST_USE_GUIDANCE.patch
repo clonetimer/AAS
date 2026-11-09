@@ -1,0 +1,47 @@
+diff --git a/tests/runner_csv_first_use_help.cjs b/tests/runner_csv_first_use_help.cjs
+new file mode 100644
+index 0000000..e0657bc
+--- /dev/null
++++ b/tests/runner_csv_first_use_help.cjs
+@@ -0,0 +1,26 @@
++const fs = require('fs');
++const path = require('path');
++const html = fs.readFileSync(path.join(__dirname, '../web/visualization/runner.html'), 'utf8');
++function check(condition, message) { if (!condition) throw new Error(message); }
++function section(label) {
++  const marker = `aria-label="${label}"`;
++  const start = html.indexOf(marker);
++  check(start >= 0, `${label}: source section exists`);
++  const end = html.indexOf('</section>', start);
++  check(end > start, `${label}: source section closes`);
++  return html.slice(start, end);
++}
++const train = section('训练数据来源');
++const test = section('测试数据来源');
++for (const [name, source, phrases] of [
++  ['train', train, ['独立工作区', '不写入历史数据库', '只有主动删除', '正在被任务使用']],
++  ['test', test, ['独立工作区', '不写入历史数据库', '未知真值', '只有主动删除']]
++]) {
++  check(source.includes('v2-user-csv-help'), `${name}: first-use explanation exists`);
++  for (const phrase of phrases) check(source.includes(phrase), `${name}: missing ${phrase}`);
++  check(/<select id="(?:train|eval)DataSource">/.test(source), `${name}: source selector exists`);
++  check(/button id="(?:train|eval)UserCsvDelete"/.test(source), `${name}: explicit delete control exists`);
++}
++check(html.includes('id="trainCsvFormatConfirmed"'), 'train explicit format confirmation exists');
++check(html.includes('id="evalCsvFormatConfirmed"'), 'test explicit format confirmation exists');
++console.log('First-use CSV destination guidance and explicit lifecycle controls: PASS');
+diff --git a/web/visualization/runner.html b/web/visualization/runner.html
+index 6895350..d3af998 100644
+--- a/web/visualization/runner.html
++++ b/web/visualization/runner.html
+@@ -1,6 +1,6 @@
+-<title>智能检测算法评估 - AAS</title><link rel="stylesheet" href="styles-light.css"><link rel="stylesheet" href="runner-v2.css"><link rel="stylesheet" href="runner-workflow-guide.css"><link rel="stylesheet" href="csv-import-wizard.css"><style>.v2-user-csv-picker{border:1px solid #dce5ee;border-radius:10px;padding:10px 12px;margin:12px 0;background:#f8fbfd}.v2-user-csv-actions{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}.v2-user-csv-actions button{border:1px solid #e2b9bd;border-radius:7px;padding:6px 10px;background:#fff6f6;color:#9d2935}.v2-user-csv-actions button:disabled{opacity:.45}.v2-user-csv-picker .field{margin:5px 0}</style></head>
++<title>智能检测算法评估 - AAS</title><link rel="stylesheet" href="styles-light.css"><link rel="stylesheet" href="runner-v2.css"><link rel="stylesheet" href="runner-workflow-guide.css"><link rel="stylesheet" href="csv-import-wizard.css"><style>.v2-user-csv-picker{border:1px solid #dce5ee;border-radius:10px;padding:10px 12px;margin:12px 0;background:#f8fbfd}.v2-user-csv-actions{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}.v2-user-csv-actions button{border:1px solid #e2b9bd;border-radius:7px;padding:6px 10px;background:#fff6f6;color:#9d2935}.v2-user-csv-actions button:disabled{opacity:.45}.v2-user-csv-picker .field{margin:5px 0}.v2-user-csv-help{margin:8px 0 0;padding:8px 10px;border-top:1px solid #e3eaf1;color:#526477;font-size:.9em}.v2-user-csv-help summary{cursor:pointer;font-weight:600}.v2-user-csv-help p{margin:7px 0 0;line-height:1.55}.v2-user-csv-meta{display:block;min-width:0;overflow-wrap:anywhere}</style></head>
+@@ -27,7 +27,8 @@
+-    <div class="v2-user-csv-actions"><span id="trainUserCsvMeta" class="field-hint">用户 CSV 独立保存，不写入历史数据库；退出和重启后仍保留。</span><button id="trainUserCsvDelete" type="button" disabled>删除所选 CSV</button></div>
++    <div class="v2-user-csv-actions"><span id="trainUserCsvMeta" class="field-hint v2-user-csv-meta">用户 CSV 独立保存，不写入历史数据库；退出和重启后仍保留。</span><button id="trainUserCsvDelete" type="button" disabled>删除所选 CSV</button></div>
++    <details class="v2-user-csv-help"><summary>为什么训练 CSV 不导入历史数据库？</summary><p>这里导入的文件只用于当前训练流程，保存在“我的训练 CSV”独立工作区。它不会改变历史故障数据库，也不会自动被历史库浏览页面检索。你可以在训练工作区重复使用；只有主动删除才会清理。正在被任务使用的文件暂时不能删除。</p></details>
+@@ -85,7 +86,8 @@
+-    <div class="v2-user-csv-actions"><span id="evalUserCsvMeta" class="field-hint">用户 CSV 独立保存，不写入历史数据库；无标签文件保持未知真值。</span><button id="evalUserCsvDelete" type="button" disabled>删除所选 CSV</button></div>
++    <div class="v2-user-csv-actions"><span id="evalUserCsvMeta" class="field-hint v2-user-csv-meta">用户 CSV 独立保存，不写入历史数据库；无标签文件保持未知真值。</span><button id="evalUserCsvDelete" type="button" disabled>删除所选 CSV</button></div>
++    <details class="v2-user-csv-help"><summary>为什么测试 CSV 不导入历史数据库？</summary><p>这里导入的文件只用于模型评估或无标签推理，保存在“我的测试 CSV”独立工作区。它不会改变历史故障数据库。真实 0/1 标签按原样保留；没有标签时保持未知真值，不会自动当作正常。文件会持续保存，只有主动删除才会清理。</p></details>

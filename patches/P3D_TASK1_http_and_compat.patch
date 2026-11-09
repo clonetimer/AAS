@@ -1,0 +1,150 @@
+diff --git a/scripts/server/application_context.py b/scripts/server/application_context.py
+index ce0bc09..7f527c7 100644
+--- a/scripts/server/application_context.py
++++ b/scripts/server/application_context.py
+@@ -24,12 +24,13 @@ from scripts.server.algorithm_process import AlgorithmProcessService
+ # Used by active HTTP handlers and their domain-specific adapters.
+ HTTP_OPERATIONS = frozenset({
+     'bind_task_thread', 'check_all_detectors', 'check_clean_table_status',
+-    'complete_task', 'create_model', 'create_training_task', 'delete_history_table',
++    'complete_task', 'create_model', 'create_task', 'create_training_task', 'delete_history_table',
+     'delete_model', 'get_all_detector_schemas', 'get_available_algorithms',
+     'get_detector_config_schema', 'get_experiment_details', 'get_fault_tables',
+     'get_model', 'get_models', 'get_simulation_fault_types',
+     'get_simulation_status', 'get_simulation_tables', 'get_task_status',
+     'get_public_task_status', 'list_public_task_statuses', 'count_public_task_statuses',
++    'request_cancel_task', 'is_cancel_requested', 'set_task_cancellable',
+     'home_dashboard_snapshot', 'import_algorithm_separate', 'import_data',
+     'import_data_multi', 'install_all_missing_dependencies',
+     'install_detector_dependencies', 'json_response', 'list_databases',
+@@ -108,7 +109,8 @@ def context_from_runtime(runtime: Any) -> HttpApplicationContext:
+     )
+     supervisor = AlgorithmProcessService(Path(runtime.ROOT), model_registry.MODELS_DIR)
+     for name in ('bind_task_thread', 'update_task_progress',
+-                 'create_training_task', 'complete_task', 'get_task_status',
++                 'create_task', 'create_training_task', 'request_cancel_task',
++                 'is_cancel_requested', 'set_task_cancellable', 'complete_task', 'get_task_status',
+                  'get_public_task_status', 'list_public_task_statuses',
+                  'count_public_task_statuses', 'record_terminal_task'):
+         operations[name] = getattr(tasks, name)
+diff --git a/scripts/server/handler_get.py b/scripts/server/handler_get.py
+index b759b0b..c428662 100644
+--- a/scripts/server/handler_get.py
++++ b/scripts/server/handler_get.py
+@@ -228,14 +228,16 @@ class GetRoutesMixin:
+                     limit = max(1, min(100, int(raw_limit)))
+                 except (TypeError, ValueError, OverflowError):
+                     limit = 50
+-                items = main.list_public_task_statuses(limit)
++                include_all = params.get('include_all', ['0'])[0] == '1'
++                items = main.list_public_task_statuses(limit, include_all=include_all)
+                 return main.json_response(self, {
+-                    'items': items, 'total': main.count_public_task_statuses(), 'limit': limit,
++                    'items': items, 'total': main.count_public_task_statuses(include_all=include_all),
++                    'limit': limit, 'include_all': include_all,
+                 })
+             except (OSError, RuntimeError, ValueError, TypeError) as exc:
+                 return main.json_response(self, {'error': '任务历史暂时不可用', 'detail': type(exc).__name__}, 503)
+ 
+-        if parsed.path == "/api/train-status":
++        if parsed.path in ('/api/train-status', '/api/task-status'):
+             try:
+                 params = parse_qs(parsed.query)
+                 task_id = params.get("task_id", [None])[0]
+diff --git a/scripts/server/handler_post.py b/scripts/server/handler_post.py
+index d1360fb..4d13521 100644
+--- a/scripts/server/handler_post.py
++++ b/scripts/server/handler_post.py
+@@ -56,6 +56,24 @@ class PostRoutesMixin:
+                 raise ValueError
+         except ValueError:
+             return main.json_response(self, {"error": "invalid Content-Length"}, 400)
++        if parsed.path == '/api/task-cancel':
++            if not 0 < length <= 4096:
++                return main.json_response(self, {'error': '取消请求无效'}, 400)
++            try:
++                payload = json.loads(self.rfile.read(length).decode('utf-8'))
++                if not isinstance(payload, dict) or set(payload) != {'task_id', 'confirm'}:
++                    raise ValueError('取消请求只接受 task_id 和 confirm')
++                task_id = payload.get('task_id')
++                if not isinstance(task_id, str) or not task_id or len(task_id) > 40:
++                    raise ValueError('任务编号无效')
++                if payload.get('confirm') is not True:
++                    raise ValueError('取消任务必须明确确认 confirm=true')
++                result = main.request_cancel_task(task_id)
++                if result is None:
++                    return main.json_response(self, {'error': '任务不存在'}, 404)
++                return main.json_response(self, result, 202 if result.get('accepted') else 409)
++            except (ValueError, TypeError, UnicodeDecodeError, json.JSONDecodeError) as exc:
++                return main.json_response(self, {'error': str(exc)}, 400)
+         if parsed.path == '/api/v2/models/import-bundle':
+             from scripts.server.v2_model_bundle import MAX_BUNDLE_BYTES, install_model_bundle
+             if not 0 < length <= MAX_BUNDLE_BYTES:
+                 return main.json_response(self, {"error": "请求体大小无效"}, 400)
+diff --git a/scripts/visualization_server.py b/scripts/visualization_server.py
+index 966756d..a6e27ea 100644
+--- a/scripts/visualization_server.py
++++ b/scripts/visualization_server.py
+@@ -97,7 +97,7 @@ def _legacy_task_runtime() -> TaskRuntime:
+     """Respect legacy monkeypatching of module-level task dependencies."""
+     return TaskRuntime(tasks=TRAINING_TASKS, lock=TASKS_LOCK,
+         resource_tracker=TASK_RESOURCE_TRACKER, execution_registry=EXECUTION_REGISTRY,
+-        state_dir=TASK_RUNTIME.state_dir)
++        state_dir=TASK_RUNTIME.state_dir, cancel_events=TASK_RUNTIME.cancel_events)
+ 
+ def bind_task_thread(task_id):
+     return _legacy_task_runtime().bind_task_thread(task_id)
+ 
+ def update_task_progress(task_id, progress, message=None, stage=None):
+     return _legacy_task_runtime().update_task_progress(task_id, progress, message, stage)
+ 
+-def create_training_task(task_id, config):
+-    return _legacy_task_runtime().create_training_task(task_id, config)
++def create_task(task_id, task_type, config=None):
++    return _legacy_task_runtime().create_task(task_id, task_type, config)
+ 
+-def complete_task(task_id, result, error=None, failure=None):
++def create_training_task(task_id, config, task_type='training'):
++    return _legacy_task_runtime().create_training_task(task_id, config, task_type=task_type)
++
++def request_cancel_task(task_id):
++    return _legacy_task_runtime().request_cancel_task(task_id)
++
++def is_cancel_requested(task_id):
++    return _legacy_task_runtime().is_cancel_requested(task_id)
++
++def set_task_cancellable(task_id, cancellable, reason=None):
++    return _legacy_task_runtime().set_task_cancellable(task_id, cancellable, reason)
++
++def complete_task(task_id, result, error=None, failure=None, *, cancelled=False):
+     # TASK_RESOURCE_TRACKER.finish is delegated into TaskRuntime.complete_task.
+-    return _legacy_task_runtime().complete_task(task_id, result, error, failure)
++    return _legacy_task_runtime().complete_task(task_id, result, error, failure, cancelled=cancelled)
+ 
+ def get_task_status(task_id):
+     return _legacy_task_runtime().get_task_status(task_id)
+@@ -118,11 +130,11 @@ def get_task_status(task_id):
+ def get_public_task_status(task_id):
+     return _legacy_task_runtime().get_public_task_status(task_id)
+ 
+-def list_public_task_statuses(limit=50):
+-    return _legacy_task_runtime().list_public_task_statuses(limit)
++def list_public_task_statuses(limit=50, include_all=False):
++    return _legacy_task_runtime().list_public_task_statuses(limit, include_all=include_all)
+ 
+-def count_public_task_statuses():
+-    return _legacy_task_runtime().count_public_task_statuses()
++def count_public_task_statuses(include_all=False):
++    return _legacy_task_runtime().count_public_task_statuses(include_all=include_all)
+ 
+ def setup_logging(config_path: str = "config.yaml") -> dict:
+     """配置日志系统。"""
+diff --git a/.gitignore b/.gitignore
+index 2fa776e..2409471 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -8,3 +8,4 @@ outputs/
+ .venv/
+ 
+ .worktrees/
++.superpowers/

@@ -1,0 +1,43 @@
+diff --git a/tests/simulation_plugin_fault_guidance.cjs b/tests/simulation_plugin_fault_guidance.cjs
+new file mode 100644
+index 0000000..a9ebc92
+--- /dev/null
++++ b/tests/simulation_plugin_fault_guidance.cjs
+@@ -0,0 +1,12 @@
++const fs = require('fs');
++const path = require('path');
++const js = fs.readFileSync(path.join(__dirname, '../web/visualization/simulation.js'), 'utf8');
++const registry = fs.readFileSync(path.join(__dirname, '../src/fault_plugins/registry.py'), 'utf8');
++function check(ok, message) { if (!ok) throw new Error(message); }
++check(js.includes('故障程度 s 是相对幅值系数，不是参量的物理单位'), 'severity semantics must be explicit');
++check(js.includes('（相对幅值系数）'), 'current severity must not be displayed as an engineering unit');
++check(js.includes('(meta.config_schema || []).forEach(field =>'), 'plugin parameter schema must drive parameter controls');
++check(js.includes('if (field.description)'), 'plugin parameter descriptions must be displayed');
++check(registry.includes('"config_schema"'), 'fault plugin registry must expose parameter schema');
++check(js.includes('info.formula') && js.includes('info.description'), 'fault formula and description must remain visible');
++console.log('Historical simulator plugin parameter guidance contract: PASS');
+diff --git a/web/visualization/simulation.js b/web/visualization/simulation.js
+index 1f64ee5..3cbbd5a 100644
+--- a/web/visualization/simulation.js
++++ b/web/visualization/simulation.js
+@@ -155,8 +155,11 @@ function renderFaultFormulaHelp() {
+   const severity = els.severityPreset?.value === 'custom'
+     ? Number(els.severityCustom?.value)
+     : Number(els.severityPreset?.value);
++  const severityMeaning = usesSeverity
++    ? '<div class="muted">故障程度 s 是相对幅值系数，不是参量的物理单位；实际变化量由该故障类型公式和原始参量值共同决定。请结合下方公式理解，不要将 s 直接当作 ℃、V 或其他工程单位。</div>'
++    : '';
+   const current = usesSeverity && Number.isFinite(severity)
+-    ? `<div class="muted">当前故障程度 s=${severity.toFixed(2)}（约 ${Math.round(severity * 100)}%）</div>`
++    ? `<div class="muted">当前故障程度 s=${severity.toFixed(2)}（相对幅值系数）</div>`
+     : '';
+   const source = info.builtin ? '内置故障类型' : '自定义故障类型插件';
+   const formula = info.formula
+@@ -169,6 +172,7 @@ function renderFaultFormulaHelp() {
+     <div class="fault-help-title">${escapeHtml(info.label || info.name)} <span class="muted">· ${source}</span></div>
+     ${formula}
+     ${description}
++    ${severityMeaning}
+     ${current}
+   `;
+ }

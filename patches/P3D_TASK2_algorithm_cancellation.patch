@@ -1,0 +1,297 @@
+diff --git a/scripts/server/algorithm_process.py b/scripts/server/algorithm_process.py
+index 7656a38..b58a4dc 100644
+--- a/scripts/server/algorithm_process.py
++++ b/scripts/server/algorithm_process.py
+@@ -27,6 +27,10 @@ class AlgorithmTimeoutError(AlgorithmWorkerError):
+     """Worker exceeded its configured wall clock limit."""
+ 
+ 
++class AlgorithmCancelledError(AlgorithmWorkerError):
++    """The user cancelled the job and its worker process tree was stopped."""
++
++
+ def _positive_int(name: str, default: int, upper: int, *, allow_zero: bool = False) -> int:
+     value = os.environ.get(name, str(default))
+     try:
+@@ -83,18 +87,21 @@ class AlgorithmProcessService:
+     def run_training(self, *, algorithm: str, algorithm_params: dict, selection: dict,
+                      train_ratio: float, normalization_method: str,
+                      training_strategy: str, expected: dict, database: str,
+-                     progress: Callable[[Any, str], None] | None = None) -> dict:
++                     progress: Callable[[Any, str], None] | None = None,
++                     cancel_requested: Callable[[], bool] | None = None) -> dict:
+         return self._run('training', {
+             'algorithm': algorithm, 'algorithm_params': algorithm_params,
+             'selection': selection, 'train_ratio': train_ratio,
+             'normalization_method': normalization_method,
+             'training_strategy': training_strategy, 'expected': expected,
+             'database': database,
+-        }, progress)
++        }, progress, cancel_requested=cancel_requested)
+ 
+     def run_evaluation(self, *, algorithm: str, selection: dict, expected: dict,
+                        scaling: dict, feature_columns: list, model_dir: Path,
+-                       database: str, label_target: dict | None = None) -> dict:
++                       database: str, label_target: dict | None = None,
++                       progress: Callable[[Any, str], None] | None = None,
++                       cancel_requested: Callable[[], bool] | None = None) -> dict:
+         target = Path(model_dir).resolve()
+         if not target.is_relative_to(self.models_dir) or target == self.models_dir:
+             raise ValueError('Model artifact is outside the managed model directory')
+@@ -103,20 +110,22 @@ class AlgorithmProcessService:
+             'scaling': scaling, 'feature_columns': feature_columns,
+             'model_dir': str(target), 'database': database,
+             'label_target': label_target,
+-        })
++        }, progress, cancel_requested=cancel_requested)
+ 
+     def run_score_only(self, *, algorithm: str, selection: dict, expected: dict,
+                        scaling: dict, feature_columns: list, model_dir: Path,
+-                       database: str) -> dict:
++                       database: str, progress: Callable[[Any, str], None] | None = None,
++                       cancel_requested: Callable[[], bool] | None = None) -> dict:
+         target = Path(model_dir).resolve()
+         if not target.is_relative_to(self.models_dir) or target == self.models_dir:
+             raise ValueError('Model artifact is outside managed model directory')
+         return self._run('score_only', {
+             'algorithm':algorithm,'selection':selection,'expected':expected,
+             'scaling':scaling,'feature_columns':feature_columns,
+-            'model_dir':str(target),'database':database})
++            'model_dir':str(target),'database':database}, progress, cancel_requested=cancel_requested)
+ 
+-    def _run(self, action: str, payload: dict, progress=None) -> dict:
++    def _run(self, action: str, payload: dict, progress=None,
++             cancel_requested: Callable[[], bool] | None = None) -> dict:
+         if action not in ('training', 'evaluation', 'score_only'):
+             raise ValueError('Only reviewed V2 algorithm jobs are supported')
+         timeout = _positive_int('AAS_ALGORITHM_TIMEOUT_SECONDS', 1800, 86400)
+@@ -124,6 +133,8 @@ class AlgorithmProcessService:
+         if not self.semaphore.acquire(blocking=False):
+             raise AlgorithmWorkerError('算法执行并发已达到上限，请稍后重试')
+         try:
++            if cancel_requested is not None and cancel_requested():
++                raise AlgorithmCancelledError('用户已取消算法任务')
+             self.job_dir.mkdir(parents=True, exist_ok=True)
+             # The temporary directory stores result/progress only. Request data
+             # is transmitted through stdin and never persisted in job files.
+@@ -162,6 +173,8 @@ class AlgorithmProcessService:
+                     proc.stdin.write(data)
+                     proc.stdin.close()
+                     while proc.poll() is None:
++                        if cancel_requested is not None and cancel_requested():
++                            raise AlgorithmCancelledError('用户取消任务，算法子进程已终止')
+                         if time.monotonic() >= deadline:
+                             raise AlgorithmTimeoutError(f'算法子进程超过 {timeout} 秒，已终止')
+                         if memory_mb and _tree_rss(proc.pid) > memory_mb * 1024 * 1024:
+@@ -172,6 +185,8 @@ class AlgorithmProcessService:
+                             if progress is not None:
+                                 progress(current['progress'], current['message'])
+                         time.sleep(.12)
++                    if cancel_requested is not None and cancel_requested():
++                        raise AlgorithmCancelledError('用户取消任务，算法子进程已终止')
+                     current = _read_progress(workspace / 'progress.json')
+                     if current is not None and current != last_update:
+                         progress(current['progress'], current['message'])
+diff --git a/scripts/server/task_runtime.py b/scripts/server/task_runtime.py
+index 433e72c..cd0f9f9 100644
+--- a/scripts/server/task_runtime.py
++++ b/scripts/server/task_runtime.py
+@@ -249,18 +249,16 @@ class TaskRuntime:
+             return bool(event and event.is_set())
+ 
+     def set_task_cancellable(self, task_id: str, cancellable: bool,
+-                             reason: str | None = None) -> None:
++                             reason: str | None = None) -> bool:
+         with self.lock:
+             task = self.tasks.get(task_id)
+-            if task is None or task.get('status') not in ('running', 'cancelling'):
+-                return
+-            if task.get('status') == 'cancelling' and not cancellable:
+-                # A cancellation already accepted must not be silently revoked.
+-                return
++            if task is None or task.get('status') != 'running':
++                return False
+             task['cancellable'] = bool(cancellable)
+             task['cancel_reason'] = (str(reason)[:160] if reason else None) if not cancellable else None
+             task['last_update'] = time.time()
+             self._write_status(task_id, task)
++            return True
+ 
+     def complete_task(self, task_id: str, result: Any, error: str | None = None,
+                       failure: dict[str, Any] | None = None, *, cancelled: bool = False) -> None:
+diff --git a/scripts/server/telemetry_v2_routes.py b/scripts/server/telemetry_v2_routes.py
+index 8985d0e..62bc4e6 100644
+--- a/scripts/server/telemetry_v2_routes.py
++++ b/scripts/server/telemetry_v2_routes.py
+@@ -107,6 +107,8 @@ def _training(main, body):
+         sel['feature_keys']=list(preview['feature_keys'])
+     task_id=uuid.uuid4().hex
+     main.create_training_task(task_id,request)
++    cancel_check=getattr(main,'is_cancel_requested',lambda _task_id: False)
++    set_cancellable=getattr(main,'set_task_cancellable',None)
+     def work():
+         summary = None
+         receipt_created = False
+@@ -130,7 +132,8 @@ def _training(main, body):
+                     training_strategy=request.get('training_strategy','standard'),
+                     expected=expected_sources, database=active_name(),
+                     progress=lambda progress,message: main.update_task_progress(
+-                        task_id,progress,message,stage='algorithm_execution'))
++                        task_id,progress,message,stage='algorithm_execution'),
++                    cancel_requested=lambda: cancel_check(task_id))
+             else:
+                 # Compatibility for external scripts that pass an unbound facade.
+                 # All HTTP-bound contexts use the isolated subprocess supervisor.
+@@ -144,6 +147,12 @@ def _training(main, body):
+                     alignment_method=sel.get('method','exact'),
+                     alignment_tolerance_seconds=sel.get('tolerance_seconds',0),
+                     task_id=task_id)
++            from scripts.server.algorithm_process import AlgorithmCancelledError
++            if cancel_check(task_id):
++                raise AlgorithmCancelledError('用户取消训练')
++            if callable(set_cancellable) and not set_cancellable(
++                    task_id, False, reason='模型校验、来源记录和报告归档阶段不可中断'):
++                raise AlgorithmCancelledError('用户取消训练')
+             stage = 'model_validation'
+             main.update_task_progress(task_id,85,'检查已保存的模型文件',stage=stage)
+             model_info=summary.get('model_info') or {}
+@@ -177,7 +186,11 @@ def _training(main, body):
+             if not receipt_created:
+                 from scripts.server.training_reliability import cleanup_unpublished_artifact
+                 cleanup_unpublished_artifact(main, summary)
+-            main.complete_task(task_id,None,str(exc),failure=diagnose_failure(exc,stage,'training'))
++            from scripts.server.algorithm_process import AlgorithmCancelledError
++            if isinstance(exc, AlgorithmCancelledError) or cancel_check(task_id):
++                main.complete_task(task_id, None, cancelled=True)
++            else:
++                main.complete_task(task_id,None,str(exc),failure=diagnose_failure(exc,stage,'training'))
+     try:
+         threading.Thread(target=work,daemon=True).start()
+     except Exception as exc:
+diff --git a/tests/test_task_algorithm_cancellation.py b/tests/test_task_algorithm_cancellation.py
+new file mode 100644
+index 0000000..b380cc7
+--- /dev/null
++++ b/tests/test_task_algorithm_cancellation.py
+@@ -0,0 +1,121 @@
++from __future__ import annotations
++
++import subprocess
++import sys
++import threading
++import time
++from types import SimpleNamespace
++
++import pytest
++
++from scripts.server.algorithm_process import (
++    AlgorithmCancelledError,
++    AlgorithmProcessService,
++)
++from scripts.server.task_runtime import TaskRuntime
++
++
++def test_algorithm_process_service_terminates_worker_and_releases_slot_on_cancel(tmp_path, monkeypatch):
++    import scripts.server.algorithm_process as process_module
++
++    models_dir = tmp_path / 'models'
++    models_dir.mkdir()
++    service = AlgorithmProcessService(tmp_path, models_dir, max_parallel=1)
++    spawned = {}
++
++    def spawn_sleeping_worker(command, options):
++        proc = subprocess.Popen(
++            [sys.executable, '-c', 'import time; time.sleep(30)'], **options)
++        spawned['proc'] = proc
++        return proc
++
++    monkeypatch.setattr(process_module, '_spawn_worker', spawn_sleeping_worker)
++    started = time.monotonic()
++
++    with pytest.raises(AlgorithmCancelledError, match='取消'):
++        service._run(
++            'training', {},
++            cancel_requested=lambda: time.monotonic() - started >= 0.25,
++        )
++
++    proc = spawned['proc']
++    assert proc.poll() is not None
++    assert service.semaphore.acquire(blocking=False) is True
++    service.semaphore.release()
++
++
++def test_training_supervisor_forwards_cancel_callback(tmp_path, monkeypatch):
++    models_dir = tmp_path / 'models'
++    models_dir.mkdir()
++    service = AlgorithmProcessService(tmp_path, models_dir)
++    callback = lambda: True
++    observed = {}
++
++    def fake_run(action, payload, progress=None, cancel_requested=None):
++        observed['action'] = action
++        observed['cancel_requested'] = cancel_requested
++        return {'status': 'ok'}
++
++    monkeypatch.setattr(service, '_run', fake_run)
++    result = service.run_training(
++        algorithm='zscore', algorithm_params={}, selection={}, train_ratio=0.8,
++        normalization_method='min_max', training_strategy='standard', expected={},
++        database='telemetry.db', cancel_requested=callback,
++    )
++
++    assert result == {'status': 'ok'}
++    assert observed == {'action': 'training', 'cancel_requested': callback}
++
++
++def test_training_route_marks_accepted_cancel_as_cancelled_and_skips_provenance(
++        tmp_path, monkeypatch):
++    import scripts.server.telemetry_v2_routes as routes
++    import scripts.server.training_reliability as reliability
++
++    runtime = TaskRuntime(resource_tracker=None)
++    runtime.enable_recovery(tmp_path)
++    cleaned = []
++    issued = []
++
++    class ImmediateThread:
++        def __init__(self, target, daemon=True):
++            self.target = target
++        def start(self):
++            self.target()
++
++    class CancellingSupervisor:
++        def run_training(self, **kwargs):
++            task_id = next(iter(runtime.tasks))
++            assert kwargs['cancel_requested']() is False
++            runtime.request_cancel_task(task_id)
++            raise AlgorithmCancelledError('用户取消训练')
++
++    main = SimpleNamespace(
++        ROOT=tmp_path,
++        ALGORITHM_SUPERVISOR=CancellingSupervisor(),
++        create_training_task=runtime.create_training_task,
++        bind_task_thread=runtime.bind_task_thread,
++        update_task_progress=runtime.update_task_progress,
++        is_cancel_requested=runtime.is_cancel_requested,
++        set_task_cancellable=runtime.set_task_cancellable,
++        complete_task=runtime.complete_task,
++        EXECUTION_REGISTRY=SimpleNamespace(issue=lambda **kwargs: issued.append(kwargs)),
++    )
++    preview = {
++        'feature_keys': ['x'], 'runs': [{'run_id': 'r1'}], 'aligned_count': 10,
++        'normal_count': 8, 'fault_count': 2, 'sample_check': {'ok': True},
++    }
++    monkeypatch.setattr(routes, '_db', lambda _main: tmp_path / 'telemetry.db')
++    monkeypatch.setattr(routes, 'validate_training_selection', lambda *_args: preview)
++    monkeypatch.setattr(routes.threading, 'Thread', ImmediateThread)
++    monkeypatch.setattr(reliability, 'cleanup_unpublished_artifact', lambda _main, summary: cleaned.append(summary))
++
++    response = routes._training(main, b'{"algorithm":"zscore","dataset_selection":{"method":"exact"}}')
++
++    task_id = response['task_id']
++    status = runtime.get_public_task_status(task_id)
++    assert response['status'] == 'accepted'
++    assert status['status'] == 'cancelled', status
++    assert status['result'] is None
++    assert cleaned == [None]
++    assert issued == []

@@ -1,0 +1,17 @@
+# G1 production report integration patch
+# Applied to the complete local candidate package and included in:
+# AAS_V2_P3G1_REPORT_INTEGRATION_20261108_candidate.zip
+#
+# Files changed:
+# - web/visualization/result-chart.js
+#   Exports evidenceSummary(), eventEvidence(), buildReportSnapshot()
+# - web/visualization/reports.html
+#   Adds #g1EvidenceCard, #g1EventEvidence, #exportG1EvidenceBtn
+# - web/visualization/reports.js
+#   Reads payload.rows[].chart_trace returned by /api/experiment-details,
+#   renders evidence/event sections and exports JSON snapshot for selected run.
+# - tests/result_chart_g1_integration.cjs
+#   Verifies unknown truth, archived trace shape, report UI hooks and snapshot.
+#
+# See docs/P3G1_REPORT_PRODUCTION_INTEGRATION_2026-11-08.md for exact behavior,
+# test commands, archive SHA-256 and remaining acceptance boundaries.

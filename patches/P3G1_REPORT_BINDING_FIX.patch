@@ -1,0 +1,52 @@
+diff --git a/web/visualization/reports.html b/web/visualization/reports.html
+--- a/web/visualization/reports.html
++++ b/web/visualization/reports.html
+@@
+-            <button type="button" id="exportComparisonG1Btn" disabled>导出比较报告 JSON</button>
+             <button type="button" id="exportComparisonG1Btn" disabled>导出比较报告 JSON</button>
+diff --git a/web/visualization/reports.js b/web/visualization/reports.js
+--- a/web/visualization/reports.js
++++ b/web/visualization/reports.js
+@@
+-  exportComparisonBtn: document.getElementById('exportComparisonG1Btn'),
+   exportComparisonBtn: document.getElementById('exportComparisonG1Btn'),
+@@
+-  lastComparison: null,
+   lastComparison: null,
+@@
+-    state.lastComparison = { schema_version: 1, created_at: new Date().toISOString(), left_experiment_id: left, right_experiment_id: right, ...result };
+-    if (els.exportComparisonBtn) els.exportComparisonBtn.disabled = false;
+     state.lastComparison = { schema_version: 1, created_at: new Date().toISOString(), left_experiment_id: left, right_experiment_id: right, ...result };
+     if (els.exportComparisonBtn) els.exportComparisonBtn.disabled = false;
+@@
+-function exportG1ComparisonJSON() {
+-  const comparison = state.lastComparison;
+-  if (!comparison) { notify('请先完成一次实验可比性检查', 'error'); return; }
+-  const payload = {schema_version:1,report_type:'experiment_comparison',exported_at:new Date().toISOString(),comparison,authority:'server_compare_experiments'};
+-  const blob = new Blob([JSON.stringify(payload,null,2)],{type:'application/json;charset=utf-8'});
+-  const url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='comparison.json';
+-  document.body.appendChild(link);link.click();link.remove();URL.revokeObjectURL(url);
+-}
+-els.exportComparisonBtn?.addEventListener('click', exportG1ComparisonJSON);
+-
+ function exportG1ComparisonJSON() {
+@@
+-els.exportComparisonBtn?.addEventListener('click', exportG1ComparisonJSON);
++els.exportComparisonBtn?.addEventListener('click', exportG1ComparisonJSON);
+diff --git a/tests/report_g1_unique_binding.cjs b/tests/report_g1_unique_binding.cjs
+new file mode 100644
+--- /dev/null
++++ b/tests/report_g1_unique_binding.cjs
+@@
++const fs=require('fs'),path=require('path');
++const html=fs.readFileSync(path.join(__dirname,'../web/visualization/reports.html'),'utf8');
++const js=fs.readFileSync(path.join(__dirname,'../web/visualization/reports.js'),'utf8');
++function count(text,pattern){return (text.match(pattern)||[]).length;}
++if(count(html,/id="exportComparisonG1Btn"/g)!==1)throw new Error('comparison export button ID must be unique');
++if(count(html,/id="g1EvidenceCard"/g)!==1)throw new Error('evidence card ID must be unique');
++if(count(html,/id="g1EventEvidence"/g)!==1)throw new Error('event evidence ID must be unique');
++if(count(js,/exportComparisonBtn: document\.getElementById\('exportComparisonG1Btn'\)/g)!==1)throw new Error('DOM binding must be unique');
++if(count(js,/function exportG1ComparisonJSON\(/g)!==1)throw new Error('handler must be unique');
++if(count(js,/lastComparison: null/g)!==1)throw new Error('state must be unique');
++if(count(js,/addEventListener\('click', exportG1ComparisonJSON\)/g)!==1)throw new Error('click binding must be unique');
++console.log('G1 report unique DOM IDs and handlers: PASS');
