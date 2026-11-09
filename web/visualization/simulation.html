@@ -72,8 +72,8 @@
 <p id="csvVersions" class="sim-csv-help">一个版本可继续派生新的故障版本，旧版本始终保留。</p>
 <div class="sim-two-col"><div><label for="csvColumn">注入参量</label><select id="csvColumn"></select></div><div><label for="csvFaultType">故障类型</label><select id="csvFaultType"><option value="bias">偏置</option><option value="drift">线性漂移</option><option value="stuck">固定值</option><option value="spike">周期尖峰</option></select></div></div>
 <div class="sim-two-col"><div><label for="csvStartFrame">开始帧（包含）</label><input id="csvStartFrame" type="number" step="1" min="1" value="1" /></div><div><label for="csvEndFrame">结束帧（包含）</label><input id="csvEndFrame" type="number" step="1" min="1" value="1" /></div></div>
-<label for="csvMagnitude" id="csvMagnitudeLabel">偏置幅值（按当前参量单位）</label><input id="csvMagnitude" type="number" step="any" value="5" /><p id="csvFaultHelp" class="sim-csv-help" role="status" aria-live="polite">在选定帧区间内，对参量叠加指定幅值；正值增加，负值减少。</p>
-<p id="csvFrameHelp" class="sim-csv-help">帧从 1 开始编号。区间两端均包含；允许在同一参量或不同参量上重复注入。</p>
+<label for="csvMagnitude" id="csvMagnitudeLabel">偏置幅值（按当前参量单位）</label><input id="csvMagnitude" type="number" step="any" value="5" /><p id="csvFaultHelp" class="sim-csv-help" role="status" aria-live="polite" data-context-help data-help-title="注入幅值">在选定帧区间内，对参量叠加指定幅值；正值增加，负值减少。</p>
+<p id="csvFrameHelp" class="sim-csv-help" data-context-help data-help-title="注入帧范围">帧从 1 开始编号。区间两端均包含；允许在同一参量或不同参量上重复注入。</p>
 <div class="sim-actions"><button id="csvFaultPreview" type="button" class="secondary">预览效果</button><button id="csvFaultSave" type="button" disabled>另存为新版本</button></div>
 <p id="csvStatus" class="sim-csv-status" role="status" aria-live="polite"></p>
 </section></div>
@@ -100,7 +100,7 @@
 <label for="simSource">来源运行</label><select id="simSource"></select>
 <label for="simType">故障类型</label><select id="simType"><option value="">加载故障类型…</option></select>
 <div class="sim-two-col"><div><label for="simStartFrame">开始帧（包含）</label><input id="simStartFrame" type="number" min="1" step="1" value="1"></div><div><label for="simEndFrame">结束帧（包含）</label><input id="simEndFrame" type="number" min="1" step="1" value="600"></div></div>
-<p id="simTimeHint" class="sim-note" aria-live="polite">选定来源及读取帧数后，选择从第几帧至第几帧注入（首尾帧都包含）。</p>
+<p id="simTimeHint" class="sim-note" aria-live="polite" data-context-help data-help-title="注入帧范围">选定来源及读取帧数后，选择从第几帧至第几帧注入（首尾帧都包含）。</p>
 <div id="simFaultPluginHelp" class="sim-note" aria-live="polite"></div><div id="simFaultPluginParams" class="sim-plugin-params" hidden></div>
 <div class="sim-two-col"><div id="simMagnitudeField"><label for="simMagnitude" id="simMagnitudeLabel">注入幅值 / 固定值</label><input id="simMagnitude" type="number" step="any" value="18"></div><div><label for="simPoints">最多读取帧数</label><input id="simPoints" type="number" min="8" max="4000" step="1" value="600"></div></div>
 <div class="sim-actions"><button id="simDryRun" type="button" class="secondary">预览</button><button id="simSave" type="button" disabled>保存</button></div>
@@ -123,4 +123,4 @@
 <svg id="simPreview" class="sim-chart" viewBox="0 0 840 260" role="img" aria-label="模拟故障数据库遥测曲线"></svg>
 <p id="simChartInfo" class="sim-note">选择保存的记录或点击左侧“预览”查看注入效果。</p>
 </section>
-</div></div></main><script src="simulation-v2.js?v=p3a-csv-format-20261106"></script><script src="csv-import-wizard.js?v=p3g0-3"></script><script src="simulation-csv-workspace.js?v=p3g0-3"></script><script src="runner-csv-dialog.js?v=1"></script></body></html>
+</div></div></main><script src="simulation-v2.js?v=p3a-csv-format-20261106"></script><script src="csv-import-wizard.js?v=p3g0-3"></script><script src="simulation-csv-workspace.js?v=p3g0-3"></script><script src="runner-csv-dialog.js?v=1"></script><script src="context-help.js?v=1"></script></body></html>

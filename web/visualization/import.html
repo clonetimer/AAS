@@ -34,7 +34,7 @@
         <div class="v2-mapping-preview"><strong>本机列映射预设</strong><p class="field-hint">仅保存列角色和参量属性，不保存遥测数据；仅可应用于列集合相同的文件。</p><div class="v2-csv-format-controls"><label class="field"><span>预设名称</span><input id="v2ImpPresetName" maxlength="50" placeholder="例如 ADCS 反作用轮"/></label><label class="field"><span>已有预设</span><select id="v2ImpPresetSelect"><option value="">尚无预设</option></select></label></div><div class="v2-import-actions"><button type="button" id="v2ImpSavePreset">保存预设</button><button type="button" id="v2ImpApplyPreset">应用预设</button><button type="button" id="v2ImpDeletePreset">删除预设</button></div><p id="v2ImpPresetStatus" class="field-hint" role="status"></p></div>
 <div id="v2ImpMappingPreview" class="v2-mapping-preview" aria-live="polite"><strong>列属性绑定核对</strong><p class="field-hint">选择文件后会自动填充已知参量；每行可检查并修改分系统、部件、参量和单位，无法可靠匹配的字段不得空缺。</p><div id="v2ImpMappingRows" class="v2-mapping-scroll" tabindex="0" aria-label="参量映射表，可横向滚动"></div></div>
         <div class="v2-mapping-preview"><strong>标签范围与真实性</strong><p class="field-hint">运行级 label=1 不代表每个部件或参量发生故障；部件/参量事件请使用独立的真值复核流程。</p></div>
-        <p id="v2ImpLabelHint" class="field-hint" aria-live="polite">数据用途必须选择；系统不会从缺失的标签推断正常或故障。</p>
+        <p id="v2ImpLabelHint" class="field-hint" aria-live="polite" data-context-help data-help-title="标签与用途">数据用途必须选择；系统不会从缺失的标签推断正常或故障。</p>
         <label class="v2-check" id="v2ImpNormalLabelField" hidden><input id="v2ImpNormalConfirmed" type="checkbox"/> 无 label：我确认训练样本全部正常，允许写入正常标签 0</label>
         <label class="v2-check" id="v2ImpUnknownTestField" hidden><input id="v2ImpUnknownTestConfirmed" type="checkbox"/> 无 label：我确认作为无标签测试数据导入，标签保持未知（不能计算需要真值的评估指标）</label>
         <div class="v2-mapping-preview"><strong>导入前质量与一致性预检</strong><p class="field-hint">预检将报告缺测、时间间隔、间断、标签数量、运行身份冲突和文件摘要；预检不写入数据库。</p></div>
@@ -60,4 +60,4 @@
       <div class="v2-import-history"><div class="v2-actions"><strong>最近导入记录</strong><button type="button" id="v2ImpRefresh">刷新导入记录</button></div><div id="v2ImpHistory" class="field-hint">展开后可查看最近导入的分片和原始文件摘要。</div></div>
     </details>
 
-    </section></main><script>if(new URLSearchParams(location.search).has('dialog'))document.body.classList.add('import-embedded');</script><script src="task-client.js?v=p3d6"></script><script src="csv-import-wizard.js?v=p3g0-3"></script><script src="telemetry-v2-import.js?v=p3g0-3"></script><script src="telemetry-v2-batch.js?v=p3d6-task-cancel"></script></body></html>
+    </section></main><script>if(new URLSearchParams(location.search).has('dialog'))document.body.classList.add('import-embedded');</script><script src="task-client.js?v=p3d6"></script><script src="csv-import-wizard.js?v=p3g0-3"></script><script src="telemetry-v2-import.js?v=p3g0-3"></script><script src="telemetry-v2-batch.js?v=p3d6-task-cancel"></script><script src="context-help.js?v=1"></script></body></html>
