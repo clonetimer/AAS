@@ -27,12 +27,12 @@
 <link rel="stylesheet" href="ui-shell.css" /></head>
 <body class="compact-ui">
 <main class="shell">
-<header class="topbar"><div><h1>软件性能监控</h1></div><nav class="nav-links"><a href="browser.html">历史故障数据库</a><a href="runner.html">智能检测算法评估</a><a href="reports.html">任务查询与导出</a><a class="active" href="monitor.html">软件性能监控</a><a href="index.html">返回首页</a></nav></header>
+<header class="topbar"><div><h1>软件性能监控</h1><p class="monitor-note" data-context-help data-help-title="统计口径">CPU 100% 表示占满一个逻辑核心，可能超过 100%；整机份额会除以逻辑核心数。进程内存为 RSS 之和，可能包含重复的共享内存页。磁盘 I/O 是存活进程的累计量和采样速率。网络指标展示 AAS 自身的 HTTP 接口耗时和调用量。NVIDIA GPU 仅在 NVML 可用时显示，设备利用率是整卡指标。</p></div><nav class="nav-links"><a href="browser.html">历史故障数据库</a><a href="runner.html">智能检测算法评估</a><a href="reports.html">任务查询与导出</a><a class="active" href="monitor.html">软件性能监控</a><a href="index.html">返回首页</a></nav></header>
 <div class="monitor-layout">
   <div class="monitor-stack">
     <section class="monitor-panel">
       <div class="monitor-head"><h2>AAS 软件资源占用</h2><span id="monitorUpdated" class="monitor-status" aria-live="polite">正在读取…</span></div>
-      <p class="monitor-note" id="monitorScope">包含当前 Web 服务及它直接启动的存活子进程；不会将电脑其他软件算作 AAS。</p>
+      <p class="monitor-note" id="monitorScope" data-context-help data-help-title="AAS 软件资源口径">包含当前 Web 服务及它直接启动的存活子进程；不会将电脑其他软件算作 AAS。</p>
       <div class="monitor-grid" id="monitorSoftware"></div>
     </section>
     <section class="monitor-panel">
@@ -55,11 +55,6 @@
     </section>
     <section class="monitor-panel"><div class="monitor-head"><h2>主机资源（参考）</h2></div>
       <p class="monitor-note">以下是整机指标，用于判断 AAS 是否受到其他进程争用；不是 AAS 的专属占用。</p><div class="monitor-grid" id="monitorHost"></div>
-    </section>
-    <section class="monitor-panel"><div class="monitor-head"><h2>统计说明</h2></div>
-      <p class="monitor-note">CPU 100% 表示占满一个逻辑核心，可能超过 100%；整机份额会除以逻辑核心数。进程内存为 RSS 之和，可能包含重复的共享内存页。</p>
-      <p class="monitor-note">磁盘 I/O 使用进程读写计数，显示存活进程的累计量和采样速率；退出的子进程不再计入当前值。普通系统接口不能可靠统计“仅 AAS 的网络字节数”，因此这里展示软件自身的 HTTP 接口耗时和调用量。</p>
-      <p class="monitor-note">支持 Windows 和 Linux 的 Python 服务；NVIDIA GPU 仅在 NVML 可用时显示：显存为 AAS 进程关联占用；设备利用率是整卡指标，不能当作某训练任务的独占 GPU 利用率。</p>
     </section>
   </div>
 </div>

@@ -2,7 +2,7 @@
 (() => {
   'use strict';
   const candidates = document.querySelectorAll(
-    'p.field-hint:not([id]), p.sim-note:not([id]), p.v2-quality-note:not([id]), .csv-wizard-instruction, [data-context-help]');
+    'p.field-hint:not([id]), p.sim-note:not([id]), p.v2-quality-note:not([id]), p.monitor-note:not([id]), .csv-wizard-instruction, .pg-dev-help, [data-context-help]');
   if (!candidates.length) return;
   const dialog = document.createElement('dialog');
   dialog.className = 'aas-help-dialog';
@@ -42,9 +42,10 @@
       anchor = source.closest('dialog')?.querySelector('.v2-dialog-header strong');
     }
     const wizardInstruction = source.classList.contains('csv-wizard-instruction');
+    const pluginGuide = source.classList.contains('pg-dev-help');
     const heading = anchor?.matches?.('h1,h2,h3,strong,summary') ? anchor :
       source.parentElement.querySelector(':scope > h1, :scope > h2, :scope > h3, :scope > strong, :scope > summary');
-    const label = source.dataset.helpTitle || (wizardInstruction ? '当前导入步骤' : heading?.textContent.trim()) ||
+    const label = source.dataset.helpTitle || (pluginGuide ? '插件开发说明' : wizardInstruction ? '当前导入步骤' : heading?.textContent.trim()) ||
       source.closest('section,dialog,details')?.querySelector('h2,h3,summary,strong')?.textContent.trim() || '说明';
     const button = document.createElement('button');
     button.type = 'button';
@@ -62,7 +63,8 @@
       event.stopPropagation();
       trigger = button;
       title.textContent = wizardInstruction && heading ? heading.textContent.trim() : label;
-      body.textContent = source.textContent.trim() + (destination ? '\n' + destination.textContent.trim() : '');
+      body.textContent = pluginGuide ? [...source.querySelectorAll('li')].map(item => item.textContent.trim()).join('\n\n') :
+        source.textContent.trim() + (destination ? '\n' + destination.textContent.trim() : '');
       if (typeof dialog.showModal === 'function') dialog.showModal();
       else dialog.setAttribute('open', '');
       close.focus();
