@@ -85,6 +85,22 @@
 }
 .v2-csv-import{margin:10px 0 16px;padding:12px;border:1px solid #c9dce9;border-radius:10px;background:#f7fbfd}
 .v2-csv-import>summary{cursor:pointer;font-weight:650;color:#175e82;padding:4px 0}
+.v2-csv-dialog{width:min(780px,calc(100vw - 32px));max-width:none;max-height:min(90vh,900px);box-sizing:border-box;overflow:auto;padding:0;border:1px solid #c5d2df;border-radius:12px;background:#fff;color:var(--text,#243447);box-shadow:0 22px 64px #142b4860}
+.v2-csv-dialog::backdrop{background:#15263c99}
+.v2-csv-dialog-head{position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 20px;border-bottom:1px solid #dce5ed;background:#fff}
+.v2-csv-dialog-head h2{margin:0;font-size:18px}
+.v2-csv-dialog-head button{flex:none}
+.v2-csv-dialog>.v2-csv-import{margin:0;padding:18px 20px;border:0;border-radius:0;background:#fff}
+.v2-csv-dialog:focus-visible,.v2-csv-dialog button:focus-visible{outline:3px solid #267bb5;outline-offset:2px}
+.v2-source-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
+.v2-source-heading strong{font-size:14px}
+.v2-source-heading button{white-space:nowrap}
+.v2-run-settings .v2-user-csv-picker{margin:0 0 20px;padding:0 0 14px;border:0;border-bottom:1px solid #dce5ee;border-radius:0;background:transparent}
+.v2-run-settings .v2-user-csv-actions{justify-content:flex-end}
+.v2-run-settings .v2-user-csv-actions .v2-user-csv-meta:empty{display:none}
+.v2-run-settings .v2-user-csv-actions button{font-size:12px}
+.v2-csv-import>summary.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+@media(max-width:620px){.v2-csv-dialog{width:calc(100vw - 16px);max-height:calc(100dvh - 16px)}.v2-csv-dialog-head,.v2-csv-dialog>.v2-csv-import{padding-left:14px;padding-right:14px}}
 .v2-csv-columns{max-height:150px;overflow:auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:6px;margin:10px 0}
 .v2-csv-columns label{display:flex;gap:7px;align-items:center;font-size:12px;overflow-wrap:anywhere}
 .v2-csv-import-actions{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}

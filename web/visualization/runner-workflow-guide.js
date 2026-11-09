@@ -18,10 +18,10 @@
     hint.textContent = message;
   }
   var actions = {
-    data: function () { focusTarget('trainCsvImport', '选择训练数据；也可使用已有历史数据', 'tabTrain'); },
+    data: function () { focusTarget('trainDataSource', '选择训练数据来源', 'tabTrain'); },
     check: function () { focusTarget('previewTrain', '检查训练数据后再继续'); },
     train: function () { focusTarget('trainAlgorithm', '确认算法和参数，再由你决定是否开始训练'); },
-    test: function () { focusTarget('evalCsvImport', '选择测试来源；已有测试数据可直接使用', 'tabEval'); },
+    test: function () { focusTarget('evalDataSource', '选择测试数据来源', 'tabEval'); },
     evaluate: function () { focusTarget('evalModel', '选择已发布模型并检查真值；无标签来源只进行推理'); },
     result: function () {
       var evalView = document.getElementById('evalView');

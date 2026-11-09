@@ -13,9 +13,9 @@
   <main class="shell">
     <header class="topbar">
       <div>
-        <p class="eyebrow">智能故障检测</p>
+        
         <h1>历史故障数据库</h1>
-        <p class="subtitle">按卫星身份、分系统、参量与时间范围查询；无需选择物理表。</p>
+        
       </div>
       <nav class="nav-links">
         <a class="active" href="browser.html">历史故障数据库</a>
@@ -32,13 +32,13 @@
         <section class="panel v2-panel">
           <div class="panel-header"><h2>筛选条件</h2><div class="v2-filter-tools"><button type="button" id="v2OpenFaultFinder" aria-haspopup="dialog" aria-controls="v2FaultDialog">查找故障</button><button type="button" id="v2OpenImport" class="primary">+ 导入 CSV</button></div></div>
           <div class="v2-fields">
-            <label class="field"><span>来源类型（仅用于浏览筛选）</span><select id="v2Role">
+            <label class="field"><span>来源类型</span><select id="v2Role">
               <option value="train">训练来源</option><option value="test">测试来源</option>
               <option value="raw">原始采集</option><option value="unspecified">用途待确认</option>
               <option value="simulation">仿真数据</option><option value="processed">预处理数据</option>
               <option value="simulated_fault">模拟故障数据</option>
             </select></label>
-            <p class="field-hint">浏览不代表数据可用于训练或评估。无标签、来源名称推断及待确认的数据可以查看；进入训练/评估时仍按来源、标签、时基和质量规则严格校验。</p>
+            
             <label class="field"><span>数据库</span><select id="v2Database"><option value="">加载数据库中…</option></select><select id="v2Namespace" hidden><option value="">全部来源</option></select></label>
             <button type="button" id="v2ManageSources">管理数据源</button>
             <label class="field"><span>卫星型号</span><select id="v2Model"><option value="">全部型号</option></select></label>
@@ -49,7 +49,7 @@
               <label class="field"><span>开始时间</span><input id="v2Start" type="datetime-local" step="1" aria-describedby="v2TimeHelp v2TimeError" disabled /></label>
               <label class="field"><span>结束时间</span><input id="v2End" type="datetime-local" step="1" aria-describedby="v2TimeHelp v2TimeError" disabled /></label>
             </div>
-            <p id="v2TimeHelp" class="v2-time-help">请先勾选参量，再选择有效日期；浏览模式展示所选曲线的时间并集，不强求各曲线时间重叠。</p>
+            <p id="v2TimeHelp" class="v2-time-help">勾选参量后可选择时间范围。</p>
             <p id="v2TimeError" class="v2-time-error" role="alert" aria-live="polite" hidden></p>
             <div class="v2-actions"><button class="primary" type="button" id="v2Search">筛选参量</button><button type="button" id="v2Reset">重置</button></div>
           </div>
@@ -69,8 +69,8 @@
       <div class="v2-right">
         <section class="panel v2-panel v2-plot-panel">
           <div class="panel-header"><h2>时间序列曲线</h2><span id="v2PlotMeta" class="meta">请选择参量</span></div>
-          <p class="field-hint">初始概览覆盖所选时间范围；滚轮缩放、按钮缩放和拖动框选都会按新时间窗口重新读取。逻辑帧数、有效数值样本数和绘图点数分别统计；导出仍包含完整匹配数据。</p>
-          <div class="v2-chart-toolbar"><span class="field-hint">滚轮缩放 · 拖动实时框选 · 双击复原；不同卫星按各自数据经过时间比较</span><button id="v2ZoomIn" type="button">放大 +</button><button id="v2ZoomOut" type="button">缩小 −</button><button id="v2ZoomReset" type="button">重置视图</button><span class="v2-toolbar-divider" aria-hidden="true"></span><button id="v2Export" type="button" class="v2-export-button" disabled title="导出当前勾选参量与日期范围内的完整采样，无需先绘图">↓ 导出所选数据（CSV）</button></div><output id="v2ZoomStatus" class="v2-zoom-status" aria-live="polite">全范围</output><div id="v2PlotStatus" class="v2-status" role="status" aria-live="polite"></div><div id="v2ExportStatus" class="v2-status" role="status" aria-live="polite"></div>
+          
+          <div class="v2-chart-toolbar"><span class="field-hint">滚轮缩放 · 拖动框选 · 双击复原</span><button id="v2ZoomIn" type="button">放大 +</button><button id="v2ZoomOut" type="button">缩小 −</button><button id="v2ZoomReset" type="button">重置视图</button><span class="v2-toolbar-divider" aria-hidden="true"></span><button id="v2Export" type="button" class="v2-export-button" disabled title="导出当前勾选参量与日期范围内的完整采样，无需先绘图">↓ 导出所选数据（CSV）</button></div><output id="v2ZoomStatus" class="v2-zoom-status" aria-live="polite">全范围</output><div id="v2PlotStatus" class="v2-status" role="status" aria-live="polite"></div><div id="v2ExportStatus" class="v2-status" role="status" aria-live="polite"></div>
           <div id="v2Chart" class="v2-chart" aria-label="遥测时间序列绘图区域"><div class="empty-state">勾选左侧参量后点击“绘制已选参量”</div></div>
         </section>
         <section class="panel v2-panel v2-selected-panel">
@@ -79,7 +79,7 @@
         </section>
         <section class="panel v2-panel v2-detail-panel">
           <div class="panel-header"><h2>单参量采样明细</h2><span class="meta">按逻辑帧游标分页</span></div>
-          <p class="field-hint">一次仅查看一个已选参量，不跨参量按行或时间戳合并。每页最多 100 个逻辑帧，并保留来源分片与源文件行号。</p>
+          
           <div class="v2-detail-toolbar">
             <label class="field"><span>查看参量</span><select id="v2DetailChannel"><option value="">请先勾选参量</option></select></label>
             <button type="button" id="v2LoadDetail" class="primary" disabled>加载明细</button>
@@ -97,7 +97,7 @@
       </div>
     </section>
     <dialog id="v2FaultDialog" class="v2-fault-dialog" aria-labelledby="v2FaultDialogTitle">
-      <div class="v2-dialog-header"><strong id="v2FaultDialogTitle">故障速查 · 查找相关参量</strong><button type="button" id="v2CloseFaultFinder" aria-label="关闭故障速查">✕ 关闭</button></div>
+      <div class="v2-dialog-header"><strong id="v2FaultDialogTitle">查找故障相关参量</strong><button type="button" id="v2CloseFaultFinder" aria-label="关闭故障速查">✕ 关闭</button></div>
       <div class="v2-fault-dialog-body">
         <p class="field-hint">按主页面的数据库、型号、分系统、部件及关键词检索测试数据中的故障证据。此操作不会改变原始数据。</p>
         <div class="v2-fault-controls">

@@ -1,4 +1,8 @@
 .runner-workflow-guide{margin:12px 0 16px;padding:16px 18px}
+.runner-workflow-guide:not([open]){padding:9px 14px;margin:8px 0 12px;width:max-content;max-width:100%}
+.runner-workflow-guide>summary{cursor:pointer;font-size:13px;font-weight:600;color:var(--muted,#526477)}
+.runner-workflow-guide>summary:focus-visible{outline:2px solid #267bb5;outline-offset:3px}
+.runner-workflow-guide:not([open]) #runnerWorkflowHint{display:none}
 .runner-workflow-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
 .runner-workflow-head h2{margin:0;font-size:17px}
 .runner-workflow-head p{margin:5px 0 0;color:var(--muted,#64748b);font-size:12px;line-height:1.6}

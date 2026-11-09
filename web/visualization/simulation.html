@@ -40,13 +40,23 @@
 .sim-csv-actions{display:flex;gap:12px;flex-wrap:wrap;align-items:center}.sim-csv-actions a{padding:8px 13px;border-radius:8px;color:#175e84;background:#e6f3fa;text-decoration:none;font-size:13px}.sim-csv-actions a[hidden]{display:none}
 .sim-csv-plot{display:block;width:100%;height:auto;min-height:220px;max-height:350px;background:#fff;border:1px solid #dfe8f0;border-radius:8px;margin-top:12px}.sim-csv-status{font-size:13px;line-height:1.6;white-space:pre-wrap;margin:10px 0}.sim-csv-status.error{color:#b42339}.csv-version-tools{display:flex;align-items:end;gap:8px;flex-wrap:wrap;margin-top:14px}.csv-version-tools label{margin:0}.csv-version-tools select{min-width:180px;flex:1}.csv-event-row{display:flex;align-items:center;justify-content:space-between;gap:8px;border-bottom:1px solid #edf0f5;padding:3px 0}.csv-event-row p{margin:5px 0}.csv-event-row button{flex-shrink:0}.sim-csv-format-confirm{display:flex;align-items:center;gap:8px;font-size:13px;margin:10px 0}.sim-csv-format-confirm input{width:auto;min-width:16px}
 [hidden]{display:none!important}@media(max-width:950px){.sim-csv-grid{grid-template-columns:1fr}}
+.sim-import-launch{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.sim-import-launch h2{margin:0}
+.sim-csv-dialog{width:min(780px,calc(100vw - 32px));max-width:none;max-height:min(90vh,900px);box-sizing:border-box;overflow:auto;padding:0;border:1px solid #c5d2df;border-radius:12px;background:#fff;color:#243447;box-shadow:0 22px 64px #142b4860}
+.sim-csv-dialog::backdrop{background:#15263c99}
+.sim-csv-dialog-head{position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 20px;border-bottom:1px solid #dce5ed;background:#fff}
+.sim-csv-dialog-head h2{margin:0;font-size:18px}
+.sim-csv-dialog>.sim-card{border:0;border-radius:0;box-shadow:none}
+.sim-csv-dialog button:focus-visible{outline:3px solid #267bb5;outline-offset:2px}
+@media(max-width:620px){.sim-csv-dialog{width:calc(100vw - 16px);max-height:calc(100dvh - 16px)}.sim-csv-dialog-head{padding:14px}}
 </style><link rel="stylesheet" href="csv-import-wizard.css"/></head>
 <body class="compact-ui"><main class="shell"><header class="topbar"><div><h1>模拟故障数据库</h1></div><nav class="nav-links"><a href="browser.html">历史故障数据库</a><a href="runner.html">智能检测算法评估</a><a href="reports.html">任务查询与导出</a></nav></header>
 <div class="sim-mode-tabs" role="tablist" aria-label="故障模拟数据来源"><button type="button" class="active" data-sim-mode="csv" aria-selected="true">本地 CSV 故障模拟</button><button type="button" data-sim-mode="historical" aria-selected="false">历史数据库故障模拟</button></div>
 <section id="simCsvWorkspace" aria-label="本地 CSV 数据与逐帧注入">
 <div class="sim-csv-grid"><div class="sim-csv-column">
-<section class="sim-card"><h2>1. 导入本地数据</h2>
-<p class="sim-note">支持 CSV / CSV.GZ、UTF-8（含 BOM）/GB18030，以及逗号、分号、TAB 分隔；上传文件最多 8 MB，解压后最多 12 MB、5 万帧。保留所有字段和已有标签，不写入历史主库。</p>
+<div class="sim-card sim-import-launch"><h2>1. 本地数据</h2><button id="openSimCsvDialog" type="button" aria-haspopup="dialog" aria-controls="simCsvDialog">导入 CSV</button></div>
+<dialog id="simCsvDialog" class="sim-csv-dialog" aria-labelledby="simCsvDialogTitle"><div class="sim-csv-dialog-head"><h2 id="simCsvDialogTitle">导入本地 CSV</h2><button type="button" data-close-csv-dialog="sim" aria-label="关闭导入弹窗">关闭</button></div><section class="sim-card">
+<p class="sim-note">支持 CSV 和 CSV.GZ；检查字段后确认导入。</p>
 <section id="csvImportWizard"><fieldset data-csv-stage="file">
 <label for="csvFile">选择 CSV / CSV.GZ 文件</label><input id="csvFile" type="file" accept=".csv,.csv.gz,text/csv,application/gzip" />
 <div class="sim-two-col sim-csv-format"><div><label for="csvEncoding">文件编码</label><select id="csvEncoding"><option value="auto">自动识别</option><option value="utf-8">UTF-8（含 BOM）</option><option value="gb18030">GB18030 / GBK</option></select></div><div><label for="csvDelimiter">列分隔符</label><select id="csvDelimiter"><option value="auto">自动识别</option><option value=",">逗号 ,</option><option value=";">分号 ;</option><option value="&#9;">制表符 TAB</option></select></div></div>
@@ -55,8 +65,8 @@
 </fieldset><fieldset data-csv-stage="fields"><p id="csvImportColumns" class="sim-csv-help"></p>
 <div class="sim-csv-preview"><strong>质量检查（只读）</strong><p id="csvQualitySummary" class="sim-note">检查 CSV 后显示缺失、无效值及时间问题。</p><div id="csvQualityIssues" class="sim-note"></div></div><div id="csvPreviewTable" class="sim-csv-preview" tabindex="0" aria-label="CSV 样例数据，可横向滚动"></div><button id="csvReview" type="button">核对完成，继续确认导入</button>
 </fieldset><fieldset data-csv-stage="review"><div class="sim-actions"><button id="csvImport" type="button" disabled>确认导入模拟库</button></div></fieldset><fieldset data-csv-stage="done"></fieldset></section>
-<p id="csvImportStatus" class="sim-csv-status" role="status" aria-live="polite">尚未选择 CSV。</p>
-</section>
+<p id="csvImportStatus" class="sim-csv-status" role="status" aria-live="polite"></p>
+</section></dialog>
 <section class="sim-card"><h2>2. 基于选中版本注入故障</h2>
 <label for="csvDatasetSelect">数据集 / 已保存版本</label><select id="csvDatasetSelect"><option value="">正在加载…</option></select>
 <p id="csvVersions" class="sim-csv-help">一个版本可继续派生新的故障版本，旧版本始终保留。</p>
@@ -113,4 +123,4 @@
 <svg id="simPreview" class="sim-chart" viewBox="0 0 840 260" role="img" aria-label="模拟故障数据库遥测曲线"></svg>
 <p id="simChartInfo" class="sim-note">选择保存的记录或点击左侧“预览”查看注入效果。</p>
 </section>
-</div></div></main><script src="simulation-v2.js?v=p3a-csv-format-20261106"></script><script src="csv-import-wizard.js?v=p3g0-3"></script><script src="simulation-csv-workspace.js?v=p3g0-3"></script></body></html>
+</div></div></main><script src="simulation-v2.js?v=p3a-csv-format-20261106"></script><script src="csv-import-wizard.js?v=p3g0-3"></script><script src="simulation-csv-workspace.js?v=p3g0-3"></script><script src="runner-csv-dialog.js?v=1"></script></body></html>

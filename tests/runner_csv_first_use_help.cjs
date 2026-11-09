@@ -12,15 +12,16 @@ function section(label) {
 }
 const train = section('训练数据来源');
 const test = section('测试数据来源');
-for (const [name, source, phrases] of [
-  ['train', train, ['独立工作区', '不写入历史数据库', '只有主动删除', '正在被任务使用']],
-  ['test', test, ['独立工作区', '不写入历史数据库', '未知真值', '只有主动删除']]
+for (const [name, source, role] of [
+  ['train', train, 'Train'],
+  ['test', test, 'Eval']
 ]) {
-  check(source.includes('v2-user-csv-help'), `${name}: first-use explanation exists`);
-  for (const phrase of phrases) check(source.includes(phrase), `${name}: missing ${phrase}`);
+  check(source.includes(`id="open${role}CsvDialog"`), `${name}: CSV import action exists`);
+  check(html.includes(`id="${name === 'train' ? 'train' : 'eval'}CsvDialog"`), `${name}: import dialog exists`);
+  check(!source.includes('为什么'), `${name}: implementation explanation removed`);
   check(/<select id="(?:train|eval)DataSource">/.test(source), `${name}: source selector exists`);
   check(/button id="(?:train|eval)UserCsvDelete"/.test(source), `${name}: explicit delete control exists`);
 }
 check(html.includes('id="trainCsvFormatConfirmed"'), 'train explicit format confirmation exists');
 check(html.includes('id="evalCsvFormatConfirmed"'), 'test explicit format confirmation exists');
-console.log('First-use CSV destination guidance and explicit lifecycle controls: PASS');
+console.log('CSV import dialogs and concise source controls: PASS');

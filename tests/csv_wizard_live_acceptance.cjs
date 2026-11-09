@@ -93,7 +93,11 @@ async function exercise(purpose) {
     if (runner) {
       await until(() => el('v2Connection').textContent.includes('已连接'), 'runner catalog', status);
       await click(purpose === 'train' ? 'tabTrain' : 'tabEval');
-      await click(el(purpose + 'CsvImport').querySelector('summary'));
+      await click(purpose === 'train' ? 'openTrainCsvDialog' : 'openEvalCsvDialog');
+      assert.equal(el(purpose + 'CsvDialog').open, true, 'CSV import dialog is open');
+    } else if (simulation) {
+      await click('openSimCsvDialog');
+      assert.equal(el('simCsvDialog').open, true, 'simulation CSV import dialog is open');
     }
     const fixture = inputs[purpose], picker = d.createElement('input'); picker.type = 'file';
     const file = new w.File([fixture.text], fixture.name, {type: 'text/csv'}), list = picker.files;
