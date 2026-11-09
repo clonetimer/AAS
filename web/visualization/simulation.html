@@ -49,7 +49,7 @@
 .sim-csv-dialog>.sim-card{border:0;border-radius:0;box-shadow:none}
 .sim-csv-dialog button:focus-visible{outline:3px solid #267bb5;outline-offset:2px}
 @media(max-width:620px){.sim-csv-dialog{width:calc(100vw - 16px);max-height:calc(100dvh - 16px)}.sim-csv-dialog-head{padding:14px}}
-</style><link rel="stylesheet" href="csv-import-wizard.css"/></head>
+</style><link rel="stylesheet" href="csv-import-wizard.css"/><link rel="stylesheet" href="ui-shell.css" /></head>
 <body class="compact-ui"><main class="shell"><header class="topbar"><div><h1>模拟故障数据库</h1></div><nav class="nav-links"><a href="browser.html">历史故障数据库</a><a href="runner.html">智能检测算法评估</a><a href="reports.html">任务查询与导出</a></nav></header>
 <div class="sim-mode-tabs" role="tablist" aria-label="故障模拟数据来源"><button type="button" class="active" data-sim-mode="csv" aria-selected="true">本地 CSV 故障模拟</button><button type="button" data-sim-mode="historical" aria-selected="false">历史数据库故障模拟</button></div>
 <section id="simCsvWorkspace" aria-label="本地 CSV 数据与逐帧注入">
@@ -77,8 +77,8 @@
 <div class="sim-actions"><button id="csvFaultPreview" type="button" class="secondary">预览效果</button><button id="csvFaultSave" type="button" disabled>另存为新版本</button></div>
 <p id="csvStatus" class="sim-csv-status" role="status" aria-live="polite"></p>
 </section></div>
-<section class="sim-card"><h2>3. 查看曲线与导出数据</h2><p class="sim-note">横轴为帧号，右侧展示当前数据版本；预览时对比本次注入前后效果。曲线可抽样显示，导出始终包含完整数据表。</p>
-<div class="sim-csv-actions"><a id="csvExport" hidden>导出完整 CSV（Excel 安全）</a><a id="csvExportRaw" hidden>导出原始值 CSV（用于算法）</a></div>
+<section class="sim-card"><h2>3. 曲线与文件</h2>
+<div class="sim-csv-actions"><a id="csvExport" hidden>导出当前版本 CSV</a><a id="csvExportRaw" hidden>导出当前版本（算法用）</a></div>
 <svg id="csvPreviewPlot" class="sim-csv-plot" viewBox="0 0 900 330" role="img" aria-label="基于帧号的模拟遥测曲线"></svg>
 <p id="csvPlotDescription" class="sim-note">导入文件或选择已有版本后显示曲线。</p>
 <div id="csvEventHistory" class="sim-csv-help"></div>
@@ -108,7 +108,7 @@
 </section>
 <section class="sim-card" aria-labelledby="simRecordsTitle">
 <div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h2 id="simRecordsTitle">故障模拟记录</h2><button id="simRefresh" class="secondary" type="button">刷新</button></div>
-<p class="sim-note">选中记录查看故障曲线；「导出 CSV」输出完整单参量数据（含帧号、模拟标签）。点击「继续注入」将记录作为新数据版本移入本地 CSV 模拟工作区，可再次叠加故障；不改变历史原记录。</p>
+<p class="sim-note">选择记录后可查看曲线、导出注入后的完整 CSV，或继续注入。</p>
 <div class="sim-filters">
 <div><label for="simFilterText">关键字</label><input id="simFilterText" type="search" placeholder="记录号 / 型号 / 参量 / 来源" /></div>
 <div><label for="simFilterType">故障类型</label><select id="simFilterType"><option value="">全部故障类型</option></select></div>

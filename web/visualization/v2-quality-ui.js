@@ -80,16 +80,19 @@
       try{
         const result=await json('/api/v2/telemetry/preprocess/jobs?limit=25');
         body.replaceChildren();
-        if(!(result.items||[]).length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=5;td.textContent='暂无派生处理记录';tr.append(td);body.append(tr);return;}
+        if(!(result.items||[]).length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=6;td.textContent='暂无派生处理记录';tr.append(td);body.append(tr);return;}
         for(const job of result.items){
           const tr=document.createElement('tr');
           const q=job.quality||{};
           const cells=[job.created_utc.slice(0,19).replace('T',' '),`#${job.output_channel_id} · ${job.variable}`,
             job.method,`${q.valid_samples??'?'} / ${q.total??job.output_sample_count}`,String(q.invalid_samples??'?')];
           for(const value of cells){const td=document.createElement('td');td.textContent=value;tr.append(td);}
-          body.append(tr);
+          const action=document.createElement('td'),link=document.createElement('a');
+          link.href='/api/v2/telemetry/preprocess/export?job_id='+encodeURIComponent(job.id);
+          link.textContent='导出 CSV';link.setAttribute('download','aas-preprocessed-'+job.id+'.csv');
+          action.append(link);tr.append(action);body.append(tr);
         }
-      }catch(err){body.replaceChildren();const td=document.createElement('td');td.colSpan=5;td.textContent='记录读取失败：'+err.message;const tr=document.createElement('tr');tr.append(td);body.append(tr);}
+      }catch(err){body.replaceChildren();const td=document.createElement('td');td.colSpan=6;td.textContent='记录读取失败：'+err.message;const tr=document.createElement('tr');tr.append(td);body.append(tr);}
     }
   };
 })();

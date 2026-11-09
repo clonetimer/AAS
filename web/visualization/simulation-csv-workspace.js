@@ -192,7 +192,7 @@ async function refreshDatasets(preferred){
  for(const entry of state.items){const fmt=entry.csv_format||{};const formatLabel=fmt.encoding?` · ${fmt.encoding}/${fmt.delimiter==='\t'?'TAB':fmt.delimiter}`:'';
   option(select,entry.id,`${entry.filename}${formatLabel} · v${entry.version} · ${entry.frame_count} 帧 · ${entry.active_event_count||0}/${entry.event_count||0} 项生效事件 · ${entry.id.slice(0,8)}`);}
  select.value=state.items.find(x=>x.id===preferred)?.id||state.items.find(x=>x.id===previous)?.id||state.items[0]?.id||'';
- const current=selected();$('csvVersions').textContent=current?`当前版本 v${current.version}；父版本：${current.parent_id?current.parent_id.slice(0,8):'原始导入'}；${current.active_event_count||0}/${current.event_count||0} 项故障事件生效；${current.operation_count||0} 项版本操作；来源格式 ${current.csv_format?.encoding||'未知'}/${current.csv_format?.delimiter==='\t'?'TAB':current.csv_format?.delimiter||'未知'}。`:'当前没有工作区数据。';
+ const current=selected();$('csvVersions').textContent=current?`当前 v${current.version} · ${current.active_event_count||0} 项注入生效`:'当前没有工作区数据。';
  await showDataset();
 }
 const csvFaultGuidance={

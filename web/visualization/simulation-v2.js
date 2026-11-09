@@ -209,7 +209,7 @@ function renderRecords(){
   tr.children[6].title=`共读取 ${row.sampled_rows} 帧，其中故障影响 ${row.injected_rows} 帧`;
   tr.children[1].title=row.source_token?`来源 token：${row.source_token}`:row.injected_model;
   const td=document.createElement('td');
-  const exportLink=document.createElement('a');exportLink.className='sim-export-link';exportLink.textContent='导出 CSV';
+  const exportLink=document.createElement('a');exportLink.className='sim-export-link';exportLink.textContent='导出注入后 CSV';
   exportLink.href='/api/v2/simulation/export?id='+encodeURIComponent(row.id);
   exportLink.download='aas-v2-injection-'+row.id+'.csv';
   exportLink.title='下载此记录的完整逐帧单参量模拟数据';

@@ -14,9 +14,20 @@
 .v2-quality-history{margin-top:20px;overflow:auto}
 .v2-quality-history table{width:100%;border-collapse:collapse;font-size:13px}
 .v2-quality-history th,.v2-quality-history td{text-align:left;border-bottom:1px solid #dce6ed;padding:7px}
-</style></head><body class="compact-ui"><main class="shell"><header class="topbar"><h1>数据预处理</h1><nav class="nav-links"><a href="browser.html">历史故障数据库</a><a href="runner.html">智能检测算法评估</a></nav></header><section class="panel" style="padding:20px;max-width:1200px;margin:auto"><details open id="v2PreprocessPanel" class="v2-native-import">
-      <summary>离线数据预处理 · 结果单独保存</summary>
-      <p class="field-hint">入库默认保留原值。本页是<strong>可选离线预处理</strong>：预览后确认才产生派生参量，不覆盖源数据。训练/评估任务内部另有归一化配置；评估复用训练时的参数，不在测试数据上重新拟合。</p>
+.prep-source-tabs{display:flex;gap:8px;margin:0 auto 14px;max-width:1200px}.prep-source-tabs button{padding:9px 16px;border:1px solid #cbd9e7;border-radius:8px;background:#fff;color:#29445a}.prep-source-tabs button[aria-selected="true"]{background:#214c92;color:#fff;border-color:#214c92}
+.prep-source-tabs button:focus-visible,.csv-prep-card button:focus-visible,.csv-prep-card select:focus-visible,.csv-prep-card input:focus-visible{outline:3px solid #267bb5;outline-offset:2px}
+.csv-prep-card{max-width:1200px;margin:0 auto;padding:20px}.csv-prep-card h2{margin:0 0 6px;font-size:18px}.csv-prep-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 18px;max-width:760px}.csv-prep-grid .field{min-width:0}.csv-prep-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:16px}.csv-prep-card [hidden]{display:none!important}
+.v2-prep-wide#v2PrepAdvanced{grid-column:1/-1;border-top:1px solid #dce5ee;padding-top:10px}.v2-prep-wide#v2PrepAdvanced>summary{cursor:pointer;color:#31566f;font-weight:600}.v2-prep-wide#v2PrepAdvanced>.v2-import-grid{margin-top:10px}.v2-prep-wide#v2PrepAdvanced>summary:focus-visible{outline:3px solid #267bb5;outline-offset:2px}
+.csv-prep-actions a{display:inline-flex;align-items:center;min-height:36px;padding:8px 14px;border-radius:8px;text-decoration:none;box-sizing:border-box}.csv-prep-actions a:focus-visible,.v2-quality-history a:focus-visible{outline:3px solid #267bb5;outline-offset:2px}
+@media(max-width:700px){.csv-prep-grid{grid-template-columns:1fr}.csv-prep-card{padding:14px}}
+</style><link rel="stylesheet" href="ui-shell.css" /></head><body class="compact-ui"><main class="shell"><header class="topbar"><h1>数据预处理</h1><nav class="nav-links"><a href="browser.html">历史故障数据库</a><a href="runner.html">智能检测算法评估</a></nav></header>
+<div class="prep-source-tabs" role="tablist" aria-label="预处理数据来源"><button id="prepHistoryTab" type="button" role="tab" aria-selected="true" aria-controls="prepHistoryView">历史数据库</button><button id="prepCsvTab" type="button" role="tab" aria-selected="false" aria-controls="prepCsvView">本地 CSV</button></div>
+<section id="prepCsvView" class="panel csv-prep-card" role="tabpanel" aria-labelledby="prepCsvTab" hidden><h2>处理本地 CSV</h2><p class="field-hint">选择文件和参量，检查后生成独立 CSV 文件。</p>
+<div class="csv-prep-grid"><label class="field"><span>CSV 文件</span><input id="csvPrepFile" type="file" accept=".csv,.csv.gz,text/csv,application/gzip"></label><label class="field"><span>文件编码</span><select id="csvPrepEncoding"><option value="auto">自动识别</option><option value="utf-8">UTF-8</option><option value="gb18030">GB18030 / GBK</option></select></label><label class="field"><span>列分隔符</span><select id="csvPrepDelimiter"><option value="auto">自动识别</option><option value=",">逗号</option><option value=";">分号</option><option value="&#9;">TAB</option></select></label><div class="field"><span>文件检查</span><button id="csvPrepInspect" type="button">检查文件与字段</button></div>
+<label class="field"><span>处理参量</span><select id="csvPrepColumn" disabled><option value="">请先检查文件</option></select></label><label class="field"><span>数据用途</span><select id="csvPrepRole"><option value="train">训练</option><option value="test">测试</option></select></label><label class="field"><span>处理方法</span><select id="csvPrepMethod"><option value="hampel_forward">Hampel + 有限前向填充</option><option value="moving_average">因果滑动均值</option><option value="median_filter">因果中值滤波</option><option value="difference">一阶差分</option><option value="clip">固定阈值裁剪</option><option value="zscore">训练期 Z-score</option></select></label><label class="field" id="csvPrepWindowField"><span>窗口大小</span><input id="csvPrepWindow" type="number" min="3" max="101" step="2" value="7"></label><label class="field" id="csvPrepMinField" hidden><span>裁剪下限</span><input id="csvPrepMin" type="number" step="any"></label><label class="field" id="csvPrepMaxField" hidden><span>裁剪上限</span><input id="csvPrepMax" type="number" step="any"></label></div>
+<div class="csv-prep-actions"><button id="csvPrepProcess" type="button" class="primary" disabled>生成预处理文件</button><a id="csvPrepDownload" class="primary" download="aas-preprocessed.csv" hidden>导出预处理后 CSV</a></div><p id="csvPrepStatus" role="status" aria-live="polite" class="field-hint"></p></section>
+<section id="prepHistoryView" class="panel" role="tabpanel" aria-labelledby="prepHistoryTab" style="padding:20px;max-width:1200px;margin:auto"><details open id="v2PreprocessPanel" class="v2-native-import">
+      <summary>处理历史库参量</summary>
       <form id="v2PrepForm" class="v2-import-grid">
         <label class="field"><span>来源用途</span><select id="v2PrepRole"><option value="train">训练</option><option value="test">测试</option></select></label>
         <label class="field"><span>卫星型号</span><select id="v2PrepModel"><option value="">全部型号</option></select></label>
@@ -25,20 +36,20 @@
         <label class="field"><span>参量名称搜索</span><input id="v2PrepKeyword" type="search" placeholder="例如 gyro、speed、current" /></label>
         <label class="field v2-prep-wide"><span>筛选后的逻辑参量</span><select id="v2PrepChannel" required><option value="">请选择参量…</option></select></label>
         <label class="field"><span>预处理算子</span><select id="v2PrepMethod"><option value="hampel_forward" selected>Hampel 野值识别 + forward 限 3 点</option><option value="moving_average">因果滑动均值</option><option value="median_filter">因果中值滤波</option><option value="difference">一阶差分</option><option value="clip">固定阈值裁剪</option><option value="zscore">训练期 Z-score</option></select></label>
+        <details class="v2-prep-wide" id="v2PrepAdvanced"><summary>方法参数</summary><div class="v2-import-grid">
         <label class="field" id="v2PrepHampelField"><span>Hampel 窗口（奇数 3～101）</span><input id="v2PrepHampelWindow" type="number" min="3" max="101" step="2" value="7" /></label>
         <label class="field" id="v2PrepLegacyWindowField"><span>窗口大小（2～501）</span><input id="v2PrepWindow" type="number" min="2" max="501" value="5" /></label>
         <label class="field"><span>裁剪下限</span><input id="v2PrepMin" type="number" step="any" placeholder="仅 clip 需要" /></label>
         <label class="field"><span>裁剪上限</span><input id="v2PrepMax" type="number" step="any" placeholder="仅 clip 需要" /></label>
-        <p class="field-hint v2-prep-wide">固定质量策略：Hampel（3 × 1.4826 × MAD）；缺测/异常均视为待填补点，最多连续前向填充 3 点。第 4 点起保留无效状态；原值、时间戳和标签不改变。</p>
+        </div></details>
         <label class="field"><span>开始时间（可选）</span><input id="v2PrepStart" type="datetime-local" step="1" aria-describedby="v2PrepTimeHint" /></label>
         <label class="field"><span>结束时间（可选）</span><input id="v2PrepEnd" type="datetime-local" step="1" aria-describedby="v2PrepTimeHint" /></label>
-        <p id="v2PrepTimeHint" class="field-hint v2-prep-wide">选择参量后自动限制日期范围；留空代表完整有效采样范围。</p>
+        <p id="v2PrepTimeHint" class="field-hint v2-prep-wide">留空使用完整范围。</p>
         <div class="v2-import-actions"><button id="v2PrepPreview" type="submit" class="primary">预览结果</button><button id="v2PrepCommit" type="button" disabled>确认生成新参量</button><button id="v2PrepReload" type="button">刷新参量</button></div>
         <p id="v2PrepStatus" class="field-hint" role="status" aria-live="polite"></p>
       </form>
       <section class="v2-quality-report" id="v2PrepReport" aria-live="polite" hidden>
         <h2>处理前后曲线对比</h2>
-        <p class="v2-quality-note">按原始采样时间同轴绘制；上下图独立缩放 Y 轴，避免野值压缩正常波动。缺测点不连接折线。</p>
         <h3>原始数值</h3><svg id="v2PrepRawPlot" class="v2-quality-plot" viewBox="0 0 1000 200" role="img" aria-label="预处理前原始采样曲线"></svg>
         <h3>处理后数值</h3><svg id="v2PrepCleanPlot" class="v2-quality-plot" viewBox="0 0 1000 200" role="img" aria-label="Hampel 和前向填充后的采样曲线"></svg>
         <h2>质量统计与训练评估有效样本</h2>
@@ -48,12 +59,11 @@
           <div><dt>前向填充</dt><dd id="v2QualityFilled">—</dd></div><div><dt>仍无效</dt><dd id="v2QualityInvalid">—</dd></div>
         </dl>
         <p class="v2-quality-note" id="v2QualitySampleCheck"></p>
-        <p class="v2-quality-note">质量标记包含 observed、filled_missing、filled_outlier、unfilled_missing、unfilled_outlier，生成后保存到 V2 质量明细表。</p>
       </section>
     </details>
     <section class="v2-quality-history"><h2>已生成的派生参量与质量记录</h2>
       <button type="button" id="v2PrepJobsReload">刷新记录</button>
-      <table><thead><tr><th>时间</th><th>派生参量</th><th>算子</th><th>有效/全部</th><th>仍无效</th></tr></thead>
-      <tbody id="v2PrepJobs"><tr><td colspan="5">尚未加载</td></tr></tbody></table>
+      <table><thead><tr><th>时间</th><th>派生参量</th><th>算子</th><th>有效/全部</th><th>仍无效</th><th>文件</th></tr></thead>
+      <tbody id="v2PrepJobs"><tr><td colspan="6">尚未加载</td></tr></tbody></table>
     </section>
-</section></main><script src="v2-quality-ui.js?v=1"></script><script src="telemetry-v2-preprocess.js?v=v2-quality"></script></body></html>
+</section></main><script src="v2-quality-ui.js?v=1"></script><script src="telemetry-v2-preprocess.js?v=v2-quality"></script><script src="preprocess-csv.js?v=1"></script></body></html>

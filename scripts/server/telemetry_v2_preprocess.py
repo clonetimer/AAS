@@ -6,7 +6,9 @@ Never fits a model on test samples, writes to raw samples or derives labels.
 """
 from __future__ import annotations
 from datetime import datetime,timezone
+import csv
 import hashlib
+import io
 import json
 import math
 from pathlib import Path
@@ -251,3 +253,34 @@ def list_quality_jobs(db: Path, *, limit=30):
             else:
                 job['quality']=None  # legacy derived job without quality metadata
         return {'items':jobs,'count':len(jobs)}
+
+
+def export_job_csv(db: Path, job_id: int) -> bytes:
+    """Export one committed derived series with its preserved coordinates and quality."""
+    if type(job_id) is not int or job_id <= 0:
+        raise ValueError('预处理记录 ID 无效')
+    with open_database(db) as conn:
+        if not conn.execute("SELECT 1 FROM sqlite_master WHERE name='v2_preprocess_jobs'").fetchone():
+            raise ValueError('预处理记录不存在')
+        job=conn.execute('SELECT output_segment_id,output_channel_id FROM v2_preprocess_jobs WHERE id=?',
+                         (job_id,)).fetchone()
+        if job is None:
+            raise ValueError('预处理记录不存在')
+        columns={row[1] for row in conn.execute('PRAGMA table_info(v2_samples)')}
+        frame='s.frame_index' if 'frame_index' in columns else 'NULL'
+        rows=conn.execute(f'''SELECT s.source_ordinal,s.timestamp_raw,s.value_num,s.label_int,
+            {frame} AS frame_index,q.status AS quality_status
+            FROM v2_samples s LEFT JOIN v2_preprocess_quality q
+              ON q.output_segment_id=s.segment_id AND q.source_ordinal=s.source_ordinal
+            WHERE s.segment_id=? AND s.channel_id=? ORDER BY s.source_ordinal LIMIT ?''',
+            (job['output_segment_id'],job['output_channel_id'],MAX_SAMPLES+1)).fetchall()
+        if len(rows)>MAX_SAMPLES:
+            raise ValueError('预处理结果超出导出上限')
+    output=io.StringIO(newline='')
+    writer=csv.writer(output,lineterminator='\r\n')
+    writer.writerow(['source_ordinal','frame_index','timestamp_raw','processed_value','label','quality_status'])
+    for row in rows:
+        writer.writerow([row['source_ordinal'],row['frame_index'] if row['frame_index'] is not None else '',
+                         row['timestamp_raw'] or '',row['value_num'] if row['value_num'] is not None else '',
+                         row['label_int'] if row['label_int'] is not None else '',row['quality_status'] or 'unknown'])
+    return ('\ufeff'+output.getvalue()).encode('utf-8')

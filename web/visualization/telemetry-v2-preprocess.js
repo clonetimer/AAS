@@ -72,6 +72,7 @@
   function invalidate(){preview=null;node('v2PrepCommit').disabled=true;window.aasV2QualityUI?.clear();}
   function methodFields(){
     const method=node('v2PrepMethod').value;
+    if(method==='clip')node('v2PrepAdvanced').open=true;
     node('v2PrepHampelField').hidden=method!=='hampel_forward';
     node('v2PrepLegacyWindowField').hidden=!['moving_average','median_filter'].includes(method);
     for(const id of ['v2PrepMin','v2PrepMax'])node(id).closest('label').hidden=method!=='clip';

@@ -97,6 +97,44 @@ class PostRoutesMixin:
             except (ValueError,TypeError,UnicodeError,binascii.Error,
                     FileNotFoundError,OSError,RuntimeError,KeyError,ImportError) as exc:
                 return main.json_response(self,{'error':str(exc)},400)
+        if parsed.path in ('/api/v2/telemetry/preprocess-csv/inspect',
+                           '/api/v2/telemetry/preprocess-csv/process'):
+            from scripts.server import v2_csv_preprocess as csv_preprocess
+            if not 0 < length <= csv_preprocess.MAX_BYTES:
+                return main.json_response(self, {'error': 'CSV 大小必须在 1 字节至 8 MB 以内'}, 413)
+            try:
+                encoded = self.headers.get('X-AAS-CSV-Filename-B64', '')
+                if not 0 < len(encoded) <= 600:
+                    raise ValueError('缺少 CSV 文件名')
+                filename = base64.b64decode(encoded, validate=True).decode('utf-8')
+                config_header = self.headers.get('X-AAS-Preprocess-Config-B64', '')
+                if len(config_header) > 4096:
+                    raise ValueError('预处理配置过大')
+                config = (json.loads(base64.b64decode(config_header, validate=True).decode('utf-8'))
+                          if config_header else {})
+                if not isinstance(config, dict):
+                    raise ValueError('预处理配置必须为对象')
+                content = self.rfile.read(length)
+                if len(content) != length:
+                    raise ValueError('CSV 上传不完整')
+                if parsed.path.endswith('/inspect'):
+                    result = csv_preprocess.inspect(content, filename,
+                        encoding=config.get('encoding', 'auto'),
+                        delimiter=config.get('delimiter', 'auto'))
+                    return main.json_response(self, result)
+                output, summary = csv_preprocess.process(content, filename, config)
+                self.send_response(200)
+                self.send_header('Content-Type', 'text/csv; charset=utf-8')
+                self.send_header('Content-Disposition', 'attachment; filename="aas-preprocessed.csv"')
+                self.send_header('Content-Length', str(len(output)))
+                self.send_header('Cache-Control', 'no-store')
+                self.send_header('X-Content-Type-Options', 'nosniff')
+                self.send_header('X-AAS-Preprocess-Rows', str(summary['input_rows']))
+                self.end_headers()
+                self.wfile.write(output)
+                return
+            except (ValueError, TypeError, UnicodeError, binascii.Error, KeyError, OSError) as exc:
+                return main.json_response(self, {'error': str(exc)}, 400)
         if parsed.path in ('/api/v2/csv-workspace/inspect','/api/v2/csv-workspace/import'):
             from scripts.server import v2_csv_workspace as workspace
             if not 0 < length <= workspace.MAX_CSV_BYTES:

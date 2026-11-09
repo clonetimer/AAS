@@ -51,6 +51,24 @@ class GetRoutesMixin:
         if not self._require_auth(parsed, main):
             return
 
+        if parsed.path == '/api/v2/telemetry/preprocess/export':
+            from scripts.server.telemetry_v2_preprocess import export_job_csv
+            try:
+                job_id = int(parse_qs(parsed.query).get('job_id', ['0'])[0])
+                content = export_job_csv(active_path(main.ROOT), job_id)
+                self.send_response(200)
+                self.send_header('Content-Type', 'text/csv; charset=utf-8')
+                self.send_header('Content-Disposition',
+                                 f'attachment; filename="aas-preprocessed-{job_id}.csv"')
+                self.send_header('Content-Length', str(len(content)))
+                self.send_header('Cache-Control', 'no-store')
+                self.send_header('X-Content-Type-Options', 'nosniff')
+                self.end_headers()
+                self.wfile.write(content)
+                return
+            except (ValueError, TypeError, sqlite3.DatabaseError, OSError) as exc:
+                return main.json_response(self, {'error': str(exc)}, 400)
+
         if parsed.path == '/api/v2/models/export-bundle':
             from scripts.server.v2_model_bundle import export_model_bundle
             try:

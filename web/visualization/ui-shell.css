@@ -1,0 +1,43 @@
+/* Shared, restrained layout for operational pages. */
+body.compact-ui .topbar {
+  border-radius: 10px;
+  box-shadow: none;
+  background: var(--surface);
+}
+body.compact-ui .topbar h1 { font-size: 21px; letter-spacing: -.02em; }
+body.compact-ui .nav-links { gap: 2px; }
+body.compact-ui .nav-links a {
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--muted);
+  font-weight: 550;
+}
+body.compact-ui .nav-links a:hover,
+body.compact-ui .nav-links a.active {
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+body.compact-ui .panel { box-shadow: none; border-color: var(--line); }
+body.compact-ui button:hover { transform: none; }
+body.compact-ui button.primary,
+body.compact-ui .primary { background: var(--accent-strong); box-shadow: none; }
+body.compact-ui button:focus-visible,
+body.compact-ui a:focus-visible,
+body.compact-ui input:focus-visible,
+body.compact-ui select:focus-visible,
+body.compact-ui summary:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+body.compact-ui .field-hint { line-height: 1.5; }
+body.compact-ui .sim-card { box-shadow: none; }
+body.compact-ui .pg-head p { max-width: 70ch; line-height: 1.5; }
+@media (max-width: 700px) {
+  body.compact-ui .topbar { align-items: stretch; flex-direction: column; }
+  body.compact-ui .nav-links { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 2px; }
+  body.compact-ui .nav-links a { flex: none; white-space: nowrap; }
+}
+@media (prefers-reduced-motion: reduce) {
+  body.compact-ui button { transition: none; }
+}
