@@ -8,9 +8,9 @@
       why: '将文件登记为可筛选的遥测参量，之后可用于浏览、训练或测试。'},
     simulation: {name: '模拟故障数据库', destination: '独立模拟库 · 原始版本 v0',
       why: '先保存完整原始数据，再选择参量和帧区间添加故障。'},
-    train: {name: '训练数据', destination: '历史故障数据库 · 训练来源',
+    train: {name: '训练数据', destination: '我的训练 CSV',
       why: '为异常检测算法准备正常基线；标签用于确认样本状态。'},
-    eval: {name: '测试数据', destination: '历史故障数据库 · 测试来源',
+    eval: {name: '测试数据', destination: '我的测试 CSV',
       why: '使用已有模型检查数据；真实标签决定能否计算评估指标。'}
   };
   function element(tag, text, className) {

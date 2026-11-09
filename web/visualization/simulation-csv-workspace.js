@@ -4,7 +4,8 @@ const $ = id => document.getElementById(id);
 const state = {items:[], inspected:null, file:null, preview:null, config:null, sequence:0};
 const API='/api/v2/csv-workspace';
 const importWizard=window.AASCsvImportWizard?.create({rootId:'csvImportWizard',purpose:'simulation',
- nextLabel:'继续设置故障注入',nextTarget:'csvColumn'});
+ nextLabel:'继续设置故障注入',nextTarget:'csvColumn',
+ onNext:()=>{const dialog=$('simCsvDialog');if(dialog?.open)dialog.close();}});
 let importBusy=false;
 function importSummary(info={},filename){return {filename:filename||state.file?.name||info.filename,
  row_count:info.frame_count,column_count:info.numeric_columns?.length,columns:info.numeric_columns||[],

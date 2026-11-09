@@ -9,7 +9,8 @@ const wizards=Object.fromEntries(['train','eval'].map(role=>[role,
  window.AASCsvImportWizard?.create({rootId:role+'CsvWizard',purpose:role,
   nextLabel:role==='train'?'检查训练时间范围':'选择模型并检查测试数据',
   nextTarget:role==='train'?'trainStart':'evalModel',
-  onNext:()=>$(role==='train'?'tabTrain':'tabEval')?.click?.()})]));
+  onNext:()=>{const dialog=$(role+'CsvDialog');if(dialog?.open)dialog.close();
+   $(role==='train'?'tabTrain':'tabEval')?.click?.();}})]));
 function importSummary(role,info={}){
  return {...info,filename:$(role+'CsvFile').files?.[0]?.name||info.filename,
   role:role==='train'?'train':'test',
