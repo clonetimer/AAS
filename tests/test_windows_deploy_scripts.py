@@ -16,7 +16,7 @@ def test_offline_installer_checks_integrity_space_and_avoids_fixed_drive():
     assert script.count("function Test-PackageManifest") == 1
     assert script.rstrip().endswith("}")
     for powershell_file in (root / "deploy" / "windows").glob("*.ps1"):
-        assert powershell_file.read_bytes().startswith(b"\\xef\\xbb\\xbf")
+        assert powershell_file.read_bytes().startswith(bytes.fromhex("efbbbf"))
 
 
 def test_service_shortcuts_use_local_token_and_preserve_user_data():
