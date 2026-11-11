@@ -1,10 +1,10 @@
 # AAS P0 Windows 离线包：本地验收步骤
 
 构建日期：2026-11-11  
-离线包：`AAS_WINDOWS_OFFLINE_P0_20261111.zip`  
-源码基线：`c137efd8b093c18949ec92a150536cbc5b2a9830`  
-文件大小：389,966,478 bytes  
-SHA-256：`1ec02fab5d1a794edee792b48be6b94e00465ba1183ce501ab5ff70ca1f08cfc`
+离线包：`AAS_WINDOWS_OFFLINE_P0_20261111_R1.zip`  
+源码基线：`7a787f44b80ce671e61786221e3be4a39b48d80b`  
+文件大小：389,969,088 bytes  
+SHA-256：`155583ee81513e2c1dcf1dfecde083deb3282f795c24072fa799b1b0b97510ba`
 
 ## 1. 交付包内容核验
 
@@ -14,35 +14,35 @@ SHA-256：`1ec02fab5d1a794edee792b48be6b94e00465ba1183ce501ab5ff70ca1f08cfc`
 - wheelhouse：39 个 wheel；锁定依赖：39 项
 - 示例遥测：19 个 CSV.GZ
 - 默认不包含 evaluated 实验模型、model.db、pickle、joblib 和 .bak 文件
-- 源码提交：`c137efd8b093c18949ec92a150536cbc5b2a9830`
+- 源码提交：`7a787f44b80ce671e61786221e3be4a39b48d80b`
 
 ## 2. 拼接分卷
 
 将以下文件放在同一个目录：
 
-- `AAS_WINDOWS_OFFLINE_P0_20261111.part01`
-- `AAS_WINDOWS_OFFLINE_P0_20261111.part02`
-- `AAS_WINDOWS_OFFLINE_P0_20261111.part03`
-- `AAS_WINDOWS_OFFLINE_P0_20261111.part04`
-- `AAS_WINDOWS_OFFLINE_P0_20261111.part05`
-- `Join-AAS-P0-OfflinePackage.ps1`
+- `AAS_WINDOWS_OFFLINE_P0_20261111_R1.part01`
+- `AAS_WINDOWS_OFFLINE_P0_20261111_R1.part02`
+- `AAS_WINDOWS_OFFLINE_P0_20261111_R1.part03`
+- `AAS_WINDOWS_OFFLINE_P0_20261111_R1.part04`
+- `AAS_WINDOWS_OFFLINE_P0_20261111_R1.part05`
+- `Join-AAS-P0-OfflinePackage-R1.ps1`
 
 在 PowerShell 5.1 中运行：
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\Join-AAS-P0-OfflinePackage.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\Join-AAS-P0-OfflinePackage-R1.ps1
 ```
 
 脚本生成 ZIP 后会自动计算 SHA-256。期望值必须为：
 
 ```text
-1ec02fab5d1a794edee792b48be6b94e00465ba1183ce501ab5ff70ca1f08cfc
+155583ee81513e2c1dcf1dfecde083deb3282f795c24072fa799b1b0b97510ba
 ```
 
 也可以单独核验：
 
 ```powershell
-Get-FileHash .\AAS_WINDOWS_OFFLINE_P0_20261111.zip -Algorithm SHA256
+Get-FileHash .\AAS_WINDOWS_OFFLINE_P0_20261111_R1.zip -Algorithm SHA256
 ```
 
 ## 3. Windows 10/11 干净安装
@@ -53,7 +53,7 @@ Get-FileHash .\AAS_WINDOWS_OFFLINE_P0_20261111.zip -Algorithm SHA256
 2. 解压完整 ZIP，不要单独移动包内文件。
 3. 右键 `一键部署.cmd`，选择运行；通常不需要管理员权限。
 4. 安装器应先检查 SHA-256、wheelhouse 和磁盘空间。
-5. 默认安装目录为当前用户的 `%LOCALAPPDATA%\AAS`。
+5. 双击部署后会询问安装目录，并优先建议有足够空间的非系统盘；也可直接输入自定义路径，例如 `E:\AAS`。
 6. 安装完成后，双击安装目录内的 `Start-AAS.cmd`。
 7. 浏览器访问 `http://127.0.0.1:8765`，完成首次管理员账号初始化。
 
