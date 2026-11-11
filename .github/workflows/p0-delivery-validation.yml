@@ -20,8 +20,10 @@ jobs:
         with:
           python-version: "3.11"
       - name: Install test runner
-        run: python -m pip install --disable-pip-version-check pytest==8.3.5
-      - name: Run P0 tests
+        run: python -m pip install --disable-pip-version-check pytest==8.3.5 numpy==1.24.4 PyYAML==6.0.3 psutil==5.9.3
+      - name: Verify browser CSV import contract
+        run: node tests/runner_csv_import_ui.cjs
+      - name: Run P0 and isolated CSV workspace tests
         run: >-
           python -m pytest -q
           tests/test_windows_offline_package_builder.py
@@ -29,6 +31,13 @@ jobs:
           tests/test_local_service_control.py
           tests/test_user_data_scope_docs.py
           tests/test_windows_deploy_scripts.py
+          tests/test_v2_user_csv_workspace.py
+          tests/test_v2_user_csv_workspace_http.py
+          tests/test_v2_user_csv_workspace_real_import.py
+          tests/test_v2_user_csv_workspace_restart.py
+          tests/test_v2_user_csv_workspace_routes_e2e.py
+          tests/test_algorithm_worker_workspace_db.py
+          tests/test_p3g0_runner_wizard_contract.py
 
   windows-powershell-5-1:
     name: Windows PowerShell 5.1 and P0 tests
