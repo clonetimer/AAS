@@ -3,7 +3,7 @@
 ## 基线与原则
 
 - 代码基线：GitHub main，提交 8d19e391d2de8fa08e6327dc38c9e965964fe394。
-- P0 候选源码：feat/aas-p0-product-delivery，提交 2f6ca2b94e02f3d1149143e7b73a3072acb75acf。
+- P0 候选源码：feat/aas-p0-product-delivery，提交 ce587c31b103e3a4a76ac09fe470dec8ae016fc6。
 - 目标：不推倒现有 AAS 架构，优先收敛普通用户安装、数据去向、首页入口、文档和安全卸载。
 - 数据原则：历史遥测、故障模拟、训练/测试用户 CSV 保持三个独立存储边界；用户数据不随源码包或普通安装包被覆盖。
 - 模型原则：默认 Windows 离线包不携带开发阶段实验模型，不把 evaluated 状态误作 published。
@@ -46,13 +46,13 @@
 
 ## 自动化测试与构建结果
 
-- GitHub Actions 最新 PR 验证：https://github.com/clonetimer/AAS/actions/runs/42964101281
+- GitHub Actions 最新 PR 验证：https://github.com/clonetimer/AAS/actions/runs/42964667112
 - Linux Python P0 测试：**18 passed**。
 - Windows Python 3.8 / PowerShell 5.1 P0 测试：**19 passed**。
 - Windows PowerShell 5.1 解析：**4/4 脚本通过**。
-- 可复现源码归档：**601 个文件**，AAS_源码.zip 为 1,665,445 bytes；源码提交 SHA 为 2f6ca2b94e02f3d1149143e7b73a3072acb75acf。
-- GitHub Actions 源码归档产物：https://github.com/clonetimer/AAS/actions/runs/42964095806（保留期 14 天）。
-- 完整离线候选包已在隔离构建环境生成：**389,964,899 bytes**，SHA-256：2c7b9cec5bb7df279a0bcfe00b279e5845f1f40685e3129665bea523e7550f47。
+- 可复现源码归档：**601 个文件**，AAS_源码.zip 为 1,665,996 bytes；源码提交 SHA 为 2f6ca2b94e02f3d1149143e7b73a3072acb75acf。
+- GitHub Actions 源码归档产物：https://github.com/clonetimer/AAS/actions/runs/42964660868（保留期 14 天）。
+- 完整离线候选包已在隔离构建环境生成：**389,965,450 bytes**，SHA-256：42e38dd4b2a0a62ac615a08d20f3f21b54059cab31fca72577e444c010e0e657。
 - 候选包清单包含 75 个文件；ZIP CRC、全部清单 SHA-256、文件大小检查通过；未发现模型目录、pickle 模型、数据库、.bak、.pyc 或 __pycache__；models_included=false。
 - 候选包较原始 398,428,340 bytes 离线包减少约 8.46 MB，主要来自移除实验模型和备份配置；未削减 PyTorch、SciPy 等运行依赖。
 
