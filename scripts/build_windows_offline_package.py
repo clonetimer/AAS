@@ -24,6 +24,7 @@ EXCLUDED_DIRS = {
     ".git", ".venv", "venv", "__pycache__", ".pytest_cache", ".mypy_cache",
     ".ruff_cache", "node_modules", "dist", "build", "outputs", "logs",
     ".cache", "cache", "user_csv_workspaces", "source_csv_gz", "source_labels",
+    "release-candidates",
 }
 EXCLUDED_SUFFIXES = {
     ".pyc", ".pyo", ".log", ".tmp", ".bak", ".sqlite", ".sqlite3", ".db",
