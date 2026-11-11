@@ -7,6 +7,7 @@ telemetry/labels. Models are intentionally excluded from the default package.
 from __future__ import annotations
 
 import argparse
+from email.parser import BytesParser
 import hashlib
 import json
 import os
@@ -68,6 +69,30 @@ def validate_wheelhouse(lock_file: Path, wheelhouse: Path) -> None:
         identity = (normalize_distribution(pieces[0]), pieces[1])
         if identity in found:
             raise ValueError("wheelhouse 含重复包版本的多个 wheel：{}".format(wheel.name))
+        try:
+            with zipfile.ZipFile(wheel, "r") as package:
+                corrupt = package.testzip()
+                if corrupt:
+                    raise ValueError("wheel 文件 CRC 校验失败：{} ({})".format(wheel.name, corrupt))
+                metadata_files = [
+                    name for name in package.namelist()
+                    if name.endswith(".dist-info/METADATA")
+                ]
+                if len(metadata_files) != 1:
+                    raise ValueError("wheel 缺少唯一的 dist-info/METADATA：{}".format(wheel.name))
+                metadata = BytesParser().parsebytes(package.read(metadata_files[0]))
+        except (OSError, zipfile.BadZipFile) as exc:
+            raise ValueError("wheel 不是有效的 ZIP 文件：{}".format(wheel.name)) from exc
+        metadata_identity = (
+            normalize_distribution(metadata.get("Name", "")),
+            metadata.get("Version", ""),
+        )
+        if metadata_identity != identity:
+            raise ValueError(
+                "wheel 文件名与内部 METADATA 不一致：{}（{}=={}）".format(
+                    wheel.name, metadata_identity[0], metadata_identity[1]
+                )
+            )
         found.add(identity)
     missing = sorted(required - found)
     extras = sorted(found - required)
@@ -174,6 +199,14 @@ def verify_seed_manifest(seed_root: Path) -> dict:
             raise ValueError("离线种子包文件大小校验失败：{}".format(relative))
         if sha256_file(candidate) != expected_hash:
             raise ValueError("离线种子包 SHA-256 校验失败：{}".format(relative))
+    actual_files = {
+        path.relative_to(root).as_posix().casefold()
+        for path in root.rglob("*")
+        if path.is_file() and path.resolve() != manifest_path.resolve()
+    }
+    unlisted = sorted(actual_files - seen)
+    if unlisted:
+        raise ValueError("离线种子包包含未列入原始清单的文件：{}".format(", ".join(unlisted[:10])))
     return manifest
 
 
