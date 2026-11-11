@@ -76,7 +76,7 @@ jobs:
           python-version: "3.11"
       - name: Build source archive from checked-out commit
         env:
-          SOURCE_COMMIT: ${{ github.sha }}
+          SOURCE_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
           python - <<'PY'
           import os
