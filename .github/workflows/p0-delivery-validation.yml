@@ -20,7 +20,7 @@ jobs:
         with:
           python-version: "3.11"
       - name: Install test runner
-        run: python -m pip install --disable-pip-version-check pytest==8.3.5 numpy==1.24.4 PyYAML==6.0.3 psutil==5.9.3
+        run: python -m pip install --disable-pip-version-check pytest==8.3.5 numpy==1.24.4 PyYAML==6.0.3 psutil==5.9.3 pydantic==2.10.6
       - name: Verify browser CSV import contract
         run: node tests/runner_csv_import_ui.cjs
       - name: Run P0 and isolated CSV workspace tests
@@ -48,7 +48,7 @@ jobs:
         with:
           python-version: "3.8"
       - name: Install test runner
-        run: python -m pip install --disable-pip-version-check pytest==8.3.5 numpy==1.24.4 PyYAML==6.0.3 psutil==5.9.3
+        run: python -m pip install --disable-pip-version-check pytest==8.3.5 numpy==1.24.4 PyYAML==6.0.3 psutil==5.9.3 pydantic==2.10.6
       - name: Verify browser CSV import contract
         run: node tests/runner_csv_import_ui.cjs
       - name: Run P0 and isolated CSV workspace tests
