@@ -1,4 +1,4 @@
-# AAS Windows 10/11 x64 offline installer.
+﻿# AAS Windows 10/11 x64 offline installer.
 [CmdletBinding()]
 param(
     [string]$TargetDir = '',
