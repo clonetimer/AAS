@@ -29,3 +29,6 @@ def test_service_shortcuts_use_local_token_and_preserve_user_data():
     assert "/_aas/control/shutdown" in stop
     assert "'datasets','models','configs','config.yaml'" in uninstall
     assert "DELETE DATA" in uninstall
+    assert "Get-CimInstance Win32_Process" in uninstall
+    assert "visualization_server" in uninstall
+    assert "检测到 AAS 服务进程仍在运行" in uninstall
