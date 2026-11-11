@@ -72,6 +72,10 @@ def test_builder_excludes_models_and_backup_assets(tmp_path):
     source.mkdir()
     seed.mkdir()
     (source / "README.md").write_text("AAS", encoding="utf-8")
+    (source / "release-candidates").mkdir()
+    (source / "release-candidates/AAS_WINDOWS_OFFLINE_P0_20261111.zip.sha256").write_text(
+        "stale self-referential package checksum", encoding="utf-8"
+    )
     tools = source / "deploy" / "windows"
     tools.mkdir(parents=True)
     for name in (
@@ -99,6 +103,7 @@ def test_builder_excludes_models_and_backup_assets(tmp_path):
         assert not any(name.endswith(".pkl") or name.endswith(".bak") for name in names)
         assert "程序/AAS_源码.zip" in names
         assert "校验/双坐标文件哈希.json" in names
+        assert not any("release-candidates/" in name for name in names)
 
 
 def test_wheelhouse_rejects_malformed_wheel_filename(tmp_path):
