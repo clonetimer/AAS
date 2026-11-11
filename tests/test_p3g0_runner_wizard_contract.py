@@ -23,3 +23,14 @@ def test_unlabeled_inference_is_explained_as_not_supervised_evaluation():
     html = (ROOT / 'web/visualization/runner.html').read_text(encoding='utf-8')
     assert '无标签' in html
     assert '不生成监督指标' in html
+
+
+def test_runner_guide_script_and_responsive_styles_are_loaded():
+    html = (ROOT / 'web/visualization/runner.html').read_text(encoding='utf-8')
+    css = (ROOT / 'web/visualization/runner-v2.css').read_text(encoding='utf-8')
+    script = (ROOT / 'web/visualization/runner-workflow-guide.js').read_text(encoding='utf-8')
+    assert 'runner-workflow-guide.js' in html
+    assert 'runnerWorkflowHint' in html
+    assert '.runner-workflow-steps' in css
+    assert "focusTarget('previewTrain'" in script
+    assert "focusTarget('evalModel'" in script
