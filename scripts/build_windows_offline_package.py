@@ -15,7 +15,7 @@ import shutil
 import subprocess
 import tempfile
 import zipfile
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Dict, Iterable, List, Tuple
 
 
@@ -127,7 +127,58 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
+def verify_seed_manifest(seed_root: Path) -> dict:
+    """Verify every file in the original offline seed before trusting its payload."""
+    manifest_path = seed_root / "校验" / "双坐标文件哈希.json"
+    if not manifest_path.is_file():
+        raise ValueError("离线种子包缺少原始 SHA-256 清单：校验/双坐标文件哈希.json")
+    try:
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8-sig"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise ValueError("离线种子包 SHA-256 清单无法读取：{}".format(exc)) from exc
+    if not isinstance(manifest, dict):
+        raise ValueError("离线种子包 SHA-256 清单格式无效")
+    commit = manifest.get("source_commit")
+    entries = manifest.get("entries")
+    if not isinstance(commit, str) or not re.fullmatch(r"[0-9a-f]{40}", commit):
+        raise ValueError("离线种子包缺少有效的原始源码提交 SHA")
+    if not isinstance(entries, dict) or len(entries) < 20:
+        raise ValueError("离线种子包 SHA-256 清单条目不足或格式无效")
+
+    root = seed_root.resolve()
+    seen = set()
+    for relative, metadata in entries.items():
+        if (not isinstance(relative, str) or not relative or "\\\\" in relative
+                or ":" in relative or relative.startswith("/")
+                or any(part in {"", ".", ".."} for part in relative.split("/"))):
+            raise ValueError("离线种子包清单包含非法路径：{}".format(relative))
+        key = relative.casefold()
+        if key in seen:
+            raise ValueError("离线种子包清单包含重复路径：{}".format(relative))
+        seen.add(key)
+        parts = PurePosixPath(relative).parts
+        candidate = (root.joinpath(*parts)).resolve()
+        if os.path.commonpath((str(root), str(candidate))) != str(root):
+            raise ValueError("离线种子包清单路径越界：{}".format(relative))
+        if not candidate.is_file():
+            raise ValueError("离线种子包缺少文件：{}".format(relative))
+        if not isinstance(metadata, dict):
+            raise ValueError("离线种子包文件元数据无效：{}".format(relative))
+        expected_bytes = metadata.get("bytes")
+        expected_hash = metadata.get("sha256")
+        if isinstance(expected_bytes, bool) or not isinstance(expected_bytes, int) or expected_bytes < 0:
+            raise ValueError("离线种子包文件大小元数据无效：{}".format(relative))
+        if not isinstance(expected_hash, str) or not re.fullmatch(r"[0-9a-f]{64}", expected_hash):
+            raise ValueError("离线种子包 SHA-256 元数据无效：{}".format(relative))
+        if candidate.stat().st_size != expected_bytes:
+            raise ValueError("离线种子包文件大小校验失败：{}".format(relative))
+        if sha256_file(candidate) != expected_hash:
+            raise ValueError("离线种子包 SHA-256 校验失败：{}".format(relative))
+    return manifest
+
+
 def copy_payload(seed_root: Path, package_root: Path) -> None:
+    verify_seed_manifest(seed_root)
     for relative in PAYLOAD_DIRS:
         source = seed_root / relative
         if not source.is_dir():
