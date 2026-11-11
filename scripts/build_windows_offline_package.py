@@ -30,7 +30,7 @@ EXCLUDED_SUFFIXES = {
     ".pyc", ".pyo", ".log", ".tmp", ".bak", ".sqlite", ".sqlite3", ".db",
     ".pkl", ".pickle", ".joblib", ".pt", ".pth", ".onnx", ".whl", ".zip",
 }
-EXCLUDED_FILENAMES = {".aas-service.json", ".aas-install.json", ".env", ".coverage"}
+EXCLUDED_FILENAMES = {".aas-service.json", ".aas-install.json", ".env", ".coverage", "P0_LOCAL_ACCEPTANCE_20261111.md"}
 PAYLOAD_DIRS = (
     Path("程序/Python安装包"),
     Path("程序/Python便携版"),
