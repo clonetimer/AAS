@@ -305,7 +305,9 @@ def _training(main, body):
             else:
                 main.complete_task(task_id,None,str(exc),failure=diagnose_failure(exc,stage,'training'))
         finally:
-            release_user_csv_reference()
+            if user_dataset is not None:
+                from scripts.server import v2_user_csv_workspace as user_workspace
+                user_workspace.release_task(main.ROOT, task_id)
     try:
         threading.Thread(target=work,daemon=True).start()
     except Exception as exc:
