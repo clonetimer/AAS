@@ -148,7 +148,7 @@ def verify_seed_manifest(seed_root: Path) -> dict:
     root = seed_root.resolve()
     seen = set()
     for relative, metadata in entries.items():
-        if (not isinstance(relative, str) or not relative or "\\\\" in relative
+        if (not isinstance(relative, str) or not relative or chr(92) in relative
                 or ":" in relative or relative.startswith("/")
                 or any(part in {"", ".", ".."} for part in relative.split("/"))):
             raise ValueError("离线种子包清单包含非法路径：{}".format(relative))
