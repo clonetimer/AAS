@@ -15,6 +15,8 @@ def test_offline_installer_checks_integrity_space_and_avoids_fixed_drive():
     assert "SHA-256 清单缺少有效的源码提交 SHA。" in script
     assert script.count("function Test-PackageManifest") == 1
     assert script.rstrip().endswith("}")
+    for powershell_file in (root / "deploy" / "windows").glob("*.ps1"):
+        assert powershell_file.read_bytes().startswith(b"\\xef\\xbb\\xbf")
 
 
 def test_service_shortcuts_use_local_token_and_preserve_user_data():
