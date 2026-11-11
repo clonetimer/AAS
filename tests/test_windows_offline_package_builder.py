@@ -108,7 +108,7 @@ def test_seed_manifest_rejects_tampered_payload(tmp_path):
     payload.parent.mkdir(parents=True)
     payload.write_bytes(b"trusted sample")
     _write_seed_manifest(seed)
-    payload.write_bytes(b"tampered sample")
+    payload.write_bytes(b"changed sample")
     with pytest.raises(ValueError, match="SHA-256 校验失败"):
         verify_seed_manifest(seed)
 
