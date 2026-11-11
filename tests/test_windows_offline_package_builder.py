@@ -14,13 +14,26 @@ from scripts.build_windows_offline_package import (
 )
 
 
+def _write_wheel(path: Path, distribution: str, version: str):
+    dist_info = "{}-{}.dist-info".format(distribution.replace("-", "_"), version)
+    with zipfile.ZipFile(path, "w") as archive:
+        archive.writestr(
+            dist_info + "/METADATA",
+            "Metadata-Version: 2.1\nName: {}\nVersion: {}\n".format(distribution, version),
+        )
+        archive.writestr(
+            dist_info + "/WHEEL",
+            "Wheel-Version: 1.0\nGenerator: AAS tests\nRoot-Is-Purelib: true\nTag: py3-none-any\n",
+        )
+
+
 def _wheelhouse(root: Path):
     lock = root / "程序" / "运行依赖" / "锁定版本.txt"
     wheelhouse = root / "程序" / "运行依赖" / "wheelhouse"
     wheelhouse.mkdir(parents=True)
     lock.write_text("numpy==1.24.4\nPyYAML==6.0.3\n", encoding="utf-8")
-    (wheelhouse / "numpy-1.24.4-cp38-cp38-win_amd64.whl").write_bytes(b"wheel")
-    (wheelhouse / "PyYAML-6.0.3-cp38-cp38-win_amd64.whl").write_bytes(b"wheel")
+    _write_wheel(wheelhouse / "numpy-1.24.4-cp38-cp38-win_amd64.whl", "numpy", "1.24.4")
+    _write_wheel(wheelhouse / "PyYAML-6.0.3-cp38-cp38-win_amd64.whl", "PyYAML", "6.0.3")
     return lock, wheelhouse
 
 
@@ -47,7 +60,7 @@ def test_lock_and_wheelhouse_must_match_exactly(tmp_path):
     lock, wheelhouse = _wheelhouse(tmp_path)
     assert len(parse_lock(lock)) == 2
     validate_wheelhouse(lock, wheelhouse)
-    (wheelhouse / "unused-1.0-py3-none-any.whl").write_bytes(b"extra")
+    _write_wheel(wheelhouse / "unused-1.0-py3-none-any.whl", "unused", "1.0")
     with pytest.raises(ValueError, match="锁定清单之外"):
         validate_wheelhouse(lock, wheelhouse)
 
@@ -123,4 +136,22 @@ def test_seed_manifest_rejects_path_traversal(tmp_path):
     }
     (manifest_dir / "双坐标文件哈希.json").write_text(json.dumps(manifest), encoding="utf-8")
     with pytest.raises(ValueError, match="非法路径"):
+        verify_seed_manifest(seed)
+
+
+def test_wheelhouse_rejects_mismatched_internal_metadata(tmp_path):
+    lock, wheelhouse = _wheelhouse(tmp_path)
+    _write_wheel(wheelhouse / "numpy-1.24.4-cp38-cp38-win_amd64.whl", "different-name", "1.24.4")
+    with pytest.raises(ValueError, match="文件名与内部 METADATA 不一致"):
+        validate_wheelhouse(lock, wheelhouse)
+
+
+def test_seed_manifest_rejects_unlisted_files(tmp_path):
+    seed = tmp_path / "seed"
+    payload = seed / "数据" / "遥测" / "sample.csv.gz"
+    payload.parent.mkdir(parents=True)
+    payload.write_bytes(b"listed")
+    _write_seed_manifest(seed)
+    (seed / "数据" / "遥测" / "unlisted.csv.gz").write_bytes(b"unlisted")
+    with pytest.raises(ValueError, match="未列入原始清单"):
         verify_seed_manifest(seed)
