@@ -7,6 +7,9 @@ def test_offline_installer_checks_integrity_space_and_avoids_fixed_drive():
     assert "Get-FileHash" in script
     assert "AvailableFreeSpace" in script
     assert "LOCALAPPDATA" in script
+    assert "Get-DefaultInstallTarget" in script
+    assert "Read-Host '安装目录" in script
+    assert "$entryProperties = @($manifest.entries.PSObject.Properties | ForEach-Object { $_ })" in script
     assert "D:\\AAS" not in script
     assert "Remove-Item -LiteralPath $TargetDir -Recurse -Force" in script
     assert "package_manifest.json" in script
