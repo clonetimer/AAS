@@ -12,7 +12,7 @@
 2. 双击 `一键部署.cmd`，或在 PowerShell 中运行 `Deploy-AAS.ps1`。
 3. 默认安装目录为 `%LOCALAPPDATA%\AAS`。可通过 `-TargetDir 'E:\AAS'` 指定目录。
 4. 若使用包内示例遥测建库，安装器会要求约 35 GB 可用空间；如果空间不足，应选择其他磁盘。迁移已有数据库时，空间要求会根据旧库大小动态估算。
-5. 安装器在修改目标目录前校验 SHA-256 清单；检查 Python ABI、wheelhouse 数量和依赖一致性。
+5. 安装器在修改目标目录前校验 SHA-256 清单；检查 Python ABI、wheelhouse 数量和依赖一致性。SHA-256 清单用于发现文件损坏或错配，不是数字签名；不能抵抗清单与文件同时被恶意替换。正式分发应使用受控仓库/发布渠道，并保留源码提交 SHA。
 6. 完成后双击安装目录中的 `Start-AAS.cmd`。浏览器打开本机首页并初始化管理员账号。
 
 安装器不会覆盖已存在的 AAS 安装目录。升级请使用新的目标目录，完成数据迁移和验收后再处理旧安装。
@@ -56,3 +56,23 @@
 7. 默认卸载保留用户数据；显式删除选项的二次确认。
 
 未完成以上实机步骤前，不应将候选包标记为 Windows 正式验收通过。
+
+
+## 7. 维护者如何重建离线包
+
+从当前源码工作树构建时，先解压上一版已校验的离线包作为 payload seed。seed 只提供 Python 安装程序、便携运行时、pip、锁定 wheelhouse、示例遥测和标签；不会复用 seed 内的旧源码、旧部署脚本或模型。
+
+```powershell
+python scripts/build_windows_offline_package.py `
+  --source-root . `
+  --seed-root 'D:\AAS_UI_CLEAN_OFFLINE_20261109_extracted' `
+  --output 'D:\AAS_UI_CLEAN_OFFLINE_candidate.zip'
+```
+
+若源码来自 GitHub ZIP 而不是 Git clone，需要显式传入该 ZIP 对应的 40 位提交 SHA：
+
+```powershell
+python scripts/build_windows_offline_package.py --source-root . --seed-root 'D:\AAS_UI_CLEAN_OFFLINE_20261109_extracted' --source-commit '<40位源码提交SHA>' --output 'D:\AAS_UI_CLEAN_OFFLINE_candidate.zip'
+```
+
+构建器会校验锁定依赖与 wheelhouse 精确匹配，排除默认模型和备份文件，生成新源码 ZIP 与 SHA-256 清单，并在输出后重新校验 ZIP CRC、文件大小和 SHA-256。需要替换已存在输出文件时，显式增加 `--overwrite`。
