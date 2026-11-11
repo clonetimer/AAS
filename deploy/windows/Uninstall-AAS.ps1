@@ -16,14 +16,21 @@ $stopScript = Join-Path $Root 'Stop-AAS.ps1'
 if (Test-Path -LiteralPath $stopScript) {
     & $stopScript
 }
-if (-not (Test-Path -LiteralPath (Join-Path $Root '.aas-service.json'))) {
-    $client = New-Object System.Net.Sockets.TcpClient
-    try {
-        $client.Connect('127.0.0.1', 8765)
-        throw '检测到 8765 端口仍有服务，但没有 AAS 受控服务记录。请在原启动终端按 Ctrl+C 停止服务后再卸载。'
-    } catch {
-        if ($_.Exception.Message -like '检测到 8765 端口仍有服务*') { throw }
-    } finally { $client.Dispose() }
+$entry = [IO.Path]::GetFullPath((Join-Path $Root 'scripts\\visualization_server.py'))
+try {
+    $runningAas = @(Get-CimInstance Win32_Process -ErrorAction Stop | Where-Object {
+        $_.CommandLine -and (
+            $_.CommandLine.IndexOf($entry, [StringComparison]::OrdinalIgnoreCase) -ge 0 -or
+            ($_.CommandLine -match 'visualization_server\\.py' -and $_.ExecutablePath -and
+             $_.ExecutablePath.StartsWith($Root, [StringComparison]::OrdinalIgnoreCase))
+        )
+    })
+} catch {
+    throw "无法确认 AAS 服务是否已经停止；为保护运行数据，已取消卸载：$($_.Exception.Message)"
+}
+if ($runningAas.Count -gt 0) {
+    $processIds = ($runningAas | ForEach-Object { [string]$_.ProcessId }) -join ', '
+    throw "检测到 AAS 服务进程仍在运行（PID: $processIds）。请先停止服务；若由终端启动，请在原终端按 Ctrl+C。"
 }
 
 $parent = Split-Path -Parent $Root
