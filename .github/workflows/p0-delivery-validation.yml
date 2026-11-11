@@ -1,0 +1,67 @@
+name: P0 Delivery Validation
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [feat/aas-p0-product-delivery]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  p0-python-tests:
+    name: P0 Python contract tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install test runner
+        run: python -m pip install --disable-pip-version-check pytest==8.3.5
+      - name: Run P0 tests
+        run: >-
+          python -m pytest -q
+          tests/test_windows_offline_package_builder.py
+          tests/test_home_quick_access.py
+          tests/test_local_service_control.py
+          tests/test_user_data_scope_docs.py
+          tests/test_windows_deploy_scripts.py
+
+  windows-powershell-5-1:
+    name: Windows PowerShell 5.1 and P0 tests
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.8"
+      - name: Install test runner
+        run: python -m pip install --disable-pip-version-check pytest==8.3.5
+      - name: Run P0 tests
+        run: >-
+          python -m pytest -q
+          tests/test_windows_offline_package_builder.py
+          tests/test_home_quick_access.py
+          tests/test_local_service_control.py
+          tests/test_user_data_scope_docs.py
+          tests/test_windows_deploy_scripts.py
+          tests/test_powershell_syntax.py
+      - name: Parse all deployment scripts with Windows PowerShell 5.1
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $files = Get-ChildItem -Path 'deploy/windows' -Filter '*.ps1' -Recurse
+          if (-not $files) { throw 'No deployment scripts found.' }
+          foreach ($file in $files) {
+            $tokens = $null
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile($file.FullName, [ref]$tokens, [ref]$errors) | Out-Null
+            if ($errors.Count -gt 0) {
+              $errors | ForEach-Object { Write-Error $_ }
+              throw "PowerShell syntax error in $($file.FullName)"
+            }
+          }
+          Write-Host "Parsed $($files.Count) PowerShell scripts successfully."
