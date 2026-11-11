@@ -1,7 +1,25 @@
-# AAS 文档索引（V2 单一数据模型）
+# AAS 文档索引
 
-当前用户工作流以 [Telemetry V2 Phase 5B 说明](TELEMETRY_V2_PHASE5B.md) 为准：按逻辑参量与时间范围浏览、原生导入、训练、发布和评估。任何有关“选择物理数据库表”“兼容旧表”的早期 Phase 1–5A 文档都属于**历史设计过程记录**，不再是有效的操作配置说明，也不构成第二套用户模式。
+## 普通用户
 
-数据库迁移规范可参考 [V2 重建方案](TELEMETRY_V2_REBUILD.md)，V2 数据筛选可参考 [浏览页方案](TELEMETRY_V2_BROWSER_PHASE4.md)，CSV 字段约束可参考 [原生导入方案](TELEMETRY_V2_IMPORT_PHASE5.md)。
+- [用户快速入门](USER_QUICKSTART.md)：安装后首次登录、数据导入、故障模拟、训练、评估和结果查看。
+- [CSV 导入向导](G0_3_CSV_IMPORT_QUICKSTART.md)：历史库、模拟工作区、训练/测试独立 CSV 工作区的区别和四步导入流程。
+- [Windows 离线部署](WINDOWS_OFFLINE_DEPLOYMENT.md)：离线包结构、安装、启动、停止、卸载和验收边界。
+- [多表遥测用户指南](MULTI_TABLE_USER_GUIDE.md)：历史遥测参量筛选与浏览。
+- [数据导入指南](DATA_IMPORT_GUIDE.md)：字段、标签、单位和来源规则。
 
-当前暂未开放 V2 原生故障区间编辑、预处理、网页故障注入及在线备份/恢复。请勿从旧文档寻找物理表管理按钮，这些入口已退役。
+## 开发与维护
+
+- [数据结构说明](DATA_SCHEMA_GUIDE.md)
+- [实验输入证据](EXPERIMENT_INPUT_EVIDENCE.md)
+- [实验来源追溯](EXPERIMENT_PROVENANCE.md)
+- [事件级评估协议](event_evaluation_protocol.md)
+- [Windows 源码部署说明](../INSTALL_DUAL_COORDINATE_WINDOWS.md)
+- [V2 重建方案](TELEMETRY_V2_REBUILD.md)
+- [升级交付说明](UPGRADE_DELIVERY_PACKAGE.md)
+
+## 历史设计记录
+
+`TELEMETRY_V2_PHASE*.md`、`superpowers/plans/` 和 `superpowers/specs/` 保存阶段性设计、实现计划和验收证据。它们用于开发追溯，不应替代普通用户快速入门。
+
+当前数据工作流包含历史 V2 数据库、独立故障模拟工作区、独立训练/测试 CSV 工作区，以及不落库的本地 CSV 预处理。旧文档中与现行页面不一致的操作说明，以本索引中的用户手册和当前软件界面为准。

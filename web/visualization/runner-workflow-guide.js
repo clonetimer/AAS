@@ -19,10 +19,10 @@
   }
   var actions = {
     data: function () { focusTarget('trainDataSource', '选择训练数据来源', 'tabTrain'); },
-    check: function () { focusTarget('previewTrain', '检查训练数据后再继续'); },
-    train: function () { focusTarget('trainAlgorithm', '确认算法和参数，再由你决定是否开始训练'); },
+    check: function () { focusTarget('previewTrain', '检查训练数据后再继续', 'tabTrain'); },
+    train: function () { focusTarget('trainAlgorithm', '确认算法和参数，再由你决定是否开始训练', 'tabTrain'); },
     test: function () { focusTarget('evalDataSource', '选择测试数据来源', 'tabEval'); },
-    evaluate: function () { focusTarget('evalModel', '选择已发布模型并检查真值；无标签来源只进行推理'); },
+    evaluate: function () { focusTarget('evalModel', '选择已发布模型并检查真值；无标签来源只进行推理', 'tabEval'); },
     result: function () {
       var evalView = document.getElementById('evalView');
       var isEval = !!(evalView && !evalView.hidden && getComputedStyle(evalView).display !== 'none');

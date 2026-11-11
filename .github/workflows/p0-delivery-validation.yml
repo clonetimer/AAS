@@ -1,0 +1,125 @@
+name: P0 Delivery Validation
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [feat/aas-p0-product-delivery]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  p0-python-tests:
+    name: P0 Python contract tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install test runner
+        run: python -m pip install --disable-pip-version-check pytest==8.3.5 numpy==1.24.4 PyYAML==6.0.3 psutil==5.9.3 pydantic==2.10.6
+      - name: Verify browser CSV import contract
+        run: node tests/runner_csv_import_ui.cjs
+      - name: Run P0 and isolated CSV workspace tests
+        run: >-
+          python -m pytest -q
+          tests/test_windows_offline_package_builder.py
+          tests/test_home_quick_access.py
+          tests/test_local_service_control.py
+          tests/test_user_data_scope_docs.py
+          tests/test_windows_deploy_scripts.py
+          tests/test_v2_user_csv_workspace.py
+          tests/test_v2_user_csv_workspace_http.py
+          tests/test_v2_user_csv_workspace_real_import.py
+          tests/test_v2_user_csv_workspace_restart.py
+          tests/test_v2_user_csv_workspace_routes_e2e.py
+          tests/test_algorithm_worker_workspace_db.py
+          tests/test_p3g0_runner_wizard_contract.py
+
+  windows-powershell-5-1:
+    name: Windows PowerShell 5.1 and P0 tests
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.8"
+      - name: Install test runner
+        run: python -m pip install --disable-pip-version-check pytest==8.3.5 numpy==1.24.4 PyYAML==6.0.3 psutil==5.9.3 pydantic==2.10.6
+      - name: Verify browser CSV import contract
+        run: node tests/runner_csv_import_ui.cjs
+      - name: Run P0 and isolated CSV workspace tests
+        run: >-
+          python -m pytest -q
+          tests/test_windows_offline_package_builder.py
+          tests/test_home_quick_access.py
+          tests/test_local_service_control.py
+          tests/test_user_data_scope_docs.py
+          tests/test_windows_deploy_scripts.py
+          tests/test_v2_user_csv_workspace.py
+          tests/test_v2_user_csv_workspace_http.py
+          tests/test_v2_user_csv_workspace_real_import.py
+          tests/test_v2_user_csv_workspace_restart.py
+          tests/test_v2_user_csv_workspace_routes_e2e.py
+          tests/test_algorithm_worker_workspace_db.py
+          tests/test_p3g0_runner_wizard_contract.py
+          tests/test_powershell_syntax.py
+      - name: Parse all deployment scripts with Windows PowerShell 5.1
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $files = Get-ChildItem -Path 'deploy/windows' -Filter '*.ps1' -Recurse
+          if (-not $files) { throw 'No deployment scripts found.' }
+          foreach ($file in $files) {
+            $tokens = $null
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile($file.FullName, [ref]$tokens, [ref]$errors) | Out-Null
+            if ($errors.Count -gt 0) {
+              $errors | ForEach-Object { Write-Error $_ }
+              throw "PowerShell syntax error in $($file.FullName)"
+            }
+          }
+          Write-Host "Parsed $($files.Count) PowerShell scripts successfully."
+
+  build-source-archive:
+    name: Build reproducible source archive
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Build source archive from checked-out commit
+        env:
+          SOURCE_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          python - <<'PY'
+          import os
+          import shutil
+          import tempfile
+          from pathlib import Path
+          from scripts.build_windows_offline_package import build_source_archive
+
+          root = Path.cwd()
+          commit = os.environ["SOURCE_COMMIT"]
+          if len(commit) != 40 or any(ch not in "0123456789abcdef" for ch in commit):
+              raise SystemExit("SOURCE_COMMIT must be a 40-character Git SHA")
+          package_root = Path(tempfile.mkdtemp(prefix="aas-source-artifact-"))
+          count = build_source_archive(root, package_root)
+          archive = package_root / "程序" / "AAS_源码.zip"
+          shutil.copy2(archive, Path("AAS_源码.zip"))
+          Path("source_commit.txt").write_text(os.environ["SOURCE_COMMIT"] + "\n", encoding="ascii")
+          print("source_files={}".format(count))
+          print("source_archive_bytes={}".format(archive.stat().st_size))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: aas-p0-source-archive
+          path: |
+            AAS_源码.zip
+            source_commit.txt
+          if-no-files-found: error
+          retention-days: 14

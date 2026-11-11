@@ -6,6 +6,7 @@ logical channel/segment. One source record groups the entire transaction.
 from __future__ import annotations
 
 import csv
+from contextlib import closing
 import hashlib
 import io
 import json
@@ -290,7 +291,10 @@ def import_wide_csv_stream(db_path: Path, payload: dict, stream: TextIO, *,
 
     with tempfile.TemporaryDirectory(prefix='aas-wide-stage-') as dirname:
         stage_path = Path(dirname) / 'stage.sqlite'
-        with sqlite3.connect(stage_path) as stage_conn:
+        # sqlite3.Connection.__exit__ commits/rolls back but does not close the
+        # handle. On Windows this keeps stage.sqlite locked while TemporaryDirectory
+        # tries to remove it. Explicitly close the staging connection on scope exit.
+        with closing(sqlite3.connect(stage_path)) as stage_conn:
             stage_conn.execute('PRAGMA journal_mode=OFF')
             stage_conn.execute('PRAGMA synchronous=OFF')
             stage_conn.execute('''CREATE TABLE staged_rows (

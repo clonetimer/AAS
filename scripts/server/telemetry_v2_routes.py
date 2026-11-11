@@ -283,6 +283,9 @@ def _training(main, body):
             stage = 'report_archive'
             main.update_task_progress(task_id,97,'正在保存实验报告',stage=stage)
             archive=_auto_archive(main,'training',receipt)
+            if user_dataset is not None:
+                from scripts.server import v2_user_csv_workspace as user_workspace
+                user_workspace.release_task(main.ROOT, task_id)
             main.complete_task(task_id,{'status':'success' if archive['archive_status']=='complete' else 'partial',
                 'experiment_id':summary['experiment_id'],
                 'algorithm':request['algorithm'],'dataset':db_ref,'data_source_provenance':data_source_provenance,'table_name':'v2_channels',
@@ -294,6 +297,9 @@ def _training(main, body):
                 from scripts.server.training_reliability import cleanup_unpublished_artifact
                 cleanup_unpublished_artifact(main, summary)
             from scripts.server.algorithm_process import AlgorithmCancelledError
+            if user_dataset is not None:
+                from scripts.server import v2_user_csv_workspace as user_workspace
+                user_workspace.release_task(main.ROOT, task_id)
             if isinstance(exc, AlgorithmCancelledError) or cancel_check(task_id):
                 main.complete_task(task_id, None, cancelled=True)
             else:
@@ -354,12 +360,18 @@ def _start_async_v2_task(main, task_type, body, operation):
     initial_stage = 'score_only_validation' if task_type == 'score_only' else 'evaluation_validation'
 
     def work():
+        def release_user_csv_reference():
+            if user_dataset is not None:
+                from scripts.server import v2_user_csv_workspace as user_workspace
+                user_workspace.release_task(main.ROOT, task_id)
         try:
             main.bind_task_thread(task_id)
             main.update_task_progress(task_id, 2, '任务已启动，正在检查模型和数据选择', stage=initial_stage)
             result = operation(main, body, task_id=task_id)
+            release_user_csv_reference()
             main.complete_task(task_id, result)
         except TaskOperationError as exc:
+            release_user_csv_reference()
             from scripts.server.algorithm_process import AlgorithmCancelledError
             if isinstance(exc.cause, AlgorithmCancelledError) or _task_cancel_requested(main, task_id):
                 main.complete_task(task_id, None, cancelled=True)
@@ -368,6 +380,7 @@ def _start_async_v2_task(main, task_type, body, operation):
                 main.complete_task(task_id, None, str(exc.cause), failure=failure)
         except Exception as exc:
             from scripts.server.algorithm_process import AlgorithmCancelledError
+            release_user_csv_reference()
             if isinstance(exc, AlgorithmCancelledError) or _task_cancel_requested(main, task_id):
                 main.complete_task(task_id, None, cancelled=True)
             else:

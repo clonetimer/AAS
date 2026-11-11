@@ -4,6 +4,17 @@
 <body class="compact-ui"><main class="shell">
 <header class="topbar"><div><h1>智能检测算法评估</h1><p class="field-hint" data-context-help data-help-title="操作步骤" hidden>选择数据并预览，训练并发布模型，然后选择测试数据进行评估或仅推理；结果可在任务查询页查看。</p></div><nav class="nav-links"><a href="browser.html">历史故障数据库 / 导入</a><a class="active" href="runner.html">智能检测算法评估</a><a href="reports.html">任务查询与导出</a><a href="index.html">首页</a></nav></header>
 <div id="v2Connection" role="status" aria-live="polite" class="field-hint" style="margin:8px 0 14px"></div><div class="v2-mode-buttons"><button class="active" id="tabTrain" type="button">训练</button><button id="tabEval" type="button">模型评估</button></div>
+<nav class="runner-workflow-guide" aria-label="训练与评估操作向导">
+  <div class="runner-workflow-steps" role="list" aria-label="推荐操作顺序">
+    <button type="button" class="active" data-runner-step="data" role="listitem" aria-current="step">1. 选择数据</button>
+    <button type="button" data-runner-step="check" role="listitem">2. 检查数据</button>
+    <button type="button" data-runner-step="train" role="listitem">3. 训练模型</button>
+    <button type="button" data-runner-step="test" role="listitem">4. 选择测试数据</button>
+    <button type="button" data-runner-step="evaluate" role="listitem">5. 评估或仅推理</button>
+    <button type="button" data-runner-step="result" role="listitem">6. 查看结果</button>
+  </div>
+  <p id="runnerWorkflowHint" role="status" aria-live="polite">先选择训练数据来源；导入的训练/测试 CSV 保存在独立工作区。</p>
+</nav>
 <section id="trainView" class="v2-run-grid is-idle">
 <aside class="panel v2-run-settings">
   <h2>① 筛选训练数据</h2>
@@ -66,7 +77,7 @@
 <section id="evalView" class="v2-run-grid is-idle" hidden>
 <aside class="panel v2-run-settings"><h2>① 筛选测试数据</h2>
   <dialog id="evalCsvDialog" class="v2-csv-dialog" aria-labelledby="evalCsvDialogTitle"><div class="v2-csv-dialog-head"><h2 id="evalCsvDialogTitle">导入测试 CSV</h2><button type="button" data-close-csv-dialog="eval" aria-label="关闭导入测试 CSV弹窗">关闭</button></div><details id="evalCsvImport" class="v2-csv-import" open><summary class="sr-only">导入测试 CSV步骤</summary>
-    <p class="field-hint">支持有标签评估和无标签推理；检查字段后确认导入。</p>
+    <p class="field-hint">支持有标签评估和无标签推理；无标签数据仅推理，不生成监督指标，也不会自动标记为正常。检查字段后确认导入。</p>
     <section id="evalCsvWizard"><fieldset data-csv-stage="file">
     <label class="field"><span>评估 CSV 文件</span><input id="evalCsvFile" type="file" accept=".csv,.csv.gz,text/csv,application/gzip"></label>
     <div class="v2-run-filters"><label class="field"><span>文件编码（检查后确认）</span><select id="evalCsvEncoding"><option value="auto">自动识别</option><option value="utf-8">UTF-8（含 BOM）</option><option value="gb18030">GB18030 / GBK（常见 Excel 格式）</option></select></label><label class="field"><span>列分隔符（检查后确认）</span><select id="evalCsvDelimiter"><option value="auto">自动识别</option><option value=",">逗号 ,</option><option value=";">分号 ;</option><option value="&#9;">制表符 TAB</option></select></label></div>
@@ -122,7 +133,7 @@
   </div>
   <section id="evalDataPanel" class="v2-workspace-panel" role="tabpanel" aria-labelledby="evalDataTab"><div id="evalPreview" class="v2-run-preview"></div><div id="evalDataPlot" class="v2-data-plot"></div></section>
   <section id="evalProgressPanel" class="v2-workspace-panel" role="tabpanel" aria-labelledby="evalProgressTab" hidden><p id="evalProgressLabel" role="status" aria-live="polite">尚未开始评估</p><progress id="evalProgressBar" max="100" value="0"></progress><div id="evalProgressMeta" class="field-hint"></div><button id="cancelEvalTask" class="v2-task-cancel" type="button" disabled>取消评估/推理</button></section>
-  <section id="evalResultPanel" class="v2-workspace-panel" role="tabpanel" aria-labelledby="evalResultTab" hidden><p id="evalResultEmpty" class="field-hint">评估完成后，将在此显示真实标签、报警点和检测指标。</p><section id="evalFailurePanel" class="v2-task-diagnostic" role="alert" aria-live="assertive" hidden></section><div id="evalResultChart" class="v2-result-chart" aria-label="评估真值与报警曲线"></div><div id="evalOutput" class="v2-run-output" role="status" aria-live="polite"></div></section>
+  <section id="evalResultPanel" class="v2-workspace-panel" role="tabpanel" aria-labelledby="evalResultTab" hidden><p id="evalResultEmpty" class="field-hint">有标签评估显示真实标签和检测指标；无标签推理仅显示预测报警，不生成监督指标。</p><section id="evalFailurePanel" class="v2-task-diagnostic" role="alert" aria-live="assertive" hidden></section><div id="evalResultChart" class="v2-result-chart" aria-label="评估真值与报警曲线"></div><div id="evalOutput" class="v2-run-output" role="status" aria-live="polite"></div></section>
 </section>
 </section>
-</main><script src="aas-report-navigation.js?v=p0"></script><script src="task-client.js?v=p3d6"></script><script src="runner-v2.js?v=score1"></script><script src="csv-import-wizard.js?v=p3g0-3"></script><script src="runner-csv-import.js?v=p3g0-3"></script><script src="runner-csv-dialog.js?v=1"></script><script src="runner-model-bundle.js?v=p1b"></script><script src="context-help.js?v=1"></script></body></html>
+</main><script src="aas-report-navigation.js?v=p0"></script><script src="task-client.js?v=p3d6"></script><script src="runner-v2.js?v=score1"></script><script src="runner-workflow-guide.js?v=p0"></script><script src="csv-import-wizard.js?v=p3g0-3"></script><script src="runner-csv-import.js?v=p3g0-3"></script><script src="runner-csv-dialog.js?v=1"></script><script src="runner-model-bundle.js?v=p1b"></script><script src="context-help.js?v=1"></script></body></html>
