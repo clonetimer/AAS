@@ -70,7 +70,12 @@ $record = [ordered]@{
     token = $token
     started_utc = (Get-Date).ToUniversalTime().ToString('o')
 }
-$record | ConvertTo-Json -Compress | Set-Content -LiteralPath $serviceFile -Encoding UTF8
+try {
+    $record | ConvertTo-Json -Compress | Set-Content -LiteralPath $serviceFile -Encoding UTF8
+} catch {
+    Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
+    throw "无法写入本机服务控制记录，已停止刚启动的服务：$($_.Exception.Message)"
+}
 
 Write-Host "AAS 已启动：http://127.0.0.1:$Port/"
 Write-Host "服务进程 PID：$($process.Id)"

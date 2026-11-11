@@ -43,5 +43,6 @@ if ($DeleteUserData) {
     Write-Host "用户数据已保留到：$backup"
 }
 
+Set-Location -LiteralPath $parent
 Remove-Item -LiteralPath $Root -Recurse -Force
 Write-Host 'AAS 程序已卸载。'
