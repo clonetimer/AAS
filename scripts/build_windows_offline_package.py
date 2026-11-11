@@ -61,6 +61,7 @@ def parse_lock(path: Path) -> List[Tuple[str, str]]:
 def validate_wheelhouse(lock_file: Path, wheelhouse: Path) -> None:
     required = set(parse_lock(lock_file))
     found = set()
+    parsed = []
     wheel_files = list(wheelhouse.glob("*.whl"))
     for wheel in wheel_files:
         pieces = wheel.name[:-4].split("-")
@@ -69,6 +70,10 @@ def validate_wheelhouse(lock_file: Path, wheelhouse: Path) -> None:
         identity = (normalize_distribution(pieces[0]), pieces[1])
         if identity in found:
             raise ValueError("wheelhouse 含重复包版本的多个 wheel：{}".format(wheel.name))
+        found.add(identity)
+        parsed.append((wheel, identity))
+
+    for wheel, identity in parsed:
         try:
             with zipfile.ZipFile(wheel, "r") as package:
                 corrupt = package.testzip()
@@ -93,7 +98,7 @@ def validate_wheelhouse(lock_file: Path, wheelhouse: Path) -> None:
                     wheel.name, metadata_identity[0], metadata_identity[1]
                 )
             )
-        found.add(identity)
+
     missing = sorted(required - found)
     extras = sorted(found - required)
     if missing:
