@@ -9,6 +9,8 @@ def test_offline_installer_checks_integrity_space_and_avoids_fixed_drive():
     assert "LOCALAPPDATA" in script
     assert "D:\\AAS" not in script
     assert "Remove-Item -LiteralPath $TargetDir -Recurse -Force" in script
+    assert "package_manifest.json" in script
+    assert "source_commit = $manifest.source_commit" in script
 
 
 def test_service_shortcuts_use_local_token_and_preserve_user_data():

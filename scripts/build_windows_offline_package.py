@@ -28,6 +28,7 @@ EXCLUDED_SUFFIXES = {
     ".pyc", ".pyo", ".log", ".tmp", ".bak", ".sqlite", ".sqlite3", ".db",
     ".pkl", ".pickle", ".joblib", ".pt", ".pth", ".onnx", ".whl", ".zip",
 }
+EXCLUDED_FILENAMES = {".aas-service.json", ".aas-install.json", ".env", ".coverage"}
 PAYLOAD_DIRS = (
     Path("程序/Python安装包"),
     Path("程序/Python便携版"),
@@ -59,11 +60,15 @@ def parse_lock(path: Path) -> List[Tuple[str, str]]:
 def validate_wheelhouse(lock_file: Path, wheelhouse: Path) -> None:
     required = set(parse_lock(lock_file))
     found = set()
-    for wheel in wheelhouse.glob("*.whl"):
+    wheel_files = list(wheelhouse.glob("*.whl"))
+    for wheel in wheel_files:
         pieces = wheel.name[:-4].split("-")
         if len(pieces) < 5:
-            continue
-        found.add((normalize_distribution(pieces[0]), pieces[1]))
+            raise ValueError("wheelhouse 含无效 wheel 文件名：{}".format(wheel.name))
+        identity = (normalize_distribution(pieces[0]), pieces[1])
+        if identity in found:
+            raise ValueError("wheelhouse 含重复包版本的多个 wheel：{}".format(wheel.name))
+        found.add(identity)
     missing = sorted(required - found)
     extras = sorted(found - required)
     if missing:
@@ -103,6 +108,8 @@ def collect_source_files(source_root: Path) -> List[Path]:
         if parts and parts[0] == "models":
             continue
         if path.suffix.lower() in EXCLUDED_SUFFIXES:
+            continue
+        if path.name in EXCLUDED_FILENAMES:
             continue
         if path.name in {".DS_Store", "Thumbs.db"}:
             continue

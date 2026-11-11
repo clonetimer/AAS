@@ -67,3 +67,17 @@ def test_builder_excludes_models_and_backup_assets(tmp_path):
         assert not any(name.endswith(".pkl") or name.endswith(".bak") for name in names)
         assert "程序/AAS_源码.zip" in names
         assert "校验/双坐标文件哈希.json" in names
+
+
+def test_wheelhouse_rejects_malformed_wheel_filename(tmp_path):
+    lock, wheelhouse = _wheelhouse(tmp_path)
+    (wheelhouse / "not-a-valid-wheel.whl").write_bytes(b"bad")
+    with pytest.raises(ValueError, match="无效 wheel 文件名"):
+        validate_wheelhouse(lock, wheelhouse)
+
+
+def test_wheelhouse_rejects_duplicate_distribution_version(tmp_path):
+    lock, wheelhouse = _wheelhouse(tmp_path)
+    (wheelhouse / "numpy-1.24.4-cp39-cp39-win_amd64.whl").write_bytes(b"duplicate")
+    with pytest.raises(ValueError, match="重复包版本"):
+        validate_wheelhouse(lock, wheelhouse)

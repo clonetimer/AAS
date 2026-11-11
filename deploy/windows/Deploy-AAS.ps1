@@ -294,13 +294,16 @@ try {
         if (-not (Test-Path -LiteralPath $from -PathType Leaf)) { throw "离线包缺少安装后工具：$name" }
         Copy-Item -LiteralPath $from -Destination (Join-Path $TargetDir $name) -Force
     }
+    $metadataDir = Join-Path $TargetDir 'install_metadata'
+    New-Item -ItemType Directory -Force -Path $metadataDir | Out-Null
+    Copy-Item -LiteralPath (Join-Path $Pkg '校验\双坐标文件哈希.json') -Destination (Join-Path $metadataDir 'package_manifest.json') -Force
     $installInfo = [ordered]@{
         product = 'AAS'
         source_commit = $manifest.source_commit
         installed_utc = (Get-Date).ToUniversalTime().ToString('o')
         python = $runtimePython
         port = 8765
-        package_manifest = '校验/双坐标文件哈希.json'
+        package_manifest = 'install_metadata/package_manifest.json'
     }
     $installInfo | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $TargetDir '.aas-install.json') -Encoding UTF8
 
