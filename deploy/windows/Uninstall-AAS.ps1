@@ -16,12 +16,12 @@ $stopScript = Join-Path $Root 'Stop-AAS.ps1'
 if (Test-Path -LiteralPath $stopScript) {
     & $stopScript
 }
-$entry = [IO.Path]::GetFullPath((Join-Path $Root 'scripts\\visualization_server.py'))
+$entry = [IO.Path]::GetFullPath((Join-Path $Root 'scripts\visualization_server.py'))
 try {
     $runningAas = @(Get-CimInstance Win32_Process -ErrorAction Stop | Where-Object {
         $_.CommandLine -and (
             $_.CommandLine.IndexOf($entry, [StringComparison]::OrdinalIgnoreCase) -ge 0 -or
-            ($_.CommandLine -match 'visualization_server\\.py' -and $_.ExecutablePath -and
+            ($_.CommandLine -match 'visualization_server\.py' -and $_.ExecutablePath -and
              $_.ExecutablePath.StartsWith($Root, [StringComparison]::OrdinalIgnoreCase))
         )
     })
