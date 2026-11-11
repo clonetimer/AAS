@@ -65,3 +65,40 @@ jobs:
             }
           }
           Write-Host "Parsed $($files.Count) PowerShell scripts successfully."
+
+  build-source-archive:
+    name: Build reproducible source archive
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Build source archive from checked-out commit
+        env:
+          SOURCE_COMMIT: \${{ github.sha }}
+        run: |
+          python - <<'PY'
+          import os
+          import shutil
+          import tempfile
+          from pathlib import Path
+          from scripts.build_windows_offline_package import build_source_archive
+
+          root = Path.cwd()
+          package_root = Path(tempfile.mkdtemp(prefix="aas-source-artifact-"))
+          count = build_source_archive(root, package_root)
+          archive = package_root / "程序" / "AAS_源码.zip"
+          shutil.copy2(archive, Path("AAS_源码.zip"))
+          Path("source_commit.txt").write_text(os.environ["SOURCE_COMMIT"] + "\n", encoding="ascii")
+          print("source_files={}".format(count))
+          print("source_archive_bytes={}".format(archive.stat().st_size))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: aas-p0-source-archive
+          path: |
+            AAS_源码.zip
+            source_commit.txt
+          if-no-files-found: error
+          retention-days: 14
