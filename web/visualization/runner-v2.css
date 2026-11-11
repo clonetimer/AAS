@@ -125,3 +125,15 @@
 
 .v2-workspace-panel>progress{width:100%;height:10px}
 .v2-workspace-panel>.v2-task-cancel{margin-top:10px}
+
+
+/* P0: compact guided workflow for first-time training/evaluation users. */
+.runner-workflow-guide{margin:10px 0 16px;padding:10px 12px;border:1px solid #d8e3ec;border-radius:10px;background:#f7fafc}
+.runner-workflow-steps{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
+.runner-workflow-steps button{min-width:0;padding:8px 6px;border:1px solid #d4dee8;border-radius:7px;background:#fff;color:#34465a;font-size:12px;line-height:1.35;white-space:normal;cursor:pointer}
+.runner-workflow-steps button:hover{border-color:#7ea6c8;background:#f1f7fc}
+.runner-workflow-steps button.active{border-color:#2f6f9f;background:#e8f2fa;color:#174b70;font-weight:650}
+.runner-workflow-steps button:focus-visible{outline:3px solid #267bb5;outline-offset:2px}
+.runner-workflow-guide #runnerWorkflowHint{margin:8px 0 0;color:#526477;font-size:12px;line-height:1.5}
+@media(max-width:980px){.runner-workflow-steps{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:520px){.runner-workflow-guide{padding:8px}.runner-workflow-steps{grid-template-columns:repeat(2,minmax(0,1fr))}.runner-workflow-steps button{padding:8px 5px}}
