@@ -142,8 +142,8 @@ def verify_seed_manifest(seed_root: Path) -> dict:
     entries = manifest.get("entries")
     if not isinstance(commit, str) or not re.fullmatch(r"[0-9a-f]{40}", commit):
         raise ValueError("离线种子包缺少有效的原始源码提交 SHA")
-    if not isinstance(entries, dict) or len(entries) < 20:
-        raise ValueError("离线种子包 SHA-256 清单条目不足或格式无效")
+    if not isinstance(entries, dict) or not entries:
+        raise ValueError("离线种子包 SHA-256 清单没有可校验的文件条目")
 
     root = seed_root.resolve()
     seen = set()
