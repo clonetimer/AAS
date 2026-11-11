@@ -33,7 +33,7 @@ def _wheelhouse(root: Path):
     wheelhouse.mkdir(parents=True)
     lock.write_text("numpy==1.24.4\nPyYAML==6.0.3\n", encoding="utf-8")
     _write_wheel(wheelhouse / "numpy-1.24.4-cp38-cp38-win_amd64.whl", "numpy", "1.24.4")
-    _write_wheel(wheelhouse / "PyYAML-6.0.3-cp38-cp38-win_amd64.whl", "PyYAML", "6.0.3")
+    _write_wheel(wheelhouse / "pyyaml-6.0.3-cp38-cp38-win_amd64.whl", "PyYAML", "6.0.3")
     return lock, wheelhouse
 
 
