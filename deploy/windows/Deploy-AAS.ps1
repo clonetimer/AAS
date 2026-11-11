@@ -90,21 +90,45 @@ function Get-RequiredFreeBytes {
     return [int64](35GB)
 }
 
+function Get-DefaultInstallTarget {
+    # Prefer a non-system fixed disk with enough space for the example database.
+    $systemRoot = [IO.Path]::GetPathRoot($env:SystemRoot)
+    $candidate = [IO.DriveInfo]::GetDrives() |
+        Where-Object {
+            $_.IsReady -and
+            $_.DriveType -eq [IO.DriveType]::Fixed -and
+            $_.Name -ne $systemRoot -and
+            $_.AvailableFreeSpace -ge [int64](35GB)
+        } |
+        Sort-Object AvailableFreeSpace -Descending |
+        Select-Object -First 1
+    if ($candidate) {
+        return Join-Path $candidate.RootDirectory.FullName 'AAS'
+    }
+    if ($env:LOCALAPPDATA) {
+        return Join-Path $env:LOCALAPPDATA 'AAS'
+    }
+    return Join-Path $env:USERPROFILE 'AAS'
+}
+
 function Test-PackageManifest {
     $manifestPath = Join-Path $Pkg '校验\双坐标文件哈希.json'
     if (-not (Test-Path -LiteralPath $manifestPath -PathType Leaf)) {
         throw '缺少 SHA-256 清单：校验\双坐标文件哈希.json'
     }
     $manifest = Get-Content -LiteralPath $manifestPath -Raw -Encoding UTF8 | ConvertFrom-Json
-    if (-not $manifest.entries -or $manifest.entries.PSObject.Properties.Count -lt 20) {
-        throw 'SHA-256 清单为空或条目数量异常。'
+    # Windows PowerShell 5.1 can expose adapted members differently from
+    # PowerShell 7. Materialize the NoteProperty collection before counting it.
+    $entryProperties = @($manifest.entries.PSObject.Properties | ForEach-Object { $_ })
+    if ($null -eq $manifest.entries -or $entryProperties.Count -lt 20) {
+        throw "SHA-256 清单为空或条目数量异常：检测到 $($entryProperties.Count) 项。"
     }
     if ([string]$manifest.source_commit -notmatch '^[0-9a-f]{40}$') {
         throw 'SHA-256 清单缺少有效的源码提交 SHA。'
     }
     $rootPrefix = [IO.Path]::GetFullPath($Pkg).TrimEnd('\') + '\'
     $checked = 0
-    foreach ($property in $manifest.entries.PSObject.Properties) {
+    foreach ($property in $entryProperties) {
         $relative = [string]$property.Name
         if ([IO.Path]::IsPathRooted($relative) -or $relative -match '(^|[\\/])\.\.([\\/]|$)') {
             throw "SHA-256 清单包含非法路径：$relative"
@@ -132,8 +156,16 @@ function Test-PackageManifest {
 
 try {
     if ([string]::IsNullOrWhiteSpace($TargetDir)) {
-        if ($env:LOCALAPPDATA) { $TargetDir = Join-Path $env:LOCALAPPDATA 'AAS' }
-        else { $TargetDir = Join-Path $env:USERPROFILE 'AAS' }
+        $suggestedTarget = Get-DefaultInstallTarget
+        Write-Host ''
+        Write-Host '请选择 AAS 安装位置。完整示例数据库建议安装到非系统盘（至少预留 35 GB）。' -ForegroundColor Cyan
+        Write-Host ("建议路径：{0}" -f $suggestedTarget)
+        $selectedTarget = Read-Host '安装目录（直接回车使用建议路径，也可输入 E:\AAS 等自定义路径）'
+        if ([string]::IsNullOrWhiteSpace($selectedTarget)) {
+            $TargetDir = $suggestedTarget
+        } else {
+            $TargetDir = $selectedTarget.Trim().Trim('"')
+        }
     }
     $TargetDir = [IO.Path]::GetFullPath($TargetDir)
     if ($DatabaseSource -and $SkipDatabase) { throw '-DatabaseSource 与 -SkipDatabase 不能同时使用。' }
