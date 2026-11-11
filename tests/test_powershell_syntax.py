@@ -23,15 +23,19 @@ def test_all_windows_deployment_scripts_parse():
             "[System.Management.Automation.Language.Parser]::ParseFile("
             f"'{literal_path}', [ref]$tokens, [ref]$errors) | Out-Null; "
             "if ($errors.Count -gt 0) { "
-            "$errors | ForEach-Object { Write-Error $_ }; exit 1 "
-            "}"
+            "$errors | ForEach-Object { [Console]::Out.WriteLine($_.ToString()) }; exit 1 "
+            "}; "
+            "[Console]::Out.WriteLine('POWERSHELL_PARSE_OK')"
         )
         result = subprocess.run(
             [powershell, "-NoProfile", "-NonInteractive", "-Command", command],
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
             timeout=30,
         )
         assert result.returncode == 0, (
             f"PowerShell parse failed: {path}\n{result.stdout}\n{result.stderr}"
         )
+        assert "POWERSHELL_PARSE_OK" in result.stdout
