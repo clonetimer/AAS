@@ -52,6 +52,19 @@ class PostRoutesMixin:
             self.wfile.write(json.dumps({"error": "主模块未加载"}).encode("utf-8"))
             return
 
+        if parsed.path == '/_aas/control/shutdown':
+            from scripts.server.local_service_control import authorized_shutdown_request
+            supplied = self.headers.get('X-AAS-Control-Token', '')
+            host = self.headers.get('Host', '')
+            if self.headers.get('Content-Length', '0') not in ('', '0'):
+                return main.json_response(self, {'error': '停止请求不接受请求体'}, 400)
+            if not authorized_shutdown_request(
+                    main.ROOT, os.getpid(), self.server.server_port,
+                    self.client_address[0], host, supplied):
+                return main.json_response(self, {'error': '本机服务控制凭据无效'}, 403)
+            threading.Thread(target=self.server.shutdown, daemon=True).start()
+            return main.json_response(self, {'status': 'stopping'})
+
         if self._handle_auth_post(parsed, main):
             return
         if not self._require_auth(parsed, main, is_post=True):

@@ -1,5 +1,7 @@
 # AAS 双坐标版本：Windows 从零部署
 
+> 本文是源码/开发环境部署说明，需要准备 Python 并安装 requirements.txt。普通用户的全离线安装请使用独立 Windows 离线包，参见 [离线部署说明](docs/WINDOWS_OFFLINE_DEPLOYMENT.md) 和包内「部署说明.md」。
+
 ## 环境与安装
 
 需要 Windows、Python 3、PowerShell 和可访问 `requirements.txt` 中依赖的安装源。交付 ZIP 含完整源码与部署脚本，不含 Python 虚拟环境、第三方 wheel 或历史遥测数据库；离线环境须预先准备依赖。
