@@ -76,7 +76,7 @@ jobs:
           python-version: "3.11"
       - name: Build source archive from checked-out commit
         env:
-          SOURCE_COMMIT: \${{ github.sha }}
+          SOURCE_COMMIT: ${{ github.sha }}
         run: |
           python - <<'PY'
           import os
@@ -86,6 +86,9 @@ jobs:
           from scripts.build_windows_offline_package import build_source_archive
 
           root = Path.cwd()
+          commit = os.environ["SOURCE_COMMIT"]
+          if len(commit) != 40 or any(ch not in "0123456789abcdef" for ch in commit):
+              raise SystemExit("SOURCE_COMMIT must be a 40-character Git SHA")
           package_root = Path(tempfile.mkdtemp(prefix="aas-source-artifact-"))
           count = build_source_archive(root, package_root)
           archive = package_root / "程序" / "AAS_源码.zip"
